@@ -1,0 +1,7 @@
+<component name="CopyrightManager">
+  <settings default="bsd3-TexTchange">
+    <module2copyright>
+      <element module="All" copyright="bsd3-TexTchange" />
+    </module2copyright>
+  </settings>
+</component>
