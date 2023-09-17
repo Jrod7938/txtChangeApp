@@ -2,6 +2,12 @@
 
 TexTchange is an Android app built using Jetpack Compose. It allows Hofstra Students to exchange texts with other users.
 
+# Developers
+- [Jrod7938](https://github.com/Jrod7938)
+- [Khang-ALe](https://github.com/Khang-ALe)
+- [jesma14](https://github.com/jesma14)
+- [Holesum](https://github.com/Holesum)
+
 ## How to Run
 
 Follow these steps to run the TexTchange app on your local machine:
