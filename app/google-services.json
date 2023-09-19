@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "264774053124",
+    "project_id": "textchange-1ec88",
+    "storage_bucket": "textchange-1ec88.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:264774053124:android:0077128867d45cbd4d7451",
+        "android_client_info": {
+          "package_name": "com.jrod7938.textchangeapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCujDc82CkCgV0l7jATvBsXJEoj4YqcHc8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
