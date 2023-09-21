@@ -7,7 +7,7 @@ currently being supported with security updates.
 
 | Version | Supported          |
 | ------- | ------------------ |
-| < 2.0   | :x:                |
+| < 2.0   | ✅                 |
 
 ## Reporting a Vulnerability
 
