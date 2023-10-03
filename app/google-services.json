@@ -15,6 +15,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "264774053124-nb7mmur72p57kmruet8jk5trsmi81sl1.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.jrod7938.textchangeapp",
+            "certificate_hash": "759680c5264a9ba6c48f6a03a591e7a13b324930"
+          }
+        },
+        {
           "client_id": "264774053124-p17q1riu3vtkp11jfmte4os6ujg9ji9b.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
