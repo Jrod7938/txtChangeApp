@@ -54,7 +54,7 @@ import java.lang.Thread.sleep
 fun SplashScreen(navController: NavHostController) {
     LaunchedEffect(key1 = navController){
         sleep(2000)
-        navController.navigate(AppScreens.HomeScreen.name)
+        navController.navigate(AppScreens.LoginScreen.name)
     }
     Surface(
         modifier = Modifier
