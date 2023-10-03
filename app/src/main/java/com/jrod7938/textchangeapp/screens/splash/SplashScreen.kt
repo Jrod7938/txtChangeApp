@@ -29,47 +29,50 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.jrod7938.textchangeapp
+package com.jrod7938.textchangeapp.screens.splash
 
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import com.jrod7938.textchangeapp.navigation.AppNavigation
-import com.jrod7938.textchangeapp.ui.theme.TexTchangeAppTheme
-import dagger.hilt.android.AndroidEntryPoint
-
-@AndroidEntryPoint
-class MainActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContent {
-            TexTchangeAppTheme {
-                TexTchangeApp()
-            }
-        }
-    }
-}
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
+import com.jrod7938.textchangeapp.navigation.AppScreens
+import java.lang.Thread.sleep
 
 @Composable
-fun TexTchangeApp(){
-    // A surface container using the 'background' color from the theme
+fun SplashScreen(navController: NavHostController) {
+    LaunchedEffect(key1 = navController){
+        sleep(2000)
+        navController.navigate(AppScreens.HomeScreen.name)
+    }
     Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background
+        modifier = Modifier
+            .size(300.dp),
+        shape = CircleShape,
+        border = BorderStroke(width = 1.dp, color = Color.Black)
     ) {
         Column(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            AppNavigation()
+            Text(text = "TxTchange App")
         }
     }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun SplashScreenPreview(){
+    SplashScreen(navController = rememberNavController())
 }
