@@ -51,11 +51,18 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun AppLogo(size: Dp = 300.dp, scale: Animatable<Float, AnimationVector1D>){
+fun AppLogo(
+    size: Dp = 300.dp,
+    scale: Animatable<Float, AnimationVector1D>,
+    txtSize: TextUnit = 64.sp,
+    changeSize: TextUnit = 24.sp,
+    legalSize: TextUnit = 12.sp
+){
     Surface(
         modifier = Modifier
             .size(size)
@@ -72,25 +79,25 @@ fun AppLogo(size: Dp = 300.dp, scale: Animatable<Float, AnimationVector1D>){
             Text(
                 text = "txt.",
                 color = MaterialTheme.colorScheme.onPrimary,
-                fontSize = 64.sp,
+                fontSize = txtSize,
                 fontWeight = FontWeight.Bold
             )
             Text(
                 text = "CHANGE",
                 color = MaterialTheme.colorScheme.onPrimary,
-                fontSize = 24.sp,
+                fontSize = changeSize,
                 fontWeight = FontWeight.SemiBold
             )
             Text(
                 text = "since",
                 color = MaterialTheme.colorScheme.onPrimary,
-                fontSize = 12.sp,
+                fontSize = legalSize,
                 fontWeight = FontWeight.SemiBold
             )
             Text(
                 text = "2023.",
                 color = MaterialTheme.colorScheme.onPrimary,
-                fontSize = 12.sp,
+                fontSize = legalSize,
                 fontWeight = FontWeight.SemiBold
             )
         }
