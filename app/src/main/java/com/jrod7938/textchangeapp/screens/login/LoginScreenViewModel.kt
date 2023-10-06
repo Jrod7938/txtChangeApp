@@ -43,6 +43,15 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.jrod7938.textchangeapp.model.MUser
 import kotlinx.coroutines.launch
 
+/**
+ * ViewModel for the LoginScreen
+ *
+ * @property auth Firebase Authentication instance
+ * @property _loading MutableLiveData<Boolean> to indicate if the user is being created
+ * @property loading LiveData<Boolean> to observe if the user is being created
+ *
+ * @constructor Creates a ViewModel for the LoginScreen
+ */
 class LoginScreenViewModel: ViewModel() {
 
     private val auth: FirebaseAuth = Firebase.auth
@@ -50,6 +59,18 @@ class LoginScreenViewModel: ViewModel() {
     private val _loading = MutableLiveData(false)
     val loading: LiveData<Boolean> = _loading
 
+
+    /**
+     * Sign in with email and password
+     *
+     * @param email email of the user
+     * @param password password of the user
+     * @param home function to call when the user is signed in
+     *
+     * @return Unit
+     *
+     * @see FirebaseAuth.signInWithEmailAndPassword
+     */
     fun signInWithEmailAndPassword(email: String, password: String, home: () -> Unit) = viewModelScope.launch{
         try {
             auth.signInWithEmailAndPassword(email, password)
@@ -67,6 +88,18 @@ class LoginScreenViewModel: ViewModel() {
         }
     }
 
+    /**
+     * Create a user with email and password within Firebase Authentication and Database
+     *
+     * @param email email of the user
+     * @param password password of the user
+     * @param home function to call when the user is created
+     *
+     * @return Unit
+     *
+     * @see FirebaseAuth.createUserWithEmailAndPassword
+     * @see createUser
+     */
     fun createUserWithEmailAndPassword(
         email: String,
         password: String,
@@ -91,7 +124,15 @@ class LoginScreenViewModel: ViewModel() {
         }
     }
 
-
+    /**
+     * Create a user within the Firebase Database
+     *
+     * @param displayName display name of the user
+     *
+     * @return Unit
+     *
+     * @see FirebaseFirestore.collection
+     */
     private fun createUser(displayName: String?) {
         val userId = auth.currentUser?.uid
         val user = MUser(

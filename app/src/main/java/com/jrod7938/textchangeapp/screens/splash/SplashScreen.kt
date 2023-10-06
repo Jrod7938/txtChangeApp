@@ -46,6 +46,14 @@ import com.jrod7938.textchangeapp.components.AppSplashScreenLogo
 import com.jrod7938.textchangeapp.navigation.AppScreens
 import kotlinx.coroutines.delay
 
+
+/**
+ * SplashScreen composable
+ *
+ * @param navController NavHostController to navigate between screens
+ *
+ * @constructor Creates a SplashScreen composable
+ */
 @Composable
 fun SplashScreen(navController: NavHostController) {
     val scale = remember{

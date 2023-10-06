@@ -53,6 +53,15 @@ import com.jrod7938.textchangeapp.components.AppLogo
 import com.jrod7938.textchangeapp.components.EmailInput
 import com.jrod7938.textchangeapp.navigation.AppScreens
 
+
+/**
+ * LoginScreen composable
+ *
+ * @param navController NavHostController to navigate between screens
+ * @param viewModel LoginScreenViewModel to handle the logic
+ *
+ * @constructor Creates a LoginScreen composable
+ */
 @Composable
 fun LoginScreen(
     navController: NavHostController,

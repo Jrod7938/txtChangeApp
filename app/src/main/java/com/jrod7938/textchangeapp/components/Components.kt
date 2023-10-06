@@ -97,9 +97,9 @@ fun AppLogo(txtSize: TextUnit = 42.sp, changeSize: TextUnit = 32.sp) {
     }
 }
 
-@Preview(showBackground = true)
+// @Preview(showBackground = true)
 @Composable
-fun AppLogoPreview() {
+private fun AppLogoPreview() {
     AppLogo()
 }
 
@@ -164,7 +164,7 @@ fun AppSplashScreenLogo(
 
 // @Preview(showBackground = true)
 @Composable
-fun AppSplashScreenLogo(){
+fun AppSplashScreenLogoPreview(){
     AppSplashScreenLogo(scale = remember {
         Animatable(.9f)
     })
