@@ -1,0 +1,33 @@
+name: Android Tests
+
+on:
+  push:
+    branches:
+      - master 
+
+jobs:
+  build:
+    runs-on: macos-latest  # macOS is used here as it supports both iOS and Android builds
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up JDK
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'adopt'
+        java-version: '17'
+
+    - name: Cache dependencies
+      uses: actions/cache@v2
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}
+        restore-keys: |
+          ${{ runner.os }}-gradle-
+
+    - name: Run connectedAndroidTest
+      run: ./gradlew connectedAndroidTest
