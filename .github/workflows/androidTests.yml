@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    runs-on: macos-latest  # macOS is used here as it supports both iOS and Android builds
+    runs-on: macos-latest
 
     steps:
     - name: Checkout code
@@ -19,24 +19,18 @@ jobs:
         distribution: 'adopt'
         java-version: '17'
 
-    - name: Cache dependencies
-      uses: actions/cache@v2
-      with:
-        path: |
-          ~/.gradle/caches
-          ~/.gradle/wrapper
-        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}
-        restore-keys: |
-          ${{ runner.os }}-gradle-
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v2
 
-    - name: Setup Android Emulator
+    - name: Create and start emulator
       run: |
-        echo "no" | avdmanager create avd --force --name testAVD --abi google_apis/x86_64 --package "system-images;android-29;google_apis;x86_64"
+        echo "y" | sdkmanager "system-images;android-34;google_apis;x86_64"
+        echo "no" | avdmanager create avd --force --name testAVD --abi google_apis/x86_64 --package "system-images;android-34;google_apis;x86_64"
         $ANDROID_HOME/emulator/emulator -avd testAVD -no-audio -no-window -no-boot-anim -accel on &
 
-    - name: Wait for Emulator
+    - name: Wait for emulator to start
       run: |
-        adb wait-for-device shell 'while [[ -z $(getprop sys.boot_completed | tr -d '\r') ]]; do sleep 1; done; input keyevent 82'
+        adb wait-for-device shell 'while [[ -z $(getprop sys.boot_completed) ]]; do sleep 1; done; input keyevent 82'
 
     - name: Run connectedAndroidTest
       run: ./gradlew connectedAndroidTest
