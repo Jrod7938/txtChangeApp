@@ -31,8 +31,10 @@
 
 package com.jrod7938.textchangeapp.screens.splash
 
+import android.annotation.SuppressLint
 import android.view.animation.OvershootInterpolator
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -55,9 +57,13 @@ import kotlinx.coroutines.delay
  * @constructor Creates a SplashScreen composable
  */
 @Composable
-fun SplashScreen(navController: NavHostController) {
+fun SplashScreen(
+    navController: NavHostController,
+    scale: Animatable<Float,
+            AnimationVector1D> = Animatable(0f)
+) {
     val scale = remember{
-        Animatable(0f)
+        scale
     }
 
     // Animate the App Logo to pop out of screen
@@ -86,8 +92,9 @@ fun SplashScreen(navController: NavHostController) {
     AppSplashScreenLogo(size = 300.dp, scale = scale)
 }
 
-@Preview(showBackground = true)
+@SuppressLint("UnrememberedAnimatable")
+//@Preview(showBackground = true)
 @Composable
 fun SplashScreenPreview(){
-    SplashScreen(navController = rememberNavController())
+    SplashScreen(navController = rememberNavController(), scale = Animatable(0.9f))
 }
