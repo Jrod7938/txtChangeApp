@@ -41,7 +41,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import com.jrod7938.textchangeapp.components.AppLogo
+import com.google.firebase.auth.FirebaseAuth
+import com.jrod7938.textchangeapp.components.AppSplashScreenLogo
 import com.jrod7938.textchangeapp.navigation.AppScreens
 import kotlinx.coroutines.delay
 
@@ -51,6 +52,7 @@ fun SplashScreen(navController: NavHostController) {
         Animatable(0f)
     }
 
+    // Animate the App Logo to pop out of screen
     LaunchedEffect(key1 = true){
         scale.animateTo(
             targetValue = 0.9f,
@@ -62,10 +64,18 @@ fun SplashScreen(navController: NavHostController) {
                 }
             )
         )
+
         delay(2000L)
-        navController.navigate(AppScreens.LoginScreen.name)
+
+        // If user is logged in goto Home else goto Login Screen
+        if(FirebaseAuth.getInstance().currentUser?.email.isNullOrEmpty()){
+            navController.navigate(AppScreens.LoginScreen.name)
+        } else {
+            navController.navigate(AppScreens.HomeScreen.name)
+        }
+
     }
-    AppLogo(size = 300.dp, scale)
+    AppSplashScreenLogo(size = 300.dp, scale = scale)
 }
 
 @Preview(showBackground = true)
