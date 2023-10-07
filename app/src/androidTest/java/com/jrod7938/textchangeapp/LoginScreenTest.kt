@@ -190,7 +190,13 @@ class LoginScreenTest {
     @Test
     fun accountLoginTest3() {
         rule.setContent {
-            LoginScreen(rememberNavController())
+            val navController = rememberNavController()
+
+            NavHost(navController = navController, startDestination = AppScreens.LoginScreen.name) {
+                composable(AppScreens.LoginScreen.name) {
+                    LoginScreen(navController = navController)
+                }
+            }
         }
 
         rule.onNodeWithText("Email")
