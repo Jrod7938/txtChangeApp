@@ -182,4 +182,30 @@ class LoginScreenTest {
             .assertIsNotEnabled()
 
     }
+
+    /**
+     * This test is to check if the user can login with invalid credentials
+     * and get an error message
+     */
+    @Test
+    fun accountLoginTest3() {
+        rule.setContent {
+            LoginScreen(navController = rememberNavController())
+        }
+
+        rule.onNodeWithText("Email")
+            .assertExists()
+            .performTextInput("test@pride.hofstra.edu")
+
+        rule.onNodeWithText("Password")
+            .assertExists()
+            .performTextInput("tester123")
+
+        rule.onNodeWithText("Login")
+            .assertExists()
+            .performClick()
+
+        rule.onNodeWithText("Incorrect email or password")
+            .assertExists()
+    }
 }

@@ -31,16 +31,18 @@
 
 package com.jrod7938.textchangeapp.screens.login
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
-import android.util.Log
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.ktx.Firebase
 import com.jrod7938.textchangeapp.model.MUser
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 /**
@@ -58,6 +60,9 @@ class LoginScreenViewModel: ViewModel() {
 
     private val _loading = MutableLiveData(false)
     val loading: LiveData<Boolean> = _loading
+
+    private val _errorMessage = MutableStateFlow<String?>(null)
+    val errorMessage: StateFlow<String?> = _errorMessage
 
 
     /**
@@ -79,12 +84,12 @@ class LoginScreenViewModel: ViewModel() {
                         Log.d("Firebase", "signInWithEmailAndPassword: ${task.result}")
                         home()
                     } else {
-                        Log.d("Firebase", "signInWithEmailAndPassword: ${task.result}")
+                        _errorMessage.value = "Incorrect email or password"
                     }
                 }
 
         } catch (e: Exception){
-            Log.d("Firebase", "signInWithEmailAndPassword: ${e.message}")
+            _errorMessage.value = e.message
         }
     }
 
@@ -117,7 +122,7 @@ class LoginScreenViewModel: ViewModel() {
                         Log.d("Firebase", "createUserWithEmailAndPassword: Success ${task.result}")
                         home()
                     } else {
-                        Log.d("Firebase", "createUserWithEmailAndPassword: Failed ${task.result}")
+                        _errorMessage.value = "Failed to create user"
                     }
                     _loading.value = false
                 }
