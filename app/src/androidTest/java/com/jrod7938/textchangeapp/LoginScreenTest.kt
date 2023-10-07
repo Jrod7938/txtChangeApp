@@ -50,7 +50,6 @@ import org.junit.Test
  *  This class is used to test the login screen
  *
  *  @property rule is used to create a compose rule
- *  @property navController is used to navigate between screens
  */
 class LoginScreenTest {
 
