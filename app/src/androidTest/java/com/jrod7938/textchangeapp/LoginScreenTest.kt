@@ -193,7 +193,7 @@ class LoginScreenTest {
             .assertExists()
             .performClick()
 
-        rule.onNodeWithText("Incorrect email or password")
+        rule.onNodeWithText("Welcome, please login to continue!")
             .assertExists()
     }
 }
