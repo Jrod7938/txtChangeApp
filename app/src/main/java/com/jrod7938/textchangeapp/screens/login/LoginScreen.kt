@@ -163,7 +163,7 @@ fun UserForm(
     val email = rememberSaveable { mutableStateOf("") }
     val password = rememberSaveable { mutableStateOf("") }
     val passwordVisibility = rememberSaveable { mutableStateOf(false) }
-    val passwordFocusRequest = FocusRequester.Default
+    val passwordFocusRequest = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
     val valid = remember(email.value, password.value) {
         email.value.trim().isNotEmpty()
@@ -281,5 +281,3 @@ fun PasswordVisibility(passwordVisibility: MutableState<Boolean>) {
         Icons.Default.Close
     }
 }
-
-
