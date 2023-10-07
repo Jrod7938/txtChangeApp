@@ -190,7 +190,7 @@ class LoginScreenTest {
     @Test
     fun accountLoginTest3() {
         rule.setContent {
-            LoginScreen(navController = rememberNavController())
+            LoginScreen(rememberNavController())
         }
 
         rule.onNodeWithText("Email")
