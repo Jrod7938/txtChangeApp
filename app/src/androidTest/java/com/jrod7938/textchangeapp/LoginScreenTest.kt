@@ -65,11 +65,11 @@ class LoginScreenTest {
             val navController = rememberNavController()
 
             NavHost(navController = navController, startDestination = AppScreens.LoginScreen.name) {
-                composable(AppScreens.LoginScreen.name) {
-                    LoginScreen(navController = navController)
-                }
                 composable(AppScreens.HomeScreen.name) {
                     HomeScreen(navController = navController)
+                }
+                composable(AppScreens.LoginScreen.name) {
+                    LoginScreen(navController = navController)
                 }
             }
         }
