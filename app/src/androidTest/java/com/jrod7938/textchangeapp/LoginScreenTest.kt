@@ -31,12 +31,11 @@
 
 package com.jrod7938.textchangeapp
 
-import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performKeyInput
 import androidx.compose.ui.test.performTextInput
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -119,9 +118,9 @@ class LoginScreenTest {
             .assertExists()
             .performTextInput("tester123")
 
-        rule.onNodeWithText("Login")
+        rule.onNodeWithText("Create Account")
             .assertExists()
-            .performClick()
+            .assertIsEnabled()
     }
 
     /**
