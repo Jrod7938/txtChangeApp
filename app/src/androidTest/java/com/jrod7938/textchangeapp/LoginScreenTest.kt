@@ -129,16 +129,7 @@ class LoginScreenTest {
     @Test
     fun accountLoginTest2(){
         rule.setContent {
-            val navController = rememberNavController()
-
-            NavHost(navController = navController, startDestination = AppScreens.LoginScreen.name) {
-                composable(AppScreens.LoginScreen.name) {
-                    LoginScreen(navController = navController)
-                }
-                composable(AppScreens.HomeScreen.name) {
-                    HomeScreen(navController = navController)
-                }
-            }
+            LoginScreen(navController = rememberNavController())
         }
 
         // enter invalid email
