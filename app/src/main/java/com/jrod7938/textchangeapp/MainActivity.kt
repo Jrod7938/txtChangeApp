@@ -52,14 +52,14 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             TexTchangeAppTheme {
-                TexTchangeApp()
+                TxTchangeApp()
             }
         }
     }
 }
 
 @Composable
-fun TexTchangeApp(){
+fun TxTchangeApp(){
     // A surface container using the 'background' color from the theme
     Surface(
         modifier = Modifier.fillMaxSize(),
