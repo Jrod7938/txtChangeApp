@@ -38,10 +38,9 @@ data class MUser(
     val email: String,
     val bookListings: List<String>,
     val savedBooks: List<String>
-){
-
+) {
     fun toMap(): MutableMap<String, Any> {
-        return mutableMapOf<String, Any>(
+        return mutableMapOf(
             "user_id" to this.userId,
             "display_name" to this.displayName,
             "email" to this.email,
@@ -49,5 +48,4 @@ data class MUser(
             "saved_books" to this.savedBooks
         )
     }
-
 }
