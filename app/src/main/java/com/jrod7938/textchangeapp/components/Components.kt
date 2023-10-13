@@ -33,7 +33,7 @@ package com.jrod7938.textchangeapp.components
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector1D
-import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -69,8 +69,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -78,7 +78,6 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
@@ -93,7 +92,7 @@ import com.jrod7938.textchangeapp.R
  * @param changeSize the size of the "CHANGE" text
  */
 @Composable
-fun AppLogo(txtSize: TextUnit = 42.sp, changeSize: TextUnit = 32.sp) {
+fun AppLogo(txtSize: TextUnit = 42.sp, changeSize: TextUnit = 32.sp, appLogoSize: Dp = 75.dp) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -101,6 +100,11 @@ fun AppLogo(txtSize: TextUnit = 42.sp, changeSize: TextUnit = 32.sp) {
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
     ) {
+        Image(
+            modifier = Modifier.size(appLogoSize),
+            painter = painterResource(id = R.drawable.applogo),
+            contentDescription = "App Logo"
+        )
         Text(
             text = "txt.",
             color = MaterialTheme.colorScheme.onBackground,
@@ -123,61 +127,27 @@ private fun AppLogoPreview() {
 }
 
 /**
- * This composable is the app logo. It displays the app logo as a circle with
- * the text "txt. CHANGE since 2023." inside of it.
+ * This composable is the app logo. It displays the app logo.
  *
  * @param size the size of the logo
  * @param scale the scale of the logo
- * @param txtSize the size of the "txt." text
- * @param changeSize the size of the "CHANGE" text
- * @param legalSize the size of the "since 2023." text
  */
 @Composable
 fun AppSplashScreenLogo(
-    size: Dp = 300.dp,
+    size: Dp = 500.dp,
     scale: Animatable<Float, AnimationVector1D>,
-    txtSize: TextUnit = 64.sp,
-    changeSize: TextUnit = 24.sp,
-    legalSize: TextUnit = 12.sp
 ){
     Surface(
         modifier = Modifier
             .size(size)
             .scale(scale = scale.value),
         shape = CircleShape,
-        color = MaterialTheme.colorScheme.onBackground,
-        border = BorderStroke(width = 2.dp, color = Color.LightGray)
     ) {
-        Column(
+        Image(
             modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                text = "txt.",
-                color = MaterialTheme.colorScheme.onPrimary,
-                fontSize = txtSize,
-                fontWeight = FontWeight.Bold
-            )
-            Text(
-                text = "CHANGE",
-                color = MaterialTheme.colorScheme.onPrimary,
-                fontSize = changeSize,
-                fontWeight = FontWeight.SemiBold
-            )
-            Text(
-                text = "since",
-                color = MaterialTheme.colorScheme.onPrimary,
-                fontSize = legalSize,
-                fontWeight = FontWeight.SemiBold
-            )
-            Text(
-                text = "2023.",
-                color = MaterialTheme.colorScheme.onPrimary,
-                fontSize = legalSize,
-                fontWeight = FontWeight.SemiBold
-            )
-        }
+            painter = painterResource(id = R.drawable.applogo),
+            contentDescription = "App Logo"
+        )
     }
 }
 
@@ -278,7 +248,7 @@ fun InputField(
  * @see SubmitButton
  */
 @OptIn(ExperimentalComposeUiApi::class)
-@Preview(showBackground = true)
+//@Preview(showBackground = true)
 @Composable
 fun UserForm(
     loading: Boolean = false,
