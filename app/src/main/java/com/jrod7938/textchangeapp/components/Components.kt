@@ -33,12 +33,12 @@ package com.jrod7938.textchangeapp.components
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector1D
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -69,7 +69,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -128,32 +127,27 @@ private fun AppLogoPreview() {
 }
 
 /**
- * This composable is the app logo. It displays the app logo as a circle with
- * the text "txt. CHANGE since 2023." inside of it.
+ * This composable is the app logo. It displays the app logo.
  *
  * @param size the size of the logo
  * @param scale the scale of the logo
- * @param txtSize the size of the "txt." text
- * @param changeSize the size of the "CHANGE" text
- * @param legalSize the size of the "since 2023." text
  */
 @Composable
 fun AppSplashScreenLogo(
     size: Dp = 500.dp,
     scale: Animatable<Float, AnimationVector1D>,
-    txtSize: TextUnit = 64.sp,
-    changeSize: TextUnit = 24.sp,
-    legalSize: TextUnit = 12.sp
 ){
     Surface(
         modifier = Modifier
             .size(size)
             .scale(scale = scale.value),
         shape = CircleShape,
-        color = MaterialTheme.colorScheme.onBackground,
-        border = BorderStroke(width = 2.dp, color = Color.LightGray)
     ) {
-        Image(painter = painterResource(id = R.drawable.applogo), contentDescription = "App Logo")
+        Image(
+            modifier = Modifier.fillMaxSize(),
+            painter = painterResource(id = R.drawable.applogo),
+            contentDescription = "App Logo"
+        )
     }
 }
 
