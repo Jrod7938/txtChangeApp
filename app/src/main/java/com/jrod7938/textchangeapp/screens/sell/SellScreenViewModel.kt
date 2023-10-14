@@ -114,10 +114,12 @@ class SellScreenViewModel : ViewModel() {
         // Make a query request to Google Books API
         val isbn = book.isbn
         val userName = userEmail.split('@')[0]
-        fetchFromGoogleBooksAPI(isbn) { imageUrl, description, category ->
+        fetchFromGoogleBooksAPI(isbn) { imageUrl, description, category, title, author ->
             book.imageURL = imageUrl
             book.description = description
             book.category = category
+            book.title = title
+            book.author = author
 
             // Add the book to Firestore
             bookRef.set(book.toMap())
@@ -149,7 +151,10 @@ class SellScreenViewModel : ViewModel() {
      *
      * @return Unit
      */
-    private fun fetchFromGoogleBooksAPI(isbn: String, callback: (String, String, String) -> Unit) =
+    private fun fetchFromGoogleBooksAPI(
+        isbn: String,
+        callback: (String, String, String, String, String) -> Unit
+    ) =
         GlobalScope.launch {
             val url = "https://www.googleapis.com/books/v1/volumes?q=isbn:$isbn"
 
@@ -169,8 +174,12 @@ class SellScreenViewModel : ViewModel() {
                         val description = volumeInfo.asJsonObject.get("description")?.asString
                         val categoriesArray = volumeInfo.asJsonObject.get("categories")?.asJsonArray
                         val mainCategory = categoriesArray?.get(0)?.asString ?: "Unknown"
+                        val title =
+                            volumeInfo.asJsonObject.get("title")?.asString ?: "Unknown Title"
+                        val authorsArray = volumeInfo.asJsonObject.get("authors")?.asJsonArray
+                        val author = authorsArray?.get(0)?.asString ?: "Unknown Author"
                         if (imageUrl != null && description != null) {
-                            callback(imageUrl, description, mainCategory)
+                            callback(imageUrl, description, mainCategory, title, author)
                         } else {
                             _message.value = "Error fetching book details from Google Books API"
                         }

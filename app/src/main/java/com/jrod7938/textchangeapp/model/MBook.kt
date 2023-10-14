@@ -50,8 +50,8 @@ package com.jrod7938.textchangeapp.model
 data class MBook(
     var bookID: String = "",
     var userId: String = "",
-    val title: String,
-    val author: String,
+    var title: String = "",
+    var author: String = "",
     val price: Double,
     var email: String = "",
     val condition: String,
