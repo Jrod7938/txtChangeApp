@@ -114,9 +114,10 @@ class SellScreenViewModel : ViewModel() {
         // Make a query request to Google Books API
         val isbn = book.isbn
         val userName = userEmail.split('@')[0]
-        fetchFromGoogleBooksAPI(isbn) { imageUrl, description ->
+        fetchFromGoogleBooksAPI(isbn) { imageUrl, description, category ->
             book.imageURL = imageUrl
             book.description = description
+            book.category = category
 
             // Add the book to Firestore
             bookRef.set(book.toMap())
@@ -143,12 +144,12 @@ class SellScreenViewModel : ViewModel() {
      * Makes a request to Google Books API to get the image url and description of a book
      *
      * @param isbn String the isbn of the book
-     * @param callback Function2<String, String, Unit> a callback function that takes in the image
-     * url and description of the book
+     * @param callback Function2<String, String, String, Unit> a callback function that takes in the image
+     * url, description of the book, and a book category
      *
      * @return Unit
      */
-    private fun fetchFromGoogleBooksAPI(isbn: String, callback: (String, String) -> Unit) =
+    private fun fetchFromGoogleBooksAPI(isbn: String, callback: (String, String, String) -> Unit) =
         GlobalScope.launch {
             val url = "https://www.googleapis.com/books/v1/volumes?q=isbn:$isbn"
 
@@ -166,8 +167,10 @@ class SellScreenViewModel : ViewModel() {
                         val imageUrl =
                             volumeInfo.asJsonObject.get("imageLinks")?.asJsonObject?.get("thumbnail")?.asString
                         val description = volumeInfo.asJsonObject.get("description")?.asString
+                        val categoriesArray = volumeInfo.asJsonObject.get("categories")?.asJsonArray
+                        val mainCategory = categoriesArray?.get(0)?.asString ?: "Unknown"
                         if (imageUrl != null && description != null) {
-                            callback(imageUrl, description)
+                            callback(imageUrl, description, mainCategory)
                         } else {
                             _message.value = "Error fetching book details from Google Books API"
                         }

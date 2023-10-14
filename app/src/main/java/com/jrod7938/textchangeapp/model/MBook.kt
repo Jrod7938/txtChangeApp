@@ -48,15 +48,16 @@ package com.jrod7938.textchangeapp.model
  * @property buyerConfirm Boolean if the buyer has confirmed the transaction
  */
 data class MBook(
-    var bookID: String,
-    var userId: String,
+    var bookID: String = "",
+    var userId: String = "",
     val title: String,
     val author: String,
     val price: Double,
-    var email: String,
+    var email: String = "",
     val condition: String,
-    var imageURL: String,
-    var description: String,
+    var category: String = "",
+    var imageURL: String = "",
+    var description: String = "",
     val isbn: String,
     var sellerConfirm: Boolean = false,
     var buyerConfirm: Boolean = false,
@@ -70,6 +71,7 @@ data class MBook(
             "price" to this.price,
             "email" to this.email,
             "condition" to this.condition,
+            "category" to this.category,
             "imageURL" to this.imageURL,
             "description" to this.description,
             "isbn" to this.isbn
