@@ -31,22 +31,39 @@
 
 package com.jrod7938.textchangeapp.model
 
+/**
+ * Model class for a book
+ *
+ * @property bookID String? the id of the book
+ * @property userId String the id of the user who created the book
+ * @property title String the title of the book
+ * @property author String the author of the book
+ * @property price Double the price of the book
+ * @property email String the email of the user who created the book
+ * @property condition String the condition of the book
+ * @property imageURL String the url of the image of the book
+ * @property description String the description of the book
+ * @property isbn String the isbn of the book
+ * @property sellerConfirm Boolean if the seller has confirmed the transaction
+ * @property buyerConfirm Boolean if the buyer has confirmed the transaction
+ */
 data class MBook(
-    val bookID: String?,
-    val userId: String,
+    var bookID: String,
+    var userId: String,
     val title: String,
     val author: String,
     val price: Double,
-    val email: String,
+    var email: String,
     val condition: String,
-    val imageURL: String,
-    val description: String,
+    var imageURL: String,
+    var description: String,
     val isbn: String,
     var sellerConfirm: Boolean = false,
     var buyerConfirm: Boolean = false,
-) { //constructor, values of seller and buyer confirm should be false when constructed
+) {
     fun toMap(): MutableMap<String, Any> {
         return mutableMapOf<String, Any>(
+            "book_id" to this.bookID,
             "user_id" to this.userId,
             "title" to this.title,
             "author" to this.author,
