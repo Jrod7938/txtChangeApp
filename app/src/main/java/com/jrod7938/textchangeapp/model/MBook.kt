@@ -31,6 +31,8 @@
 
 package com.jrod7938.textchangeapp.model
 
+import com.google.firebase.firestore.DocumentSnapshot
+
 /**
  * Model class for a book
  *
@@ -76,6 +78,35 @@ data class MBook(
             "description" to this.description,
             "isbn" to this.isbn
         )
+    }
 
+    companion object {
+        /**
+         * Creates a MBook object from a DocumentSnapshot
+         *
+         * @param document DocumentSnapshot the document to create the MBook from
+         *
+         * @return MBook the MBook created from the DocumentSnapshot
+         *
+         * @see DocumentSnapshot
+         * @see MBook
+         */
+        fun fromDocument(document: DocumentSnapshot): MBook {
+            return MBook(
+                bookID = document.getString("book_id") ?: "",
+                userId = document.getString("user_id") ?: "",
+                title = document.getString("title") ?: "",
+                author = document.getString("author") ?: "",
+                price = document.getDouble("price") ?: 0.0,
+                email = document.getString("email") ?: "",
+                condition = document.getString("condition") ?: "",
+                category = document.getString("category") ?: "",
+                imageURL = document.getString("imageURL") ?: "",
+                description = document.getString("description") ?: "",
+                isbn = document.getString("isbn") ?: "",
+                sellerConfirm = document.getBoolean("sellerConfirm") ?: false,
+                buyerConfirm = document.getBoolean("buyerConfirm") ?: false
+            )
+        }
     }
 }
