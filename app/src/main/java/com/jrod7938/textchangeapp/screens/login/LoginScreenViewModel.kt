@@ -141,19 +141,23 @@ class LoginScreenViewModel: ViewModel() {
     private fun createUser(displayName: String?) {
         val userId = auth.currentUser?.uid
         val user = MUser(
-            id = null,
+            id = displayName.toString(),
             userId = userId.toString(),
             displayName = displayName.toString(),
             email = displayName.plus("@pride.hofstra.edu"),
-            bookListings = listOf<String>(),
-            savedBooks = listOf<String>()
+            bookListings = mutableListOf<String>(),
+            savedBooks = mutableListOf<String>()
         ).toMap()
 
 
         FirebaseFirestore.getInstance().collection("users")
-            .add(user)
-            .addOnCompleteListener {
-                Log.d("Firebase", "createUser: Successful")
+            .document(displayName.toString())
+            .set(user.toMap())
+            .addOnSuccessListener {
+                Log.d(
+                    "Firebase",
+                    "createUser: Successful with document ID: ${displayName.toString()}"
+                )
             }.addOnFailureListener {
                 Log.d("Firebase", "createUser: Failed")
             }
