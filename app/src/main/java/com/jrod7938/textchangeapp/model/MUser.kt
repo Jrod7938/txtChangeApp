@@ -75,7 +75,7 @@ data class MUser(
         // Builds the query to search for the book in the books collection
         val bookQuery: Query =
             booksRef.whereEqualTo("user_id", this.userId)
-            booksRef.whereEqualTo("book_id", bookID)
+                    .whereEqualTo("book_id", bookID)
 
         // Executes query to delete the book from the database
         bookQuery.get()
