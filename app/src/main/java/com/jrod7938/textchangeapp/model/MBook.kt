@@ -36,7 +36,7 @@ import com.google.firebase.firestore.DocumentSnapshot
 /**
  * Model class for a book
  *
- * @property bookID String? the id of the book
+ * @property bookID String the id of the book
  * @property userId String the id of the user who created the book
  * @property title String the title of the book
  * @property author String the author of the book
