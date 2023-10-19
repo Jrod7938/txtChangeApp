@@ -31,10 +31,6 @@
 
 package com.jrod7938.textchangeapp.model
 
-import com.google.firebase.firestore.FieldValue
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.Query
-
 data class MUser(
     val id: String?,
     val userId: String,
@@ -52,61 +48,5 @@ data class MUser(
             "saved_books" to this.savedBooks
         )
     }
-
-    /**
-     * Deletes a book listing from the current user's bookListings List
-     * by using the book's bookID and userId to delete from
-     * the books collections and to delete from the user's "book_listings" field
-     * in the database.
-     *
-     * @param bookID A String that corresponds to a book in the database's books collection.
-     * Assumes that each bookID in the database is unique.
-     *
-     * @return Void
-     *
-     * @see MBook for bookID
-     */
-    fun deleteListing(bookID: String) {
-        // Initializes Firestore to access the books collection
-        val db = FirebaseFirestore.getInstance()
-        val booksRef = db.collection("books")
-
-        // Builds the query to search for the book in the books collection
-        val bookQuery: Query =
-            booksRef.whereEqualTo("user_id", this.userId)
-                    .whereEqualTo("book_id", bookID)
-
-        // Executes query to delete the book from the database
-        bookQuery.get()
-            .addOnSuccessListener { documents ->
-                if (!documents.isEmpty) {
-                    val bookDocRef = documents.documents[0].reference
-                    bookDocRef.delete()
-                        .addOnSuccessListener {
-                            println("Successful deletion of book document from database. " +
-                                    "\nbookId: $bookID")
-                        }
-                        .addOnFailureListener { exception ->
-                            println("Error in deleting book document: $exception " +
-                                    "\nbookId: $bookID")
-                        }
-                }
-            }
-            .addOnFailureListener { exception ->
-                println("Error in searching for book document: $exception")
-            }
-
-        // Performs an update to the user's document delete the book from book listings field
-        val userDocRef = db.collection("users").document(this.userId)
-        userDocRef.update("book_listings", FieldValue.arrayRemove(bookID))
-            .addOnSuccessListener {
-                println("Successfully deleted ${this.displayName}'s book from the book_listings. " +
-                        "\nuser_id: ${this.userId}; \nbook_id: $bookID")
-            }
-            .addOnFailureListener { exception ->
-                println("Error in updating the user document: $exception " +
-                        "\nuser_id: ${this.userId}")
-            }
-    }//end of deleteListing function
 
 }
