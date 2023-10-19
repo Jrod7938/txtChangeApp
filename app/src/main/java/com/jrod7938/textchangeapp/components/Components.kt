@@ -38,7 +38,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -92,7 +91,7 @@ import com.jrod7938.textchangeapp.R
  * @param changeSize the size of the "CHANGE" text
  */
 @Composable
-fun AppLogo(txtSize: TextUnit = 42.sp, changeSize: TextUnit = 32.sp, appLogoSize: Dp = 75.dp) {
+fun AppLogo(txtSize: TextUnit = 42.sp, changeSize: TextUnit = 42.sp, appLogoSize: Dp = 50.dp) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -141,10 +140,9 @@ fun AppSplashScreenLogo(
         modifier = Modifier
             .size(size)
             .scale(scale = scale.value),
-        shape = CircleShape,
     ) {
         Image(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.size(75.dp),
             painter = painterResource(id = R.drawable.applogo),
             contentDescription = "App Logo"
         )
@@ -268,7 +266,7 @@ fun UserForm(
     }
 
     val modifier = Modifier
-        .height(250.dp)
+        .height(300.dp)
         .background(color = MaterialTheme.colorScheme.background)
         .verticalScroll(rememberScrollState())
 
