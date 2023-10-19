@@ -67,10 +67,9 @@ data class MUser(
      * @see MBook for bookID
      */
     fun deleteListing(bookID: String) {
-        // Initializes Firestore to access the books collection & the user document
+        // Initializes Firestore to access the books collection
         val db = FirebaseFirestore.getInstance()
         val booksRef = db.collection("books")
-        val userDocRef = db.collection("users").document(this.userId)
 
         // Builds the query to search for the book in the books collection
         val bookQuery: Query =
@@ -97,7 +96,8 @@ data class MUser(
                 println("Error in searching for book document: $exception")
             }
 
-        // Performs an update to delete the book from the user's book listings field
+        // Performs an update to the user's document delete the book from book listings field
+        val userDocRef = db.collection("users").document(this.userId)
         userDocRef.update("book_listings", FieldValue.arrayRemove(bookID))
             .addOnSuccessListener {
                 println("Successfully deleted ${this.displayName}'s book from the book_listings. " +
