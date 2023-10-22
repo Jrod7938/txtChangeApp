@@ -429,6 +429,7 @@ fun BottomNavigationBar(
     items: List<BottomNavItem>
 ) {
     BottomNavigation(
+        elevation = 0.dp,
         modifier = Modifier.height(70.dp),
         backgroundColor = MaterialTheme.colorScheme.background,
         contentColor = MaterialTheme.colorScheme.onBackground
