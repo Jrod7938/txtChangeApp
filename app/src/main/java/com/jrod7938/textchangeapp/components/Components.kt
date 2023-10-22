@@ -429,7 +429,7 @@ fun BottomNavigationBar(
     items: List<BottomNavItem>
 ) {
     BottomNavigation(
-        elevation = 0.dp,
+        elevation = 10.dp,
         modifier = Modifier.height(70.dp),
         backgroundColor = MaterialTheme.colorScheme.background,
         contentColor = MaterialTheme.colorScheme.onBackground
@@ -442,13 +442,14 @@ fun BottomNavigationBar(
                     Icon(
                         modifier = Modifier.size(40.dp),
                         imageVector = if (currentRoute == item.route) item.selectedIcon else item.unselectedIcon,
-                        contentDescription = null
+                        contentDescription = null,
+                        tint = if (currentRoute == item.route) MaterialTheme.colorScheme.primary else Color.DarkGray
                     )
                 },
                 label = {
                     Text(
                         item.title,
-                        color = if (currentRoute == item.route) MaterialTheme.colorScheme.onBackground else Color.DarkGray
+                        color = if (currentRoute == item.route) MaterialTheme.colorScheme.primary else Color.DarkGray
                     )
                 },
                 selected = currentRoute == item.route,
