@@ -412,6 +412,16 @@ fun PasswordVisibility(passwordVisibility: MutableState<Boolean>) {
     }
 }
 
+
+/**
+ * This composable is the Bottom Navigation Bar. It displays a bottom
+ * navigation bar for the user to navigate between screens.
+ *
+ * @param navController the navigation controller
+ * @param items the items for the bottom navigation bar
+ *
+ * @see BottomNavItem
+ */
 @Composable
 fun BottomNavigationBar(
     navController: NavHostController,
