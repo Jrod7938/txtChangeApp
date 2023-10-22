@@ -35,31 +35,44 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.Search
 import androidx.compose.ui.graphics.vector.ImageVector
 
+/**
+ * A data class representing a bottom navigation item.
+ *
+ * @param title The title of the item.
+ * @param selectedIcon The icon to display when the item is selected.
+ * @param unselectedIcon The icon to display when the item is not selected.
+ * @param route The route to navigate to when the item is selected.
+ */
 data class BottomNavItem(
     val title: String,
     val selectedIcon: ImageVector,
     val unselectedIcon: ImageVector,
     val route: String,
 ) {
+
+
     companion object {
         val Home = BottomNavItem(
             title = "Home",
             selectedIcon = Icons.Filled.Home,
-            unselectedIcon = Icons.Default.Home,
+            unselectedIcon = Icons.Outlined.Home,
             route = AppScreens.HomeScreen.name
         )
         val Sell = BottomNavItem(
             title = "Sell",
             selectedIcon = Icons.Filled.AddCircle,
-            unselectedIcon = Icons.Default.AddCircle,
+            unselectedIcon = Icons.Outlined.Add,
             route = AppScreens.SellBookScreen.name
         )
         val Search = BottomNavItem(
             title = "Search",
             selectedIcon = Icons.Filled.Search,
-            unselectedIcon = Icons.Default.Search,
+            unselectedIcon = Icons.Outlined.Search,
             route = AppScreens.SearchScreen.name
         )
     }

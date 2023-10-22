@@ -72,6 +72,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -428,8 +429,9 @@ fun BottomNavigationBar(
     items: List<BottomNavItem>
 ) {
     BottomNavigation(
-        backgroundColor = MaterialTheme.colorScheme.primary,
-        contentColor = MaterialTheme.colorScheme.onPrimary
+        modifier = Modifier.height(70.dp),
+        backgroundColor = MaterialTheme.colorScheme.background,
+        contentColor = MaterialTheme.colorScheme.onBackground
     ) {
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentRoute = navBackStackEntry?.destination?.route
@@ -437,17 +439,25 @@ fun BottomNavigationBar(
             BottomNavigationItem(
                 icon = {
                     Icon(
+                        modifier = Modifier.size(40.dp),
                         imageVector = if (currentRoute == item.route) item.selectedIcon else item.unselectedIcon,
                         contentDescription = null
                     )
                 },
-                label = { Text(item.title, color = MaterialTheme.colorScheme.onPrimary) },
+                label = {
+                    Text(
+                        item.title,
+                        color = if (currentRoute == item.route) MaterialTheme.colorScheme.onBackground else Color.DarkGray
+                    )
+                },
                 selected = currentRoute == item.route,
                 onClick = {
                     if (currentRoute != item.route) {
                         navController.navigate(item.route)
                     }
-                }
+                },
+                selectedContentColor = MaterialTheme.colorScheme.onBackground,
+                unselectedContentColor = Color.DarkGray
             )
         }
     }
