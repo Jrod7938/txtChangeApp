@@ -29,42 +29,24 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.jrod7938.textchangeapp.navigation
+package com.jrod7938.textchangeapp.model
 
-/**
- * Enum class to represent the different screens of the app
- *
- * @constructor Creates an enum class to represent the different screens of the app
- */
-enum class AppScreens {
-    SplashScreen,
-    LoginScreen,
-    CreateAccountScreen,
-    HomeScreen,
-    SearchScreen,
-    BookInfoScreen,
-    SellBookScreen,
-    SavedBooksScreen;
-
-    companion object {
-        /**
-         * Get the screen from the route
-         *
-         * @param route route to get the screen from
-         *
-         * @return AppScreens
-         */
-        fun fromRoute(route: String): AppScreens = when (route?.substringBefore("/")) {
-            SplashScreen.name -> SplashScreen
-            LoginScreen.name -> LoginScreen
-            CreateAccountScreen.name -> CreateAccountScreen
-            HomeScreen.name -> HomeScreen
-            SearchScreen.name -> SearchScreen
-            BookInfoScreen.name -> BookInfoScreen
-            SellBookScreen.name -> SellBookScreen
-            SavedBooksScreen.name -> SavedBooksScreen
-            null -> HomeScreen
-            else -> throw IllegalArgumentException("Route $route is not recognized.")
-        }
+data class MUser(
+    val id: String?,
+    val userId: String,
+    val displayName: String,
+    val email: String,
+    val bookListings: List<String>,
+    val savedBooks: List<String>
+) {
+    fun toMap(): MutableMap<String, Any> {
+        return mutableMapOf(
+            "user_id" to this.userId,
+            "display_name" to this.displayName,
+            "email" to this.email,
+            "book_listings" to this.bookListings,
+            "saved_books" to this.savedBooks
+        )
     }
+
 }

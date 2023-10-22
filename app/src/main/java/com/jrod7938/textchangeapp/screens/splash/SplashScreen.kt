@@ -31,8 +31,10 @@
 
 package com.jrod7938.textchangeapp.screens.splash
 
+import android.annotation.SuppressLint
 import android.view.animation.OvershootInterpolator
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -41,16 +43,30 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import com.jrod7938.textchangeapp.components.AppLogo
+import com.google.firebase.auth.FirebaseAuth
+import com.jrod7938.textchangeapp.components.AppSplashScreenLogo
 import com.jrod7938.textchangeapp.navigation.AppScreens
 import kotlinx.coroutines.delay
 
+
+/**
+ * SplashScreen composable
+ *
+ * @param navController NavHostController to navigate between screens
+ *
+ * @constructor Creates a SplashScreen composable
+ */
 @Composable
-fun SplashScreen(navController: NavHostController) {
+fun SplashScreen(
+    navController: NavHostController,
+    scale: Animatable<Float,
+            AnimationVector1D> = Animatable(0f)
+) {
     val scale = remember{
-        Animatable(0f)
+        scale
     }
 
+    // Animate the App Logo to pop out of screen
     LaunchedEffect(key1 = true){
         scale.animateTo(
             targetValue = 0.9f,
@@ -62,14 +78,23 @@ fun SplashScreen(navController: NavHostController) {
                 }
             )
         )
+
         delay(2000L)
-        navController.navigate(AppScreens.LoginScreen.name)
+
+        // If user is logged in goto Home else goto Login Screen
+        if(FirebaseAuth.getInstance().currentUser?.email.isNullOrEmpty()){
+            navController.navigate(AppScreens.LoginScreen.name)
+        } else {
+            navController.navigate(AppScreens.HomeScreen.name)
+        }
+
     }
-    AppLogo(size = 300.dp, scale)
+    AppSplashScreenLogo(size = 300.dp, scale = scale)
 }
 
-@Preview(showBackground = true)
+@SuppressLint("UnrememberedAnimatable")
+//@Preview(showBackground = true)
 @Composable
 fun SplashScreenPreview(){
-    SplashScreen(navController = rememberNavController())
+    SplashScreen(navController = rememberNavController(), scale = Animatable(0.9f))
 }
