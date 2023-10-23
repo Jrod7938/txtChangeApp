@@ -48,6 +48,16 @@ import androidx.navigation.NavHostController
 import com.jrod7938.textchangeapp.components.DisplayCategories
 import com.jrod7938.textchangeapp.components.HomeScreenButtons
 
+/**
+ * Home screen of the app.
+ *
+ * @param navController the navigation controller
+ * @param viewModel the view model
+ *
+ * @see HomeScreenViewModel
+ * @see HomeScreenButtons
+ * @see DisplayCategories
+ */
 @Composable
 fun HomeScreen(
     navController: NavHostController,

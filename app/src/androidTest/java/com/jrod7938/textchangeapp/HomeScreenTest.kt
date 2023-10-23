@@ -39,11 +39,19 @@ import com.jrod7938.textchangeapp.screens.home.HomeScreen
 import org.junit.Rule
 import org.junit.Test
 
+/**
+ * This class is used to test the home screen
+ *
+ * @property rule is used to create a compose rule
+ */
 class HomeScreenTest {
 
     @get:Rule
     val rule = createComposeRule()
 
+    /**
+     * This test is to check if the home screen is displayed correctly
+     */
     @Test
     fun homeScreenDisplayTest() {
         rule.setContent {
