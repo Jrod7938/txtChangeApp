@@ -41,10 +41,14 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardActions
@@ -60,6 +64,8 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
@@ -90,15 +96,19 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
+import coil.compose.rememberAsyncImagePainter
 import com.jrod7938.textchangeapp.R
+import com.jrod7938.textchangeapp.model.MBook
 import com.jrod7938.textchangeapp.navigation.AppScreens
 import com.jrod7938.textchangeapp.navigation.BottomNavItem
+import com.jrod7938.textchangeapp.screens.home.HomeScreen
 
 /**
  * This composable is the App Logo. It displays the app logo as a circle with
@@ -516,5 +526,118 @@ fun TxTchangeAppBar(navController: NavHostController) {
                     contentDescription = "Account"
                 )
             }
-        })
+        }
+    )
 }
+
+
+/**
+ * A card that displays a book category
+ *
+ * @param category the category of the book
+ * @param bookImageUrl the url of the book image
+ * @param navController the nav controller
+ *
+ * @return a card that displays a book category
+ *
+ * @see HomeScreen
+ */
+@Composable
+fun CategoryCard(
+    category: String,
+    bookImageUrl: String,
+    navController: NavHostController
+) {
+    Card(
+        modifier = Modifier
+            .padding(8.dp)
+            .size(200.dp)
+            .clickable(onClick = { navController.navigate("${AppScreens.SearchScreen.name}/$category") }),
+        shape = MaterialTheme.shapes.small,
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Image(
+                modifier = Modifier
+                    .size(120.dp)
+                    .padding(10.dp),
+                painter = rememberAsyncImagePainter(model = bookImageUrl),
+                contentDescription = "$category image"
+            )
+            Text(
+                text = category,
+                style = MaterialTheme.typography.titleSmall.copy(fontSize = 20.sp),
+                textAlign = TextAlign.Center,
+                maxLines = 2
+            )
+        }
+    }
+}
+
+/**
+ * Displays the categories of books.
+ *
+ * @param bookCategories the categories of books
+ * @param navController the navigation controller
+ *
+ * @see CategoryCard
+ * @see HomeScreen
+ */
+@Composable
+fun DisplayCategories(bookCategories: HashMap<String, MBook>, navController: NavHostController) {
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(2),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        items(bookCategories.entries.toList()) { entry ->
+            val category = entry.key
+            val book = entry.value
+
+            CategoryCard(
+                category = category,
+                bookImageUrl = book.imageURL,
+                navController = navController
+            )
+        }
+    }
+}
+
+/**
+ * This function displays the buttons on the home screen.
+ *
+ * @param navController the navigation controller
+ *
+ * @see HomeScreen
+ */
+@Composable
+fun HomeScreenButtons(navController: NavHostController) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Button(
+            modifier = Modifier
+                .padding(top = 16.dp)
+                .size(width = 200.dp, height = 40.dp),
+            onClick = { navController.navigate(AppScreens.SearchScreen.name) }
+        ) {
+            Text(text = "Find A Book")
+        }
+        Button(
+            modifier = Modifier
+                .padding(16.dp)
+                .size(width = 200.dp, height = 40.dp),
+            onClick = { navController.navigate(AppScreens.SellBookScreen.name) }
+        ) {
+            Text(text = "Sell A Book")
+        }
+    }
+}
+
