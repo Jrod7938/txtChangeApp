@@ -39,7 +39,7 @@ package com.jrod7938.textchangeapp.navigation
 enum class AppScreens {
     SplashScreen,
     LoginScreen,
-    CreateAccountScreen,
+    AccountScreen,
     HomeScreen,
     SearchScreen,
     BookInfoScreen,
@@ -57,7 +57,7 @@ enum class AppScreens {
         fun fromRoute(route: String): AppScreens = when (route?.substringBefore("/")) {
             SplashScreen.name -> SplashScreen
             LoginScreen.name -> LoginScreen
-            CreateAccountScreen.name -> CreateAccountScreen
+            AccountScreen.name -> AccountScreen
             HomeScreen.name -> HomeScreen
             SearchScreen.name -> SearchScreen
             BookInfoScreen.name -> BookInfoScreen

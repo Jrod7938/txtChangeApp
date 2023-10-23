@@ -40,11 +40,14 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.jrod7938.textchangeapp.components.BottomNavigationBar
-import com.jrod7938.textchangeapp.screens.createAccount.CreateAccountScreen
+import com.jrod7938.textchangeapp.components.TxTchangeAppBar
+import com.jrod7938.textchangeapp.screens.account.AccountScreen
 import com.jrod7938.textchangeapp.screens.details.BookInfoScreen
 import com.jrod7938.textchangeapp.screens.home.HomeScreen
 import com.jrod7938.textchangeapp.screens.login.LoginScreen
@@ -70,11 +73,16 @@ fun AppNavigation() {
         BottomNavItem.Search
     )
 
-    val showBottomBar = remember { mutableStateOf(true) }
+    val showAppBars = remember { mutableStateOf(true) }
 
     Scaffold(
+        topBar = {
+            if (showAppBars.value) {
+                TxTchangeAppBar(navController = navController)
+            }
+        },
         bottomBar = {
-            if (showBottomBar.value) {  // Conditionally display BottomNavigationBar
+            if (showAppBars.value) {  // Conditionally display BottomNavigationBar
                 BottomNavigationBar(navController = navController, items = bottomNavItems)
             }
         }
@@ -86,61 +94,74 @@ fun AppNavigation() {
             ) {
                 composable(route = AppScreens.SplashScreen.name) {
                     DisposableEffect(Unit) {
-                        showBottomBar.value = false
+                        showAppBars.value = false
                         onDispose { }
                     }
                     SplashScreen(navController = navController)
                 }
                 composable(route = AppScreens.HomeScreen.name) {
                     DisposableEffect(Unit) {
-                        showBottomBar.value = true
+                        showAppBars.value = true
                         onDispose { }
                     }
                     HomeScreen(navController = navController)
                 }
                 composable(route = AppScreens.LoginScreen.name) {
                     DisposableEffect(Unit) {
-                        showBottomBar.value = false
+                        showAppBars.value = false
                         onDispose { }
                     }
                     LoginScreen(navController = navController)
                 }
+                composable(
+                    route = "${AppScreens.SearchScreen.name}/{category}",
+                    arguments = listOf(navArgument("category") { type = NavType.StringType })
+                ) { backStackEntry ->
+                    val category = backStackEntry.arguments?.getString("category")
+                    DisposableEffect(Unit) {
+                        showAppBars.value = true
+                        onDispose { }
+                    }
+                    SearchScreen(navController = navController, category = category)
+                }
                 composable(route = AppScreens.SearchScreen.name) {
                     DisposableEffect(Unit) {
-                        showBottomBar.value = true
+                        showAppBars.value = true
                         onDispose { }
                     }
                     SearchScreen(navController = navController)
                 }
                 composable(route = AppScreens.SavedBooksScreen.name) {
                     DisposableEffect(Unit) {
-                        showBottomBar.value = true
+                        showAppBars.value = true
                         onDispose { }
                     }
                     SavedBooksScreen(navController = navController)
                 }
                 composable(route = AppScreens.BookInfoScreen.name) {
                     DisposableEffect(Unit) {
-                        showBottomBar.value = true
+                        showAppBars.value = true
                         onDispose { }
                     }
                     BookInfoScreen(navController = navController)
                 }
                 composable(route = AppScreens.SellBookScreen.name) {
                     DisposableEffect(Unit) {
-                        showBottomBar.value = true
+                        showAppBars.value = true
                         onDispose { }
                     }
                     SellBooksScreen(navController = navController)
                 }
-                composable(route = AppScreens.CreateAccountScreen.name) {
+                composable(route = AppScreens.AccountScreen.name) {
                     DisposableEffect(Unit) {
-                        showBottomBar.value = false
+                        showAppBars.value = true
                         onDispose { }
                     }
-                    CreateAccountScreen(navController = navController)
+                    AccountScreen(navController = navController)
                 }
             }
         }
     }
 }
+
+

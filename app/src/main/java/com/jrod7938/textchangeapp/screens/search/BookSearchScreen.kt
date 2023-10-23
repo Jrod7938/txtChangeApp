@@ -33,10 +33,15 @@ package com.jrod7938.textchangeapp.screens.search
 
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 
 @Composable
-fun SearchScreen(navController: NavHostController) {
+fun SearchScreen(
+    navController: NavHostController,
+    category: String? = "",
+    viewModel: BookSearchScreenViewModel = viewModel()
+) {
     Text(text = "Search Screen")
 
 }
