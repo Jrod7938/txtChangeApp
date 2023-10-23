@@ -31,12 +31,62 @@
 
 package com.jrod7938.textchangeapp.screens.home
 
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import com.jrod7938.textchangeapp.components.DisplayCategories
+import com.jrod7938.textchangeapp.components.HomeScreenButtons
 
+/**
+ * Home screen of the app.
+ *
+ * @param navController the navigation controller
+ * @param viewModel the view model
+ *
+ * @see HomeScreenViewModel
+ * @see HomeScreenButtons
+ * @see DisplayCategories
+ */
 @Composable
-fun HomeScreen(navController: NavHostController) {
-    Text(text = "Home Screen")
+fun HomeScreen(
+    navController: NavHostController,
+    viewModel: HomeScreenViewModel = viewModel()
+) {
+    val bookCategories by viewModel.bookCategories.observeAsState(initial = HashMap())
+    val errorMessage by viewModel.message.collectAsState(initial = "")
 
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+        if (!errorMessage.isNullOrEmpty()) {
+            Text(text = "$errorMessage")
+        }
+        Text(
+            text = "Get Started:",
+            color = MaterialTheme.colorScheme.onBackground,
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold
+        )
+        HomeScreenButtons(navController = navController)
+        Text(
+            text = "Categories:",
+            color = MaterialTheme.colorScheme.onBackground,
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold
+        )
+        DisplayCategories(bookCategories, navController)
+    }
 }
