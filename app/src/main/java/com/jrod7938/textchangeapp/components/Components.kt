@@ -35,9 +35,11 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -52,6 +54,10 @@ import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -60,6 +66,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
@@ -89,6 +96,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.jrod7938.textchangeapp.R
+import com.jrod7938.textchangeapp.navigation.AppScreens
 import com.jrod7938.textchangeapp.navigation.BottomNavItem
 
 /**
@@ -102,7 +110,6 @@ import com.jrod7938.textchangeapp.navigation.BottomNavItem
 fun AppLogo(txtSize: TextUnit = 42.sp, changeSize: TextUnit = 42.sp, appLogoSize: Dp = 50.dp) {
     Row(
         modifier = Modifier
-            .fillMaxWidth()
             .padding(10.dp),
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
@@ -463,4 +470,46 @@ fun BottomNavigationBar(
             )
         }
     }
+}
+
+/**
+ * This composable is the App Bar. It displays an app bar for the user to
+ * navigate between account and saved books screen.
+ *
+ * @param navController the navigation controller
+ *
+ * @see AppLogo
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TxTchangeAppBar(navController: NavHostController) {
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+
+    TopAppBar(title = {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceAround
+        ) {
+            AppLogo(txtSize = 30.sp, changeSize = 30.sp, appLogoSize = 54.dp)
+            Spacer(modifier = Modifier.fillMaxWidth(0.5f))
+            Icon(
+                modifier = Modifier
+                    .size(34.dp)
+                    .clickable { navController.navigate(AppScreens.SavedBooksScreen.name) },
+                imageVector = if (currentRoute == AppScreens.SavedBooksScreen.name) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
+                tint = if (currentRoute == AppScreens.SavedBooksScreen.name) MaterialTheme.colorScheme.primary else Color.DarkGray,
+                contentDescription = "Favorite"
+            )
+            Spacer(modifier = Modifier.fillMaxWidth(0.1f))
+            Icon(
+                modifier = Modifier
+                    .size(34.dp)
+                    .clickable { navController.navigate(AppScreens.AccountScreen.name) },
+                imageVector = if (currentRoute == AppScreens.AccountScreen.name) Icons.Filled.Person else Icons.Outlined.Person,
+                tint = if (currentRoute == AppScreens.AccountScreen.name) MaterialTheme.colorScheme.primary else Color.DarkGray,
+                contentDescription = "Account"
+            )
+        }
+    })
 }
