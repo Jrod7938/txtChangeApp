@@ -38,6 +38,7 @@ import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.jrod7938.textchangeapp.model.MBook
+import com.jrod7938.textchangeapp.model.MUser
 
 class BookInfoScreenViewModel : ViewModel() {
 
@@ -202,4 +203,95 @@ class BookInfoScreenViewModel : ViewModel() {
             deleteBook(book, userID)
         }
     }
+
+    /**
+     * adds a book to current user's saved_favorites by using their user ID and the
+     * book_id associated with a book given by the addToFavorites function
+     *
+     * @param book an MBook object from the function addToFavorites
+     * @param userID a string corresponding to the current user in the database's users collection.
+     *
+     * @return Unit
+     *
+     * @see MUser
+     * @see addToFavorites
+     *
+     */
+
+    private fun addFavorite(book: MBook, userID: String) {
+        val db = FirebaseFirestore.getInstance()
+        val userDocRef = db.collection("users").document(userID)
+        userDocRef
+            .get()
+            .addOnSuccessListener { document ->
+                val favorites = document.get("saved_books") as List<String>
+                if(favorites.size < 50) {
+                    userDocRef.update("saved_listings", FieldValue.arrayUnion(book.bookID))
+                        .addOnSuccessListener {
+                            Log.d(
+                                "addFavorite",
+                                "Successful addition to the current user's saved_books field." +
+                                        "\nuser_id: $userID \nadded book_id: ${book.bookID}"
+                            )
+                        }
+                        .addOnFailureListener { exception ->
+                            Log.e(
+                                "addFavorite",
+                                "Error in updating the current user's saved_books field in the user document: $exception" +
+                                        "\nuser_id: $userID " +
+                                        "\nbook_id to add ${book.bookID}"
+                            )
+                        }
+                } else {Log.d("favorite limit check", "too many books in favorites please remove some")}
+            }.addOnFailureListener {exception ->
+                Log.e(
+                    "favorite limit check",
+                    "Failure to return value to check user $userID favorite limite: $exception"
+
+                )
+            }
+    }
+
+
+    /**
+     * Wrapper function that checks if a user is currently logged in and then generates an MBook object
+     * to send to the function addFavorite
+     *
+     * @param bookID a string depicting the book_id of a book in the database's collection books
+     *
+     * @return Unit
+     *
+
+     * @see MBook
+     * @see addFavorite
+     *
+     */
+    fun addToFavorites(bookID: String) {
+        val db = FirebaseFirestore.getInstance()
+        val userID: String = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+        if (userID.isEmpty()) {
+            Log.e("add to favorites", "Error - current user's userID is null")
+            return // Stops function here
+        } else {
+            db.collection("books")
+                .document(bookID)
+                .get()
+                .addOnSuccessListener { document ->
+                    val book = MBook.fromDocument(document)
+                    addFavorite(book, userID)
+                }
+                .addOnFailureListener { exception ->
+                    Log.e(
+                    "get book document",
+                    "failure to acquire book document: $exception" +
+                        "\n $bookID"
+                    )
+                }
+
+
+
+                }
+
+        }
+
 }

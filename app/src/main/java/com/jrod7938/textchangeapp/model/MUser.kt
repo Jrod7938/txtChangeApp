@@ -31,6 +31,8 @@
 
 package com.jrod7938.textchangeapp.model
 
+import com.google.firebase.firestore.DocumentSnapshot
+
 data class MUser(
     val id: String?,
     val userId: String,
@@ -48,5 +50,6 @@ data class MUser(
             "saved_books" to this.savedBooks
         )
     }
+
 
 }
