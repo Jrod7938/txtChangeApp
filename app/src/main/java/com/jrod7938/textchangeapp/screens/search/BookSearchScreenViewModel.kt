@@ -38,6 +38,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.jrod7938.textchangeapp.model.MBook
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import java.util.Locale.Category
 
 /**
  * ViewModel for the book search screen
@@ -63,6 +64,9 @@ class BookSearchScreenViewModel : ViewModel() {
     private val _books = MutableLiveData<List<MBook>>()
     val books: LiveData<List<MBook>> = _books
 
+    private val _bookInfo = MutableLiveData<MBook>()
+    val bookInfo: LiveData<MBook> = _bookInfo
+
     /**
      * Search for a book by title
      *
@@ -83,4 +87,67 @@ class BookSearchScreenViewModel : ViewModel() {
                 _message.value = exception.message
             }
     }
+
+    /**
+     * Search for book by isbn
+     *
+     * @param isbn String of the isbn of book to search for
+     *
+     * @return Unit
+     */
+    fun searchBookByISBN(isbn : String) {
+        db.collection("books")
+            .whereEqualTo("isbn", isbn)
+            .get()
+            .addOnSuccessListener { result ->
+                val bookList = result.map { document ->
+                    MBook.fromDocument(document)
+                }
+                _books.value = bookList
+            }.addOnFailureListener { exception ->
+                _message.value = exception.message
+            }
+    }
+    /**
+     * Search for book by category
+     *
+     * @param category String of the category of books to search for
+     *
+     * @return Unit
+     */
+    fun searchBookByCategory(category: String) {
+        db.collection("books")
+            .whereEqualTo("category", category)
+            .get()
+            .addOnSuccessListener { result ->
+                val bookList = result.map { document ->
+                    MBook.fromDocument(document)
+                }
+                _books.value = bookList
+            }.addOnFailureListener { exception ->
+                _message.value = exception.message
+            }
+    }
+    /**
+     * Search for book by author
+     *
+     * @param author String of the author of books to search for
+     *
+     * @return Unit
+     */
+    fun searchBookByAuthor(author : String) {
+        db.collection("books")
+            .whereEqualTo("author", author)
+            .get()
+            .addOnSuccessListener { result ->
+                val bookList = result.map { document ->
+                    MBook.fromDocument(document)
+                }
+                _books.value = bookList
+            }.addOnFailureListener { exception ->
+                _message.value = exception.message
+            }
+    }
+
+
 }

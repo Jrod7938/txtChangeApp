@@ -37,7 +37,9 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
+import com.google.firebase.firestore.ktx.getField
 import com.jrod7938.textchangeapp.model.MBook
+import com.jrod7938.textchangeapp.model.MUser
 
 class BookInfoScreenViewModel : ViewModel() {
 
@@ -158,6 +160,53 @@ class BookInfoScreenViewModel : ViewModel() {
             return // Stops function here
         } else {
             deleteBook(bookID, userID)
+        }
+    }
+
+    private fun addFavorite(book: MBook, userID: String) {
+        val db = FirebaseFirestore.getInstance()
+        val userDocRef = db.collection("users").document(userID)
+       //insert check for number of saved listings here
+        //
+        //
+        //
+        userDocRef.update("saved_listings", FieldValue.arrayUnion(book.bookID))
+            .addOnSuccessListener {
+                Log.d(
+                    "addFavorite",
+                    "Successful addition to the current user's saved_books field." +
+                            "\nuser_id: $userID \nadded book_id: ${book.bookID}"
+                )
+            }
+            .addOnFailureListener { exception ->
+                Log.e(
+                    "addFavorite",
+                    "Error in updating the current user's saved_books field in the user document: $exception" +
+                            "\nuser_id: $userID " +
+                            "\nbook_id to add ${book.bookID}"
+                )
+            }
+    }
+
+    /**
+     * Wrapper function which checks first if a user is logged in prior to attempting to add favorite to list
+     * of favorites using book id
+     *
+     * @param book an MBook object currently being viewed
+     *
+     * @return Unit
+     *
+     * @see MBook for userID
+     * @see addFavorite
+     *
+     */
+    fun addToFavorites(book: MBook) {
+        val userID: String = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+        if (userID.isEmpty()) {
+            Log.e("add to favorites", "Error - current user's userID is null")
+            return // Stops function here
+        } else {
+            addFavorite(book, userID)
         }
     }
 }
