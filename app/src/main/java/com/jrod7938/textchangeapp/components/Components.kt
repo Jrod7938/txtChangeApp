@@ -494,10 +494,10 @@ fun TxTchangeAppBar(navController: NavHostController) {
         title = {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceAround
+                horizontalArrangement = Arrangement.Start
             ) {
                 AppLogo(txtSize = 30.sp, changeSize = 30.sp, appLogoSize = 54.dp)
-                Spacer(modifier = Modifier.fillMaxWidth(0.5f))
+                Spacer(modifier = Modifier.fillMaxWidth(0.4f))
                 Icon(
                     modifier = Modifier
                         .size(34.dp)
