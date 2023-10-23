@@ -31,10 +31,19 @@
 
 package com.jrod7938.textchangeapp.navigation
 
+import android.annotation.SuppressLint
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.jrod7938.textchangeapp.components.BottomNavigationBar
 import com.jrod7938.textchangeapp.screens.createAccount.CreateAccountScreen
 import com.jrod7938.textchangeapp.screens.details.BookInfoScreen
 import com.jrod7938.textchangeapp.screens.home.HomeScreen
@@ -51,36 +60,87 @@ import com.jrod7938.textchangeapp.screens.splash.SplashScreen
  *
  * @see NavHost
  */
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun AppNavigation(){
+fun AppNavigation() {
     val navController = rememberNavController()
-    NavHost(
-        navController = navController,
-        startDestination = AppScreens.SplashScreen.name
-    ){
-        composable(route = AppScreens.SplashScreen.name){
-            SplashScreen(navController = navController)
+    val bottomNavItems = listOf(
+        BottomNavItem.Home,
+        BottomNavItem.Sell,
+        BottomNavItem.Search
+    )
+
+    val showBottomBar = remember { mutableStateOf(true) }
+
+    Scaffold(
+        bottomBar = {
+            if (showBottomBar.value) {  // Conditionally display BottomNavigationBar
+                BottomNavigationBar(navController = navController, items = bottomNavItems)
+            }
         }
-        composable(route = AppScreens.HomeScreen.name){
-            HomeScreen(navController = navController)
-        }
-        composable(route = AppScreens.LoginScreen.name){
-            LoginScreen(navController = navController)
-        }
-        composable(route = AppScreens.SearchScreen.name){
-            SearchScreen(navController = navController)
-        }
-        composable(route = AppScreens.SavedBooksScreen.name){
-            SavedBooksScreen(navController = navController)
-        }
-        composable(route = AppScreens.BookInfoScreen.name){
-            BookInfoScreen(navController = navController)
-        }
-        composable(route = AppScreens.SellBookScreen.name){
-            SellBooksScreen(navController = navController)
-        }
-        composable(route = AppScreens.CreateAccountScreen.name){
-            CreateAccountScreen(navController = navController)
+    ) { innerPadding ->
+        Box(modifier = Modifier.padding(innerPadding)) {
+            NavHost(
+                navController = navController,
+                startDestination = AppScreens.SplashScreen.name
+            ) {
+                composable(route = AppScreens.SplashScreen.name) {
+                    DisposableEffect(Unit) {
+                        showBottomBar.value = false
+                        onDispose { }
+                    }
+                    SplashScreen(navController = navController)
+                }
+                composable(route = AppScreens.HomeScreen.name) {
+                    DisposableEffect(Unit) {
+                        showBottomBar.value = true
+                        onDispose { }
+                    }
+                    HomeScreen(navController = navController)
+                }
+                composable(route = AppScreens.LoginScreen.name) {
+                    DisposableEffect(Unit) {
+                        showBottomBar.value = false
+                        onDispose { }
+                    }
+                    LoginScreen(navController = navController)
+                }
+                composable(route = AppScreens.SearchScreen.name) {
+                    DisposableEffect(Unit) {
+                        showBottomBar.value = true
+                        onDispose { }
+                    }
+                    SearchScreen(navController = navController)
+                }
+                composable(route = AppScreens.SavedBooksScreen.name) {
+                    DisposableEffect(Unit) {
+                        showBottomBar.value = true
+                        onDispose { }
+                    }
+                    SavedBooksScreen(navController = navController)
+                }
+                composable(route = AppScreens.BookInfoScreen.name) {
+                    DisposableEffect(Unit) {
+                        showBottomBar.value = true
+                        onDispose { }
+                    }
+                    BookInfoScreen(navController = navController)
+                }
+                composable(route = AppScreens.SellBookScreen.name) {
+                    DisposableEffect(Unit) {
+                        showBottomBar.value = true
+                        onDispose { }
+                    }
+                    SellBooksScreen(navController = navController)
+                }
+                composable(route = AppScreens.CreateAccountScreen.name) {
+                    DisposableEffect(Unit) {
+                        showBottomBar.value = false
+                        onDispose { }
+                    }
+                    CreateAccountScreen(navController = navController)
+                }
+            }
         }
     }
 }

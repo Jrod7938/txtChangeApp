@@ -47,6 +47,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.BottomNavigation
+import androidx.compose.material.BottomNavigationItem
+import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Button
@@ -59,6 +62,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -68,6 +72,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -81,7 +86,10 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import com.jrod7938.textchangeapp.R
+import com.jrod7938.textchangeapp.navigation.BottomNavItem
 
 /**
  * This composable is the App Logo. It displays the app logo as a circle with
@@ -402,5 +410,57 @@ fun PasswordVisibility(passwordVisibility: MutableState<Boolean>) {
     val visible = passwordVisibility.value
     IconButton(onClick = { passwordVisibility.value = !visible }) {
         Icons.Default.Close
+    }
+}
+
+
+/**
+ * This composable is the Bottom Navigation Bar. It displays a bottom
+ * navigation bar for the user to navigate between screens.
+ *
+ * @param navController the navigation controller
+ * @param items the items for the bottom navigation bar
+ *
+ * @see BottomNavItem
+ */
+@Composable
+fun BottomNavigationBar(
+    navController: NavHostController,
+    items: List<BottomNavItem>
+) {
+    BottomNavigation(
+        elevation = 10.dp,
+        modifier = Modifier.height(70.dp),
+        backgroundColor = MaterialTheme.colorScheme.background,
+        contentColor = MaterialTheme.colorScheme.onBackground
+    ) {
+        val navBackStackEntry by navController.currentBackStackEntryAsState()
+        val currentRoute = navBackStackEntry?.destination?.route
+        items.forEach { item ->
+            BottomNavigationItem(
+                icon = {
+                    Icon(
+                        modifier = Modifier.size(40.dp),
+                        imageVector = if (currentRoute == item.route) item.selectedIcon else item.unselectedIcon,
+                        contentDescription = null,
+                        tint = if (currentRoute == item.route) MaterialTheme.colorScheme.primary else Color.DarkGray
+                    )
+                },
+                label = {
+                    Text(
+                        item.title,
+                        color = if (currentRoute == item.route) MaterialTheme.colorScheme.primary else Color.DarkGray
+                    )
+                },
+                selected = currentRoute == item.route,
+                onClick = {
+                    if (currentRoute != item.route) {
+                        navController.navigate(item.route)
+                    }
+                },
+                selectedContentColor = MaterialTheme.colorScheme.onBackground,
+                unselectedContentColor = Color.DarkGray
+            )
+        }
     }
 }
