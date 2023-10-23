@@ -40,6 +40,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -150,7 +151,7 @@ private fun AppLogoPreview() {
 fun AppSplashScreenLogo(
     size: Dp = 500.dp,
     scale: Animatable<Float, AnimationVector1D>,
-){
+) {
     Surface(
         modifier = Modifier
             .size(size)
@@ -171,7 +172,7 @@ fun AppSplashScreenLogo(
  */
 // @Preview(showBackground = true)
 @Composable
-fun AppSplashScreenLogoPreview(){
+fun AppSplashScreenLogoPreview() {
     AppSplashScreenLogo(scale = remember {
         Animatable(.9f)
     })
@@ -196,7 +197,7 @@ fun EmailInput(
     enabled: Boolean = true,
     imeAction: ImeAction = ImeAction.Next,
     onAction: KeyboardActions = KeyboardActions.Default
-){
+) {
     InputField(
         modifier = modifier,
         valueState = emailState,
@@ -486,30 +487,34 @@ fun TxTchangeAppBar(navController: NavHostController) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
-    TopAppBar(title = {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceAround
-        ) {
-            AppLogo(txtSize = 30.sp, changeSize = 30.sp, appLogoSize = 54.dp)
-            Spacer(modifier = Modifier.fillMaxWidth(0.5f))
-            Icon(
-                modifier = Modifier
-                    .size(34.dp)
-                    .clickable { navController.navigate(AppScreens.SavedBooksScreen.name) },
-                imageVector = if (currentRoute == AppScreens.SavedBooksScreen.name) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
-                tint = if (currentRoute == AppScreens.SavedBooksScreen.name) MaterialTheme.colorScheme.primary else Color.DarkGray,
-                contentDescription = "Favorite"
-            )
-            Spacer(modifier = Modifier.fillMaxWidth(0.1f))
-            Icon(
-                modifier = Modifier
-                    .size(34.dp)
-                    .clickable { navController.navigate(AppScreens.AccountScreen.name) },
-                imageVector = if (currentRoute == AppScreens.AccountScreen.name) Icons.Filled.Person else Icons.Outlined.Person,
-                tint = if (currentRoute == AppScreens.AccountScreen.name) MaterialTheme.colorScheme.primary else Color.DarkGray,
-                contentDescription = "Account"
-            )
-        }
-    })
+    TopAppBar(
+        modifier = Modifier
+            .fillMaxHeight(.1f)
+            .padding(10.dp),
+        title = {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceAround
+            ) {
+                AppLogo(txtSize = 30.sp, changeSize = 30.sp, appLogoSize = 54.dp)
+                Spacer(modifier = Modifier.fillMaxWidth(0.5f))
+                Icon(
+                    modifier = Modifier
+                        .size(34.dp)
+                        .clickable { navController.navigate(AppScreens.SavedBooksScreen.name) },
+                    imageVector = if (currentRoute == AppScreens.SavedBooksScreen.name) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
+                    tint = if (currentRoute == AppScreens.SavedBooksScreen.name) MaterialTheme.colorScheme.primary else Color.DarkGray,
+                    contentDescription = "Favorite"
+                )
+                Spacer(modifier = Modifier.fillMaxWidth(0.1f))
+                Icon(
+                    modifier = Modifier
+                        .size(34.dp)
+                        .clickable { navController.navigate(AppScreens.AccountScreen.name) },
+                    imageVector = if (currentRoute == AppScreens.AccountScreen.name) Icons.Filled.Person else Icons.Outlined.Person,
+                    tint = if (currentRoute == AppScreens.AccountScreen.name) MaterialTheme.colorScheme.primary else Color.DarkGray,
+                    contentDescription = "Account"
+                )
+            }
+        })
 }
