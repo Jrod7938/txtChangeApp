@@ -83,4 +83,24 @@ class BookSearchScreenViewModel : ViewModel() {
                 _message.value = exception.message
             }
     }
+
+    /**
+     *  Search books by category
+     *
+     *  @param category String the category of the books to search for
+     *
+     *  @return Unit
+     */
+    fun searchBooksByCategory(category: String) {
+        db.collection(category)
+            .get()
+            .addOnSuccessListener { result ->
+                val bookList = result.map { document ->
+                    MBook.fromDocument(document)
+                }
+                _books.value = bookList
+            }.addOnFailureListener { exception ->
+                _message.value = exception.message
+            }
+    }
 }

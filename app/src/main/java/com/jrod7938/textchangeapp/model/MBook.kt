@@ -60,7 +60,7 @@ data class MBook(
     var email: String = "",
     val condition: String,
     var category: String = "",
-    val mCategory: String = MCategory.Other.toString(),
+    var mCategory: String = MCategory.Other.toString(),
     var imageURL: String = "",
     var description: String = "",
     val isbn: String,

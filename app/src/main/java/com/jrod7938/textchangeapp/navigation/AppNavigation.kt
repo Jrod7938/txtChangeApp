@@ -40,9 +40,11 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.jrod7938.textchangeapp.components.BottomNavigationBar
 import com.jrod7938.textchangeapp.components.TxTchangeAppBar
 import com.jrod7938.textchangeapp.screens.account.AccountScreen
@@ -110,6 +112,17 @@ fun AppNavigation() {
                         onDispose { }
                     }
                     LoginScreen(navController = navController)
+                }
+                composable(
+                    route = "${AppScreens.SearchScreen.name}/{category}",
+                    arguments = listOf(navArgument("category") { type = NavType.StringType })
+                ) { backStackEntry ->
+                    val category = backStackEntry.arguments?.getString("category")
+                    DisposableEffect(Unit) {
+                        showAppBars.value = true
+                        onDispose { }
+                    }
+                    SearchScreen(navController = navController, category = category)
                 }
                 composable(route = AppScreens.SearchScreen.name) {
                     DisposableEffect(Unit) {
