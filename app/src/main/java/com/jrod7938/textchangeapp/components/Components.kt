@@ -35,9 +35,12 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -47,8 +50,15 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.BottomNavigation
+import androidx.compose.material.BottomNavigationItem
+import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -57,8 +67,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -68,6 +80,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -81,7 +94,11 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import com.jrod7938.textchangeapp.R
+import com.jrod7938.textchangeapp.navigation.AppScreens
+import com.jrod7938.textchangeapp.navigation.BottomNavItem
 
 /**
  * This composable is the App Logo. It displays the app logo as a circle with
@@ -94,7 +111,6 @@ import com.jrod7938.textchangeapp.R
 fun AppLogo(txtSize: TextUnit = 42.sp, changeSize: TextUnit = 42.sp, appLogoSize: Dp = 50.dp) {
     Row(
         modifier = Modifier
-            .fillMaxWidth()
             .padding(10.dp),
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
@@ -135,7 +151,7 @@ private fun AppLogoPreview() {
 fun AppSplashScreenLogo(
     size: Dp = 500.dp,
     scale: Animatable<Float, AnimationVector1D>,
-){
+) {
     Surface(
         modifier = Modifier
             .size(size)
@@ -156,7 +172,7 @@ fun AppSplashScreenLogo(
  */
 // @Preview(showBackground = true)
 @Composable
-fun AppSplashScreenLogoPreview(){
+fun AppSplashScreenLogoPreview() {
     AppSplashScreenLogo(scale = remember {
         Animatable(.9f)
     })
@@ -181,7 +197,7 @@ fun EmailInput(
     enabled: Boolean = true,
     imeAction: ImeAction = ImeAction.Next,
     onAction: KeyboardActions = KeyboardActions.Default
-){
+) {
     InputField(
         modifier = modifier,
         valueState = emailState,
@@ -403,4 +419,102 @@ fun PasswordVisibility(passwordVisibility: MutableState<Boolean>) {
     IconButton(onClick = { passwordVisibility.value = !visible }) {
         Icons.Default.Close
     }
+}
+
+
+/**
+ * This composable is the Bottom Navigation Bar. It displays a bottom
+ * navigation bar for the user to navigate between screens.
+ *
+ * @param navController the navigation controller
+ * @param items the items for the bottom navigation bar
+ *
+ * @see BottomNavItem
+ */
+@Composable
+fun BottomNavigationBar(
+    navController: NavHostController,
+    items: List<BottomNavItem>
+) {
+    BottomNavigation(
+        elevation = 10.dp,
+        modifier = Modifier.height(70.dp),
+        backgroundColor = MaterialTheme.colorScheme.background,
+        contentColor = MaterialTheme.colorScheme.onBackground
+    ) {
+        val navBackStackEntry by navController.currentBackStackEntryAsState()
+        val currentRoute = navBackStackEntry?.destination?.route
+        items.forEach { item ->
+            BottomNavigationItem(
+                icon = {
+                    Icon(
+                        modifier = Modifier.size(40.dp),
+                        imageVector = if (currentRoute == item.route) item.selectedIcon else item.unselectedIcon,
+                        contentDescription = null,
+                        tint = if (currentRoute == item.route) MaterialTheme.colorScheme.primary else Color.DarkGray
+                    )
+                },
+                label = {
+                    Text(
+                        item.title,
+                        color = if (currentRoute == item.route) MaterialTheme.colorScheme.primary else Color.DarkGray
+                    )
+                },
+                selected = currentRoute == item.route,
+                onClick = {
+                    if (currentRoute != item.route) {
+                        navController.navigate(item.route)
+                    }
+                },
+                selectedContentColor = MaterialTheme.colorScheme.onBackground,
+                unselectedContentColor = Color.DarkGray
+            )
+        }
+    }
+}
+
+/**
+ * This composable is the App Bar. It displays an app bar for the user to
+ * navigate between account and saved books screen.
+ *
+ * @param navController the navigation controller
+ *
+ * @see AppLogo
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TxTchangeAppBar(navController: NavHostController) {
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+
+    TopAppBar(
+        modifier = Modifier
+            .fillMaxHeight(.1f)
+            .padding(10.dp),
+        title = {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Start
+            ) {
+                AppLogo(txtSize = 30.sp, changeSize = 30.sp, appLogoSize = 54.dp)
+                Spacer(modifier = Modifier.fillMaxWidth(0.4f))
+                Icon(
+                    modifier = Modifier
+                        .size(34.dp)
+                        .clickable { navController.navigate(AppScreens.SavedBooksScreen.name) },
+                    imageVector = if (currentRoute == AppScreens.SavedBooksScreen.name) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
+                    tint = if (currentRoute == AppScreens.SavedBooksScreen.name) MaterialTheme.colorScheme.primary else Color.DarkGray,
+                    contentDescription = "Favorite"
+                )
+                Spacer(modifier = Modifier.fillMaxWidth(0.1f))
+                Icon(
+                    modifier = Modifier
+                        .size(34.dp)
+                        .clickable { navController.navigate(AppScreens.AccountScreen.name) },
+                    imageVector = if (currentRoute == AppScreens.AccountScreen.name) Icons.Filled.Person else Icons.Outlined.Person,
+                    tint = if (currentRoute == AppScreens.AccountScreen.name) MaterialTheme.colorScheme.primary else Color.DarkGray,
+                    contentDescription = "Account"
+                )
+            }
+        })
 }

@@ -128,6 +128,8 @@ class SellScreenViewModel : ViewModel() {
                     val userRef = db.collection("users").document(userName)
                     userRef.update("book_listings", FieldValue.arrayUnion(bookId))
                         .addOnSuccessListener {
+                            // update the book category collection
+                            db.collection(book.mCategory).document(bookId).set(book.toMap())
                             _message.value = "Book added successfully"
                             _loading.value = false
                         }

@@ -87,7 +87,7 @@ class BookInfoScreenViewModel : ViewModel() {
      * After a successful deletion, calls the updateUserBookListings
      * with the same bookID & userID to delete from the corresponding user.
      *
-     * @param bookID A String corresponding to a book in the database's books collection.
+     * @param book A MBook corresponding to a book in the database's books collection.
      * Assumes that each book_id field is unique for each document in the collection.
      * @param userID A String corresponding to a user in the database's users collection.
      * Assumes that each user_id field is unique for each document in the collection.
@@ -97,12 +97,12 @@ class BookInfoScreenViewModel : ViewModel() {
      * @see deleteListing
      * @see updateUserBookListings
      */
-    private fun deleteBook(bookID: String, userID: String) {
+    private fun deleteBook(book: MBook, userID: String) {
         // Builds a query to search for the book in the books collection
         val booksRef = FirebaseFirestore.getInstance().collection("books")
         val bookQuery: Query =
             booksRef.whereEqualTo("user_id", userID)
-                .whereEqualTo("book_id", bookID)
+                .whereEqualTo("book_id", book.bookID)
 
         // Executes the book query to delete the book from the database
         // then if successful, subsequently executes updateUserBookListings function
@@ -116,14 +116,15 @@ class BookInfoScreenViewModel : ViewModel() {
                             Log.d(
                                 "deleteBook",
                                 "Successful deletion of book document from database. " +
-                                        "\nDeleted book's book_id: $bookID \nDeleted book's user_id: $userID "
+                                        "\nDeleted book's book_id: ${book.bookID} \nDeleted book's user_id: $userID "
                             )
-                            updateUserBookListings(bookID)
+                            updateUserBookListings(book.bookID)
+                            updateCategoryListings(book)
                         }
                         .addOnFailureListener { exception ->
                             Log.e(
                                 "deleteBook", "Error in deleting book document: $exception " +
-                                        "\nbook_id: $bookID \nuser_id: $userID "
+                                        "\nbook_id: ${book.bookID} \nuser_id: $userID "
                             )
                         }
                 } else {
@@ -133,8 +134,49 @@ class BookInfoScreenViewModel : ViewModel() {
             .addOnFailureListener { exception ->
                 Log.e(
                     "deleteBook", "Error in searching for the book document: $exception" +
-                            "\nuser_id: $userID \nbook_id: $bookID"
+                            "\nuser_id: $userID \nbook_id: ${book.bookID}"
                 )
+            }
+    }
+
+    /**
+     * Queries Firestore (the Firebase database) using the input bookID & userID
+     * to delete the corresponding book from the books collection.
+     *
+     * @param book A MBook corresponding to a book in the database's books collection.
+     *
+     * @return Unit
+     *
+     * @see deleteListing
+     * @see updateUserBookListings
+     */
+    private fun updateCategoryListings(book: MBook) {
+        val categoryRef = FirebaseFirestore.getInstance().collection(book.mCategory)
+        val categoryQuery: Query = categoryRef
+            .whereEqualTo("user_id", book.userId)
+            .whereEqualTo("book_id", book.bookID)
+
+        categoryQuery.get()
+            .addOnSuccessListener { documents ->
+                if (!documents.isEmpty) {
+                    val bookRef = documents.documents[0].reference
+                    bookRef.delete()
+                        .addOnSuccessListener {
+                            Log.d(
+                                "UpdateCategoryListing",
+                                "Success: ${book.bookID} has been deleted."
+                            )
+                        }.addOnFailureListener {
+                            Log.d(
+                                "UpdateCategoryListing",
+                                "Failed: ${book.bookID} has not deleted."
+                            )
+                        }
+                } else {
+                    Log.d("UpdateCategoryListing", "Failed: $documents is empty.")
+                }
+            }.addOnFailureListener {
+                Log.d("UpdateCategoryListing", "Failed: ${it.message}")
             }
     }
 
@@ -152,14 +194,14 @@ class BookInfoScreenViewModel : ViewModel() {
      * @see deleteBook for book collections delete query
      * @see updateUserBookListings for user's book_listings update
      */
-    fun deleteListing(bookID: String) {
+    fun deleteListing(book: MBook) {
         // Performs a check on the current user's id then, if valid, executes deleteBook
         val userID: String = FirebaseAuth.getInstance().currentUser?.uid ?: ""
         if (userID.isEmpty()) {
             Log.e("deleteListing", "Error - current user's userID is null")
             return // Stops function here
         } else {
-            deleteBook(bookID, userID)
+            deleteBook(book, userID)
         }
     }
 

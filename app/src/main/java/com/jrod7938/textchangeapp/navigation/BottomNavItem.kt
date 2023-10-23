@@ -31,40 +31,49 @@
 
 package com.jrod7938.textchangeapp.navigation
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AddCircle
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.Search
+import androidx.compose.ui.graphics.vector.ImageVector
+
 /**
- * Enum class to represent the different screens of the app
+ * A data class representing a bottom navigation item.
  *
- * @constructor Creates an enum class to represent the different screens of the app
+ * @param title The title of the item.
+ * @param selectedIcon The icon to display when the item is selected.
+ * @param unselectedIcon The icon to display when the item is not selected.
+ * @param route The route to navigate to when the item is selected.
  */
-enum class AppScreens {
-    SplashScreen,
-    LoginScreen,
-    AccountScreen,
-    HomeScreen,
-    SearchScreen,
-    BookInfoScreen,
-    SellBookScreen,
-    SavedBooksScreen;
+data class BottomNavItem(
+    val title: String,
+    val selectedIcon: ImageVector,
+    val unselectedIcon: ImageVector,
+    val route: String,
+) {
+
 
     companion object {
-        /**
-         * Get the screen from the route
-         *
-         * @param route route to get the screen from
-         *
-         * @return AppScreens
-         */
-        fun fromRoute(route: String): AppScreens = when (route?.substringBefore("/")) {
-            SplashScreen.name -> SplashScreen
-            LoginScreen.name -> LoginScreen
-            AccountScreen.name -> AccountScreen
-            HomeScreen.name -> HomeScreen
-            SearchScreen.name -> SearchScreen
-            BookInfoScreen.name -> BookInfoScreen
-            SellBookScreen.name -> SellBookScreen
-            SavedBooksScreen.name -> SavedBooksScreen
-            null -> HomeScreen
-            else -> throw IllegalArgumentException("Route $route is not recognized.")
-        }
+        val Home = BottomNavItem(
+            title = "Home",
+            selectedIcon = Icons.Filled.Home,
+            unselectedIcon = Icons.Outlined.Home,
+            route = AppScreens.HomeScreen.name
+        )
+        val Sell = BottomNavItem(
+            title = "Sell",
+            selectedIcon = Icons.Filled.AddCircle,
+            unselectedIcon = Icons.Outlined.Add,
+            route = AppScreens.SellBookScreen.name
+        )
+        val Search = BottomNavItem(
+            title = "Search",
+            selectedIcon = Icons.Filled.Search,
+            unselectedIcon = Icons.Outlined.Search,
+            route = AppScreens.SearchScreen.name
+        )
     }
 }

@@ -87,48 +87,8 @@ class BookSearchScreenViewModel : ViewModel() {
                 _message.value = exception.message
             }
     }
-
-    /**
-     * Search for book by isbn
-     *
-     * @param isbn String of the isbn of book to search for
-     *
-     * @return Unit
-     */
-    fun searchBookByISBN(isbn : String) {
-        db.collection("books")
-            .whereEqualTo("isbn", isbn)
-            .get()
-            .addOnSuccessListener { result ->
-                val bookList = result.map { document ->
-                    MBook.fromDocument(document)
-                }
-                _books.value = bookList
-            }.addOnFailureListener { exception ->
-                _message.value = exception.message
-            }
-    }
-    /**
-     * Search for book by category
-     *
-     * @param category String of the category of books to search for
-     *
-     * @return Unit
-     */
-    fun searchBookByCategory(category: String) {
-        db.collection("books")
-            .whereEqualTo("category", category)
-            .get()
-            .addOnSuccessListener { result ->
-                val bookList = result.map { document ->
-                    MBook.fromDocument(document)
-                }
-                _books.value = bookList
-            }.addOnFailureListener { exception ->
-                _message.value = exception.message
-            }
-    }
-    /**
+    
+  /**
      * Search for book by author
      *
      * @param author String of the author of books to search for
@@ -148,6 +108,46 @@ class BookSearchScreenViewModel : ViewModel() {
                 _message.value = exception.message
             }
     }
+    
+    /**
+       * Search for book by isbn
+     *
+     * @param isbn String of the isbn of book to search for
+     *
+     * @return Unit
+     */
+    fun searchBookByISBN(isbn : String) {
+        db.collection("books")
+            .whereEqualTo("isbn", isbn)
+            .get()
+            .addOnSuccessListener { result ->
+                val bookList = result.map { document ->
+                    MBook.fromDocument(document)
+                }
+                _books.value = bookList
+            }.addOnFailureListener { exception ->
+                _message.value = exception.message
+            }
+    }
 
+     *  Search books by category
+     *
+     *  @param category String the category of the books to search for
+     *
+     *  @return Unit
+     */
+    fun searchBooksByCategory(category: String) {
+        db.collection(category)
+
+            .get()
+            .addOnSuccessListener { result ->
+                val bookList = result.map { document ->
+                    MBook.fromDocument(document)
+                }
+                _books.value = bookList
+            }.addOnFailureListener { exception ->
+                _message.value = exception.message
+            }
+    }
 
 }
