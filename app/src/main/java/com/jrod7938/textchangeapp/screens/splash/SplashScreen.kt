@@ -39,6 +39,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -49,8 +50,12 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.google.firebase.auth.FirebaseAuth
 import com.jrod7938.textchangeapp.components.AppSplashScreenLogo
+import com.jrod7938.textchangeapp.components.NamePlate
 import com.jrod7938.textchangeapp.navigation.AppScreens
 import kotlinx.coroutines.delay
+import androidx.compose.material3.Text
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.text.style.TextAlign
 
 
 /**
@@ -99,6 +104,17 @@ fun SplashScreen(
         verticalArrangement = Arrangement.Center
     ) {
         AppSplashScreenLogo(size = 300.dp, scale = scale)
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .scale(scale.value),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Bottom
+    ){
+        NamePlate(size = 200.dp, isRegistered = true)
+        Text(text = "Since 2023", textAlign = TextAlign.Center, modifier = Modifier.padding(bottom = 30.dp))
     }
 }
 
