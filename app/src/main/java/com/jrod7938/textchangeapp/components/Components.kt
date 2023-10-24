@@ -36,6 +36,7 @@ import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -131,7 +132,10 @@ import com.jrod7938.textchangeapp.screens.home.HomeScreen
  * @param changeSize the size of the "CHANGE" text
  */
 @Composable
-fun AppLogo(txtSize: TextUnit = 42.sp, changeSize: TextUnit = 42.sp, appLogoSize: Dp = 50.dp) {
+fun AppLogo(appLogoSize: Dp = 50.dp,
+            namePlateSize: Dp = 175.dp,
+            namePlateTopPadding: Dp = 0.dp,
+            namePlateRegistered: Boolean = false) {
     Row(
         modifier = Modifier
             .padding(10.dp),
@@ -143,6 +147,10 @@ fun AppLogo(txtSize: TextUnit = 42.sp, changeSize: TextUnit = 42.sp, appLogoSize
             painter = painterResource(id = R.drawable.applogo),
             contentDescription = "App Logo"
         )
+        NamePlate(size = namePlateSize,
+            overrideTopPadding = namePlateTopPadding,
+            isRegistered = namePlateRegistered )
+        /*
         Text(
             text = "txt.",
             color = MaterialTheme.colorScheme.onBackground,
@@ -154,7 +162,7 @@ fun AppLogo(txtSize: TextUnit = 42.sp, changeSize: TextUnit = 42.sp, appLogoSize
             color = MaterialTheme.colorScheme.onBackground,
             fontSize = changeSize,
             fontWeight = FontWeight.SemiBold
-        )
+        ) */
     }
 }
 
@@ -170,6 +178,29 @@ private fun AppLogoPreview() {
  * @param size the size of the logo
  * @param scale the scale of the logo
  */
+
+@Composable
+fun NamePlate(
+    size: Dp = 200.dp,
+    overrideTopPadding: Dp = 50.dp,
+    isRegistered: Boolean = true,
+){
+    var getResourceId = if(isRegistered){
+        if(isSystemInDarkTheme()) R.drawable.suppreg_dark else R.drawable.suppreg_light
+    } else if(isSystemInDarkTheme()) R.drawable.supp_unreg_dark else R.drawable.suppreg_light
+
+    Surface(
+        modifier = Modifier
+            .size(size)
+            .padding(top = overrideTopPadding)
+    ){
+        Image(
+            modifier = Modifier.size(10.dp),
+            painter = painterResource(id = getResourceId),
+            contentDescription = "Supplementary Name Plate"
+        )
+    }
+}
 @Composable
 fun AppSplashScreenLogo(
     size: Dp = 500.dp,
@@ -538,7 +569,7 @@ fun TxTchangeAppBar(navController: NavHostController) {
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Start
             ) {
-                AppLogo(txtSize = 30.sp, changeSize = 30.sp, appLogoSize = 54.dp)
+                AppLogo(appLogoSize = 54.dp, namePlateTopPadding = 0.dp, namePlateSize = 120.dp, namePlateRegistered = false )
                 Spacer(modifier = Modifier.fillMaxWidth(0.4f))
                 Icon(
                     modifier = Modifier
