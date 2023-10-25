@@ -45,8 +45,8 @@ data class MUser(
         return mutableMapOf(
             "user_id" to this.userId,
             "display_name" to this.displayName,
-            "first_Name" to this.firstName,
-            "last_Name" to this.lastName,
+            "first_name" to this.firstName,
+            "last_name" to this.lastName,
             "email" to this.email,
             "book_listings" to this.bookListings,
             "saved_books" to this.savedBooks
