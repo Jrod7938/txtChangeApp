@@ -82,14 +82,17 @@ fun LoginScreen(
         ) {
             AppLogo()
             if (showLoginForm.value){
-                UserForm(loading = false, isCreateAccount = false){ email, password ->
-                    viewModel.signInWithEmailAndPassword(email, password){
+                UserForm(loading = false, isCreateAccount = false) { _, _, email, password ->
+                    viewModel.signInWithEmailAndPassword(email, password) {
                         navController.navigate(AppScreens.HomeScreen.name)
                     }
                 }
             } else {
-                UserForm(loading = false, isCreateAccount = true) { email, password ->
-                    viewModel.createUserWithEmailAndPassword(email, password) {
+                UserForm(
+                    loading = false,
+                    isCreateAccount = true
+                ) { firstName, lastName, email, password ->
+                    viewModel.createUserWithEmailAndPassword(firstName, lastName, email, password) {
                         navController.navigate(AppScreens.HomeScreen.name)
                     }
                 }
