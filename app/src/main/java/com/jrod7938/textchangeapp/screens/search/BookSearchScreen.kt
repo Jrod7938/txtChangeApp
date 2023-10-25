@@ -31,14 +31,31 @@
 
 package com.jrod7938.textchangeapp.screens.search
 
+import android.widget.Toast
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material3.Divider
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.RadioButtonColors
 import androidx.compose.material3.SearchBar
+import androidx.compose.material3.Shapes
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -49,8 +66,9 @@ import androidx.compose.ui.Alignment
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-
 
 @Composable
 fun SearchScreen(
@@ -60,7 +78,9 @@ fun SearchScreen(
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.padding(30.dp)
+        modifier = Modifier
+            .fillMaxWidth()
+            .fillMaxHeight(0.1f)
     ){
         Search()
     }
@@ -69,25 +89,86 @@ fun SearchScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Search(){
-
+    // search input state
     var text by remember { mutableStateOf("") }
     var active by remember { mutableStateOf(false) }
 
-    Row {
-        SearchBar(
-            query = text,
-            onQueryChange = { text = it } ,
-            onSearch = { active = false },
-            active = active,
-            onActiveChange = { active = it },
-            leadingIcon = { Icon(
-                Icons.Outlined.Search,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary) },
-            placeholder = { Text("Search")}) {
+    var expanded by remember { mutableStateOf(false)}
+    val context = LocalContext.current
+    Column(){
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceAround,
+        ){
+            SearchBar( // search bar display
+                query = text,
+                onQueryChange = { text = it },
+                onSearch = { active = false },
+                active = active,
+                onActiveChange = { active = it },
+                leadingIcon = {
+                    Icon(
+                        Icons.Outlined.Search,
+                        tint = MaterialTheme.colorScheme.primary,
+                        contentDescription = "search icon"
+                    )
+                },
+                trailingIcon = {
+                    IconButton(onClick = { expanded = !expanded }) {
+                        Icon(
+                            Icons.Outlined.MoreVert,
+                            tint = MaterialTheme.colorScheme.primary,
+                            contentDescription = "search by"
+                        )
+                    }
+                },
 
-        }
+                placeholder = { Text("Search") }
+
+            ) {}
+        }// end of Row, search bar
+
+
+        // Drop-Down search menu
+        Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
+            MaterialTheme(
+                shapes = MaterialTheme.shapes.copy(
+
+                    // override Material Theme for rounded corners
+                    extraSmall = RoundedCornerShape(16.dp)
+                )
+            ) {
+                DropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false },
+                )
+                {
+                    DropdownMenuItem(
+                        text = { Text("ISBN") },
+                        onClick = {
+                            Toast.makeText(context, "ISBN", Toast.LENGTH_SHORT).show()
+                        }
+                    )
+
+                    DropdownMenuItem(text = { Text("Title") },
+                        onClick = {
+                            Toast.makeText(context, "Title", Toast.LENGTH_SHORT).show()
+                        }
+                    )
+
+                    DropdownMenuItem(
+                        text = { Text("Author") },
+                        onClick = {
+                            Toast.makeText(context, "Author", Toast.LENGTH_SHORT).show()
+                        }
+                    )
+
+
+                }
+            }
+        } // end of Row, search menu
     }
 }
+
 
 
