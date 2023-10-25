@@ -58,10 +58,11 @@ import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -294,13 +295,13 @@ fun UserForm(
     }
 
     val modifier = Modifier
-        .height(300.dp)
+        .fillMaxHeight(.6f)
         .background(color = MaterialTheme.colorScheme.background)
         .verticalScroll(rememberScrollState())
 
     Column(
         modifier = modifier,
-        verticalArrangement = Arrangement.Center,
+        verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         if (isCreateAccount) {
@@ -442,7 +443,11 @@ fun PasswordInput(
 fun PasswordVisibility(passwordVisibility: MutableState<Boolean>) {
     val visible = passwordVisibility.value
     IconButton(onClick = { passwordVisibility.value = !visible }) {
-        Icons.Default.Close
+        Icon(
+            imageVector = if (visible) Icons.Outlined.Lock else Icons.Default.Lock,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onBackground
+        )
     }
 }
 
