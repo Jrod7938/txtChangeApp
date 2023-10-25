@@ -277,14 +277,16 @@ fun InputField(
 fun UserForm(
     loading: Boolean = false,
     isCreateAccount: Boolean = false,
-    onDone: (String, String) -> Unit = { email, pwd -> }
+    onDone: (String, String, String, String) -> Unit = { firstName, lastName, email, pwd -> }
 ) {
     val email = rememberSaveable { mutableStateOf("") }
     val password = rememberSaveable { mutableStateOf("") }
+    val firstName = rememberSaveable { mutableStateOf("") }
+    val lastName = rememberSaveable { mutableStateOf("") }
     val passwordVisibility = rememberSaveable { mutableStateOf(false) }
     val passwordFocusRequest = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
-    val valid = remember(email.value, password.value) {
+    val valid = remember(email.value, password.value, firstName.value, lastName.value) {
         email.value.trim().isNotEmpty()
                 && email.value.contains("@pride.hofstra.edu")
                 && password.value.trim().isNotEmpty()
@@ -304,8 +306,11 @@ fun UserForm(
         if (isCreateAccount) {
             Text(
                 text = stringResource(id = R.string.create_acct),
-                modifier = Modifier.padding(4.dp)
+                modifier = Modifier.padding(4.dp),
+                textAlign = TextAlign.Center
             )
+            FirstNameInput(firstNameState = firstName)
+            LastNameInput(lastNameState = lastName)
         } else {
             Text(
                 text = "Welcome, please login to continue!",
@@ -325,7 +330,12 @@ fun UserForm(
             passwordVisibility = passwordVisibility,
             onAction = KeyboardActions {
                 if (!valid) return@KeyboardActions
-                onDone(email.value.trim(), password.value.trim())
+                onDone(
+                    firstName.value.trim(),
+                    lastName.value.trim(),
+                    email.value.trim(),
+                    password.value.trim()
+                )
             }
         )
         SubmitButton(
@@ -333,7 +343,12 @@ fun UserForm(
             loading = loading,
             validInputs = valid,
         ) {
-            onDone(email.value.trim(), password.value.trim())
+            onDone(
+                firstName.value.trim(),
+                lastName.value.trim(),
+                email.value.trim(),
+                password.value.trim()
+            )
             keyboardController?.hide()
         }
 
@@ -639,5 +654,67 @@ fun HomeScreenButtons(navController: NavHostController) {
             Text(text = "Sell A Book")
         }
     }
+}
+
+/**
+ * This composable is the FirstName Input Field. It displays an input field for the
+ * user to enter their first name.
+ *
+ * @param modifier the modifier for the input field
+ * @param firstNameState the state of the email
+ * @param labelId the label for the input field
+ * @param enabled whether the input field is enabled
+ * @param imeAction the IME action for the input field
+ * @param onAction the keyboard actions for the input field
+ */
+@Composable
+fun FirstNameInput(
+    modifier: Modifier = Modifier,
+    firstNameState: MutableState<String>,
+    labelId: String = "First Name",
+    enabled: Boolean = true,
+    imeAction: ImeAction = ImeAction.Next,
+    onAction: KeyboardActions = KeyboardActions.Default
+) {
+    InputField(
+        modifier = modifier,
+        valueState = firstNameState,
+        labelId = labelId,
+        enabled = enabled,
+        keyboardType = KeyboardType.Text,
+        imeAction = imeAction,
+        onAction = onAction
+    )
+}
+
+/**
+ * This composable is the LastName Input Field. It displays an input field for the
+ * user to enter their last name.
+ *
+ * @param modifier the modifier for the input field
+ * @param lastNameState the state of the email
+ * @param labelId the label for the input field
+ * @param enabled whether the input field is enabled
+ * @param imeAction the IME action for the input field
+ * @param onAction the keyboard actions for the input field
+ */
+@Composable
+fun LastNameInput(
+    modifier: Modifier = Modifier,
+    lastNameState: MutableState<String>,
+    labelId: String = "Last Name",
+    enabled: Boolean = true,
+    imeAction: ImeAction = ImeAction.Next,
+    onAction: KeyboardActions = KeyboardActions.Default
+) {
+    InputField(
+        modifier = modifier,
+        valueState = lastNameState,
+        labelId = labelId,
+        enabled = enabled,
+        keyboardType = KeyboardType.Text,
+        imeAction = imeAction,
+        onAction = onAction
+    )
 }
 
