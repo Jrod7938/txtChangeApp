@@ -119,10 +119,13 @@ import com.jrod7938.textchangeapp.screens.home.HomeScreen
  * @param changeSize the size of the "CHANGE" text
  */
 @Composable
-fun AppLogo(appLogoSize: Dp = 50.dp,
-            namePlateSize: Dp = 175.dp,
-            namePlateTopPadding: Dp = 0.dp,
-            namePlateRegistered: Boolean = false) {
+fun AppLogo(
+    appLogoSize: Dp = 50.dp,
+    namePlateSize: Dp = 175.dp,
+    namePlateTopPadding: Dp = 0.dp,
+    namePlateRegistered: Boolean = false,
+
+) {
     Row(
         modifier = Modifier
             .padding(10.dp),
@@ -137,19 +140,19 @@ fun AppLogo(appLogoSize: Dp = 50.dp,
         NamePlate(size = namePlateSize,
             overrideTopPadding = namePlateTopPadding,
             isRegistered = namePlateRegistered )
-        /*
-        Text(
-            text = "txt.",
-            color = MaterialTheme.colorScheme.onBackground,
-            fontSize = txtSize,
-            fontWeight = FontWeight.Bold
-        )
-        Text(
-            text = "CHANGE",
-            color = MaterialTheme.colorScheme.onBackground,
-            fontSize = changeSize,
-            fontWeight = FontWeight.SemiBold
-        ) */
+
+//        Text(
+//            text = "txt.",
+//            color = MaterialTheme.colorScheme.onBackground,
+//            fontSize = txtSize,
+//            fontWeight = FontWeight.Bold
+//        )
+//        Text(
+//            text = "CHANGE",
+//            color = MaterialTheme.colorScheme.onBackground,
+//            fontSize = changeSize,
+//            fontWeight = FontWeight.SemiBold
+//        )
     }
 }
 
@@ -174,7 +177,7 @@ fun NamePlate(
 ){
     var getResourceId = if(isRegistered){
         if(isSystemInDarkTheme()) R.drawable.suppreg_dark else R.drawable.suppreg_light
-    } else if(isSystemInDarkTheme()) R.drawable.supp_unreg_dark else R.drawable.suppreg_light
+    } else if(isSystemInDarkTheme()) R.drawable.supp_unreg_dark else R.drawable.supp_unreg_light
 
     Surface(
         modifier = Modifier
@@ -537,7 +540,7 @@ fun TxTchangeAppBar(navController: NavHostController) {
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Start
             ) {
-                AppLogo(appLogoSize = 45.dp, namePlateTopPadding = 0.dp, namePlateSize = 120.dp, namePlateRegistered = false )
+                AppLogo(appLogoSize = 54.dp, namePlateSize = 125.dp)
                 Spacer(modifier = Modifier.fillMaxWidth(0.4f))
                 Icon(
                     modifier = Modifier
