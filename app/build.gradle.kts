@@ -138,4 +138,7 @@ dependencies {
     // Coroutine Lifecycle Scopes
     implementation ("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.2")
     implementation ("androidx.lifecycle:lifecycle-runtime-ktx:2.6.2")
+
+    // Extended Icon Pack
+    implementation ("androidx.compose.material:material-icons-extended:1.5.4")
 }
