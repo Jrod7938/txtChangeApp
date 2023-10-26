@@ -31,8 +31,10 @@
 
 package com.jrod7938.textchangeapp.components
 
+import android.icu.text.CaseMap.Title
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector1D
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -40,6 +42,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -53,6 +56,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -67,17 +71,18 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.outlined.FavoriteBorder
-import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ButtonElevation
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -86,6 +91,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -101,6 +107,7 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -704,6 +711,135 @@ fun HomeScreenButtons(navController: NavHostController) {
         ) {
             Text(text = "Sell A Book")
         }
+    }
+}
+
+@Composable
+fun SelectionPill(
+    option: ToggleButtonOption,
+    selected: Boolean,
+    onClick: (option: ToggleButtonOption) -> Unit = {}
+) {
+
+    Button(
+        onClick = { onClick(option)},
+        colors = ButtonDefaults.buttonColors(
+            containerColor = if(selected) MaterialTheme.colorScheme.primary
+                else MaterialTheme.colorScheme.background,
+        ),
+        shape = MaterialTheme.shapes.extraLarge,
+        elevation  = ButtonDefaults.elevatedButtonElevation(0.dp),
+        contentPadding = ButtonDefaults.ContentPadding,
+        modifier = Modifier.padding(14.dp, 0.dp),
+    ) {
+        Row(
+            modifier = Modifier.padding(0.dp),
+            verticalAlignment = Alignment.Bottom,
+        ) {
+            Text(
+                text = option.text,
+                color = if (selected) MaterialTheme.colorScheme.onPrimary
+                    else MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(0.dp),
+                fontWeight = FontWeight.Bold
+            )
+            if (option.iconRes != null) {
+                Icon(
+                    painterResource(id = option.iconRes),
+                    contentDescription = null,
+                    tint = if (selected) MaterialTheme.colorScheme.onPrimary
+                        else MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(4.dp, 2.dp, 2.dp, 2.dp),
+                )
+            }
+        }
+    }
+}
+
+enum class SelectionType {
+    NONE,
+    SINGLE,
+    MULTIPLE,
+}
+
+data class ToggleButtonOption(
+    val text: String,
+    val iconRes: Int?,
+)
+
+@Composable
+fun ToggleButton(
+    options: Array<ToggleButtonOption>,
+    modifier: Modifier = Modifier,
+    type: SelectionType = SelectionType.SINGLE,
+    onClick: (selectedOptions: Array<ToggleButtonOption>) -> Unit = {},
+) {
+    val state = remember  { mutableStateMapOf<String, ToggleButtonOption>() }
+
+    OutlinedButton(
+        onClick = { },
+        border = BorderStroke(3.dp, MaterialTheme.colorScheme.primary),
+        shape = MaterialTheme.shapes.extraLarge,
+        colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.primary),
+        contentPadding = PaddingValues(0.dp, 0.dp),
+        modifier = modifier
+            .padding(0.dp)
+            .height(52.dp),
+    ) {
+        if (options.isEmpty()) {
+            return@OutlinedButton
+        }
+        val onItemClick: (option: ToggleButtonOption) -> Unit = { option ->
+            if (type == SelectionType.SINGLE) {
+                options.forEach {
+                    val key = it.text
+                    if (key == option.text) {
+                        state[key] = option
+                    } else {
+                        state.remove(key)
+                    }
+                }
+            } else {
+                val key = option.text
+                if (!state.contains(key)) {
+                    state[key] = option
+                } else {
+                    state.remove(key)
+                }
+            }
+            onClick(state.values.toTypedArray())
+        }
+        if (options.size == 1) {
+            val option = options.first()
+            SelectionPill(
+                option = option,
+                selected = state.contains(option.text),
+                onClick = onItemClick,
+            )
+            return@OutlinedButton
+        }
+        val first = options.first()
+        val last = options.last()
+        val middle = options.slice(1..options.size - 2)
+        SelectionPill(
+            option = first,
+            selected = state.contains(first.text),
+            onClick = onItemClick,
+        )
+        // VerticalDivider()
+        middle.map { option ->
+            SelectionPill(
+                option = option,
+                selected = state.contains(option.text),
+                onClick = onItemClick,
+            )
+            // VerticalDivider()
+        }
+        SelectionPill(
+            option = last,
+            selected = state.contains(last.text),
+            onClick = onItemClick,
+        )
     }
 }
 

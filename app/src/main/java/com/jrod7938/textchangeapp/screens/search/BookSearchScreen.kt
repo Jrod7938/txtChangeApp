@@ -31,24 +31,48 @@
 
 package com.jrod7938.textchangeapp.screens.search
 
+import android.app.appsearch.SearchResults
+import android.text.Selection
 import android.widget.Toast
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardColors
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CardElevation
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledIconToggleButton
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -57,18 +81,36 @@ import androidx.compose.material3.RadioButtonColors
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.Shapes
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.ui.graphics.drawscope.DrawStyle
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.jrod7938.textchangeapp.components.SelectionType
+import com.jrod7938.textchangeapp.components.ToggleButton
+import com.jrod7938.textchangeapp.components.ToggleButtonOption
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Composable
 fun SearchScreen(
@@ -76,14 +118,11 @@ fun SearchScreen(
     category: String? = "",
     viewModel: BookSearchScreenViewModel = viewModel()
 ) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .fillMaxWidth()
-            .fillMaxHeight(0.1f)
-    ){
+    Column(){
         Search()
+        SearchBy()
     }
+
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -93,12 +132,10 @@ fun Search(){
     var text by remember { mutableStateOf("") }
     var active by remember { mutableStateOf(false) }
 
-    var expanded by remember { mutableStateOf(false)}
-    val context = LocalContext.current
-    Column(){
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceAround,
+            modifier = Modifier.fillMaxWidth()
         ){
             SearchBar( // search bar display
                 query = text,
@@ -114,61 +151,76 @@ fun Search(){
                     )
                 },
                 trailingIcon = {
-                    IconButton(onClick = { expanded = !expanded }) {
+                    IconButton(onClick = {text = ""}) {
                         Icon(
-                            Icons.Outlined.MoreVert,
+                            Icons.Outlined.Close,
                             tint = MaterialTheme.colorScheme.primary,
                             contentDescription = "search by"
                         )
                     }
                 },
-
                 placeholder = { Text("Search") }
 
             ) {}
-        }// end of Row, search bar
-
-
-        // Drop-Down search menu
-        Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
-            MaterialTheme(
-                shapes = MaterialTheme.shapes.copy(
-
-                    // override Material Theme for rounded corners
-                    extraSmall = RoundedCornerShape(16.dp)
-                )
-            ) {
-                DropdownMenu(
-                    expanded = expanded,
-                    onDismissRequest = { expanded = false },
-                )
-                {
-                    DropdownMenuItem(
-                        text = { Text("ISBN") },
-                        onClick = {
-                            Toast.makeText(context, "ISBN", Toast.LENGTH_SHORT).show()
-                        }
-                    )
-
-                    DropdownMenuItem(text = { Text("Title") },
-                        onClick = {
-                            Toast.makeText(context, "Title", Toast.LENGTH_SHORT).show()
-                        }
-                    )
-
-                    DropdownMenuItem(
-                        text = { Text("Author") },
-                        onClick = {
-                            Toast.makeText(context, "Author", Toast.LENGTH_SHORT).show()
-                        }
-                    )
-
-
-                }
-            }
-        } // end of Row, search menu
-    }
+        }
 }
+
+@Composable
+fun SearchBy(){
+    var active by remember { mutableStateOf(false)}
+    var a by remember { mutableStateOf(false)}
+
+    Row(horizontalArrangement = Arrangement.Start,
+        modifier = Modifier.padding(top = 15.dp, bottom = 15.dp, start = 28.dp)){
+        Text("Search Options")
+        Spacer(modifier = Modifier.padding(5.dp))
+        ClickableText(
+            text = AnnotatedString(text = if(active) "Show" else "Hide"), onClick = {
+                active = !active },
+            style = TextStyle(color = MaterialTheme.colorScheme.primary, textDecoration = TextDecoration.Underline  )
+        )
+    }
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        AnimatedVisibility(visible = a,
+            enter = slideInVertically(
+                initialOffsetY = { -40 }
+            ) + fadeIn(initialAlpha = 0.3f),
+            exit = slideOutVertically() + fadeOut()) {
+            SearchFilterBar()
+        }
+    }
+
+
+    LaunchedEffect(active) {
+        launch {
+            a = !a
+        }
+    }
+
+}
+@Composable
+fun SearchFilterBar(){
+    val context = LocalContext.current
+    val options = arrayOf(
+        ToggleButtonOption("ISBN", iconRes = null),
+        ToggleButtonOption("Title", iconRes = null),
+        ToggleButtonOption("Author", iconRes = null)
+    )
+    ToggleButton(
+        options = options,
+        type = SelectionType.SINGLE,
+        modifier = Modifier.padding(end = 4.dp),
+        onClick = {
+            selectedOption ->  Toast.makeText(context, ""+selectedOption[0].text, Toast.LENGTH_SHORT).show()
+
+        }
+    )
+}
+
 
 
 
