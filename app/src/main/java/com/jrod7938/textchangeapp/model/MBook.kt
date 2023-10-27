@@ -80,7 +80,9 @@ data class MBook(
             "mcategory" to this.mCategory,
             "imageURL" to this.imageURL,
             "description" to this.description,
-            "isbn" to this.isbn
+            "isbn" to this.isbn,
+            "seller_confirm" to this.sellerConfirm,
+            "buyer_confirm" to this.buyerConfirm
         )
     }
 

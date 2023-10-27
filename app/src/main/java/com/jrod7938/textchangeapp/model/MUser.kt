@@ -42,8 +42,6 @@ package com.jrod7938.textchangeapp.model
  * @param email String the email of the user
  * @param bookListings List<String> the list of book listings of the user
  * @param savedBooks List<String> the list of saved books of the user
- * @param buyerConfirm Boolean if the buyer has confirmed the transaction
- * @param sellerConfirmed Boolean if the seller has confirmed the transaction
  */
 data class MUser(
     val id: String?,
@@ -54,8 +52,6 @@ data class MUser(
     val email: String,
     val bookListings: List<String>,
     val savedBooks: List<String>,
-    var buyerConfirm: Boolean = false,
-    var sellerConfirmed: Boolean = false
 ) {
 
     /**
@@ -74,9 +70,7 @@ data class MUser(
             "last_name" to this.lastName,
             "email" to this.email,
             "book_listings" to this.bookListings,
-            "saved_books" to this.savedBooks,
-            "buyer_confirm" to this.buyerConfirm,
-            "seller_confirm" to this.sellerConfirmed
+            "saved_books" to this.savedBooks
         )
     }
 
