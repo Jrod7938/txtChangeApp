@@ -97,6 +97,8 @@ class LoginScreenViewModel: ViewModel() {
      * Create a user with email and password within Firebase Authentication and Database
      *
      * @param email email of the user
+     * @param firstName first name of the user
+     * @param lastName last name of the user
      * @param password password of the user
      * @param home function to call when the user is created
      *
@@ -106,6 +108,8 @@ class LoginScreenViewModel: ViewModel() {
      * @see createUser
      */
     fun createUserWithEmailAndPassword(
+        firstName: String,
+        lastName: String,
         email: String,
         password: String,
         home: () -> Unit
@@ -117,7 +121,7 @@ class LoginScreenViewModel: ViewModel() {
                     if (task.isSuccessful){
                         // email is displayed as me@pride.hofstra.edu, split this to two strings, select the first
                         val displayName = task.result?.user?.email?.split('@')?.get(0)
-                        createUser(displayName)
+                        createUser(displayName, firstName, lastName)
 
                         Log.d("Firebase", "createUserWithEmailAndPassword: Success ${task.result}")
                         home()
@@ -133,17 +137,21 @@ class LoginScreenViewModel: ViewModel() {
      * Create a user within the Firebase Database
      *
      * @param displayName display name of the user
+     * @param firstName first name of the user
+     * @param lastName last name of the user
      *
      * @return Unit
      *
      * @see FirebaseFirestore.collection
      */
-    private fun createUser(displayName: String?) {
+    private fun createUser(displayName: String?, firstName: String, lastName: String) {
         val userId = auth.currentUser?.uid
         val user = MUser(
             id = displayName.toString(),
             userId = userId.toString(),
             displayName = displayName.toString(),
+            firstName = firstName,
+            lastName = lastName,
             email = displayName.plus("@pride.hofstra.edu"),
             bookListings = mutableListOf<String>(),
             savedBooks = mutableListOf<String>()

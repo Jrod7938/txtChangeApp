@@ -75,8 +75,10 @@ class HomeScreenViewModel : ViewModel() {
     init {
         if (!dataFetched) {
             viewModelScope.launch {
+                _loading.value = true
                 _bookCategories.value = getBookCategories()
                 dataFetched = true
+                _loading.value = false
             }
         }
     }

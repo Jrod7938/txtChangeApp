@@ -31,12 +31,12 @@
 
 package com.jrod7938.textchangeapp.model
 
-import com.google.firebase.firestore.DocumentSnapshot
-
 data class MUser(
     val id: String?,
     val userId: String,
     val displayName: String,
+    val firstName: String,
+    val lastName: String,
     val email: String,
     val bookListings: List<String>,
     val savedBooks: List<String>
@@ -45,6 +45,8 @@ data class MUser(
         return mutableMapOf(
             "user_id" to this.userId,
             "display_name" to this.displayName,
+            "first_name" to this.firstName,
+            "last_name" to this.lastName,
             "email" to this.email,
             "book_listings" to this.bookListings,
             "saved_books" to this.savedBooks
