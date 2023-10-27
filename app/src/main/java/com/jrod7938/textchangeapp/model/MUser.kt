@@ -31,6 +31,20 @@
 
 package com.jrod7938.textchangeapp.model
 
+/**
+ * A model for the User
+ *
+ * @param id String? the firebase ID of the user
+ * @param userId String the ID of the user
+ * @param displayName String the display name of the user
+ * @param firstName String the first name of the user
+ * @param lastName String the last name of the user
+ * @param email String the email of the user
+ * @param bookListings List<String> the list of book listings of the user
+ * @param savedBooks List<String> the list of saved books of the user
+ * @param buyerConfirm Boolean if the buyer has confirmed the transaction
+ * @param sellerConfirmed Boolean if the seller has confirmed the transaction
+ */
 data class MUser(
     val id: String?,
     val userId: String,
@@ -39,8 +53,19 @@ data class MUser(
     val lastName: String,
     val email: String,
     val bookListings: List<String>,
-    val savedBooks: List<String>
+    val savedBooks: List<String>,
+    val buyerConfirm: Boolean = false,
+    val sellerConfirmed: Boolean = false
 ) {
+
+    /**
+     * Returns a map of the user
+     *
+     * @return MutableMap<String, Any> the map of the user
+     *
+     * @see MutableMap
+     * @see MUser
+     */
     fun toMap(): MutableMap<String, Any> {
         return mutableMapOf(
             "user_id" to this.userId,
@@ -49,7 +74,9 @@ data class MUser(
             "last_name" to this.lastName,
             "email" to this.email,
             "book_listings" to this.bookListings,
-            "saved_books" to this.savedBooks
+            "saved_books" to this.savedBooks,
+            "buyer_confirm" to this.buyerConfirm,
+            "seller_confirm" to this.sellerConfirmed
         )
     }
 
