@@ -54,8 +54,8 @@ data class MUser(
     val email: String,
     val bookListings: List<String>,
     val savedBooks: List<String>,
-    val buyerConfirm: Boolean = false,
-    val sellerConfirmed: Boolean = false
+    var buyerConfirm: Boolean = false,
+    var sellerConfirmed: Boolean = false
 ) {
 
     /**
