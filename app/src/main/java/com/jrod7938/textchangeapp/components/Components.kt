@@ -938,7 +938,7 @@ fun BookConditionDropdown(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Start
         ) {
-            Text(text = "Category: ")
+            Text(text = "Condition: ")
             TextButton(onClick = { isDropdownExpanded = true }
             ) {
                 Text(selectedCondition)
