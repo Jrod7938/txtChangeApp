@@ -32,6 +32,8 @@
 package com.jrod7938.textchangeapp.screens.details
 
 import android.util.Log
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
@@ -39,8 +41,16 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.jrod7938.textchangeapp.model.MBook
 import com.jrod7938.textchangeapp.model.MUser
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import com.google.android.gms.tasks.Task
 
 class BookInfoScreenViewModel : ViewModel() {
+    private val _loading = MutableLiveData(false)
+    val loading: LiveData<Boolean> = _loading
+
+    private val _errorMessage = MutableStateFlow<String?>(null)
+    val errorMessage: StateFlow<String?> = _errorMessage
 
     private val userName: String? =
         FirebaseAuth.getInstance().currentUser?.email?.split("@")?.get(0)
@@ -293,5 +303,6 @@ class BookInfoScreenViewModel : ViewModel() {
                 }
 
         }
+
 
 }
