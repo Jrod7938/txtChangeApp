@@ -746,8 +746,8 @@ fun EditBookDialog(book: MBook, onConfirm: (MBook) -> Unit, onDismiss: () -> Uni
 
     val valid by remember(editedCondition, editedPrice) {
         mutableStateOf(
-            editedCondition.isNotEmpty()
-                    && editedPrice.isNotEmpty()
+            editedCondition.matches("^[a-zA-Z\\s]+$".toRegex())
+                    && editedPrice.matches("^\\d*\\.?\\d+$".toRegex())
                     && editedPrice.toDouble() > 0
         )
     }
@@ -760,7 +760,11 @@ fun EditBookDialog(book: MBook, onConfirm: (MBook) -> Unit, onDismiss: () -> Uni
                 OutlinedTextField(
                     value = editedCondition,
                     enabled = true,
-                    onValueChange = { editedCondition = it },
+                    onValueChange = {
+                        if (it.matches("^[a-zA-Z\\s]*$".toRegex())) {
+                            editedCondition = it
+                        }
+                    },
                     label = { Text("Book Condition") },
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Text,
@@ -771,10 +775,14 @@ fun EditBookDialog(book: MBook, onConfirm: (MBook) -> Unit, onDismiss: () -> Uni
                 OutlinedTextField(
                     value = editedPrice,
                     enabled = true,
-                    onValueChange = { editedPrice = it },
+                    onValueChange = {
+                        if (it.matches("^\\d*\\.?\\d*$".toRegex())) {
+                            editedPrice = it
+                        }
+                    },
                     label = { Text("Book Price") },
                     keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Text,
+                        keyboardType = KeyboardType.Number,
                         imeAction = ImeAction.Done
                     ),
                     keyboardActions = KeyboardActions.Default

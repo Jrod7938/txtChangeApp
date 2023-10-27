@@ -89,7 +89,7 @@ fun AccountScreen(
         if (errorMessage?.isNotEmpty() == true) {
             Text(text = errorMessage!!)
         }
-        if (!loading && errorMessage?.isEmpty() == true && user != null && bookListings != null) {
+        if (!loading && user != null && bookListings != null) {
             if (currentlyEditingBook.value != null) {
                 EditBookDialog(
                     book = currentlyEditingBook.value!!,
