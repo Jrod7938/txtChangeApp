@@ -37,6 +37,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -56,8 +57,11 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
+import androidx.compose.material.DropdownMenu
+import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
@@ -76,6 +80,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -731,7 +736,7 @@ fun LastNameInput(
 }
 
 /**
- * This composable is the Book Card. It displays a card for a book in the account screen.
+ * This composable is the Book Edit Alert. It displays a card for a book in the account screen to edit.
  *
  * @param book the book to display
  * @param onConfirm the function to call when the user confirms the book
@@ -757,20 +762,9 @@ fun EditBookDialog(book: MBook, onConfirm: (MBook) -> Unit, onDismiss: () -> Uni
         title = { Text("Edit ${book.title}") },
         text = {
             Column {
-                OutlinedTextField(
-                    value = editedCondition,
-                    enabled = true,
-                    onValueChange = {
-                        if (it.matches("^[a-zA-Z\\s]*$".toRegex())) {
-                            editedCondition = it
-                        }
-                    },
-                    label = { Text("Book Condition") },
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Text,
-                        imeAction = ImeAction.Next
-                    ),
-                    keyboardActions = KeyboardActions.Default
+                BookConditionDropdown(
+                    selectedCondition = editedCondition,
+                    onConditionSelected = { editedCondition = it }
                 )
                 OutlinedTextField(
                     value = editedPrice,
@@ -916,6 +910,59 @@ fun AccountInfo(user: MUser) {
             Text(text = "Name: ${user.firstName} ${user?.lastName}")
             Text(text = "Display Name: ${user.displayName}")
             Text(text = "Email: ${user.email}")
+        }
+    }
+}
+
+/**
+ * This composable is the Book Condition Dropdown. It displays a dropdown for
+ * the user to select the condition of their book.
+ *
+ * @param selectedCondition the selected condition
+ * @param onConditionSelected the function to call when the condition is selected
+ *
+ */
+@Composable
+fun BookConditionDropdown(
+    selectedCondition: String,
+    onConditionSelected: (String) -> Unit
+) {
+    var isDropdownExpanded by remember { mutableStateOf(false) }
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth(),
+        contentAlignment = Alignment.CenterStart
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Start
+        ) {
+            Text(text = "Category: ")
+            TextButton(onClick = { isDropdownExpanded = true }
+            ) {
+                Text(selectedCondition)
+                Icon(
+                    imageVector = Icons.Default.ArrowDropDown,
+                    contentDescription = "Drop down arrow"
+                )
+            }
+
+            DropdownMenu(
+                expanded = isDropdownExpanded,
+                onDismissRequest = { isDropdownExpanded = false }
+            ) {
+                listOf("New", "Used", "Worn").forEach { condition ->
+                    DropdownMenuItem(
+                        onClick = {
+                            onConditionSelected(condition)
+                            isDropdownExpanded = false
+                        }
+                    ) {
+                        Text(condition, color = Color.Black)
+                    }
+                }
+            }
         }
     }
 }
