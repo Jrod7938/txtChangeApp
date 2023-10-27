@@ -107,7 +107,7 @@ data class MBook(
                 email = document.getString("email") ?: "",
                 condition = document.getString("condition") ?: "",
                 category = document.getString("category") ?: "",
-                mCategory = document.getString("mCategory") ?: MCategory.Other.toString(),
+                mCategory = document.getString("mcategory") ?: MCategory.Other.toString(),
                 imageURL = document.getString("imageURL") ?: "",
                 description = document.getString("description") ?: "",
                 isbn = document.getString("isbn") ?: "",
