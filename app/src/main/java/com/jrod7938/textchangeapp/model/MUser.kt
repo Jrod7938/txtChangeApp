@@ -31,6 +31,8 @@
 
 package com.jrod7938.textchangeapp.model
 
+import com.google.firebase.firestore.DocumentSnapshot
+
 /**
  * A model for the User
  *
@@ -54,6 +56,31 @@ data class MUser(
     val savedBooks: List<String>,
 ) {
 
+    companion object {
+        /**
+         * Creates a MUser object from a DocumentSnapshot
+         *
+         * @param document DocumentSnapshot the document to create the MUser from
+         *
+         * @return MUser the MUser created from the DocumentSnapshot
+         *
+         * @see DocumentSnapshot
+         * @see MUser
+         */
+        fun fromDocument(document: DocumentSnapshot): MUser {
+            return MUser(
+                id = document.id,
+                userId = document.getString("user_id") ?: "",
+                displayName = document.getString("display_name") ?: "",
+                firstName = document.getString("first_name") ?: "",
+                lastName = document.getString("last_name") ?: "",
+                email = document.getString("email") ?: "",
+                bookListings = document.get("book_listings") as List<String>,
+                savedBooks = document.get("saved_books") as List<String>,
+            )
+        }
+    }
+
     /**
      * Returns a map of the user
      *
@@ -73,6 +100,4 @@ data class MUser(
             "saved_books" to this.savedBooks
         )
     }
-
-
 }
