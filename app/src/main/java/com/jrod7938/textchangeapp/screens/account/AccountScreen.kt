@@ -31,12 +31,100 @@
 
 package com.jrod7938.textchangeapp.screens.account
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.jrod7938.textchangeapp.components.AccountInfo
+import com.jrod7938.textchangeapp.components.AccountListings
+import com.jrod7938.textchangeapp.components.EditBookDialog
+import com.jrod7938.textchangeapp.model.MBook
+import com.jrod7938.textchangeapp.navigation.AppScreens
 
+/**
+ * Account Screen
+ *
+ * @param navController NavController the navigation controller
+ * @param viewModel AccountScreenViewModel the viewmodel for the screen
+ *
+ * @see NavController
+ * @see AccountScreenViewModel
+ */
 @Composable
-fun AccountScreen(navController: NavController) {
-    Text(text = "Account Screen")
+fun AccountScreen(
+    navController: NavController,
+    viewModel: AccountScreenViewModel = viewModel()
+) {
+    val user by viewModel.mUser.observeAsState(initial = null)
+    val bookListings by viewModel.bookListings.observeAsState(initial = null)
+    val errorMessage by viewModel.message.collectAsState(initial = "")
+    val loading by viewModel.loading.observeAsState(initial = false)
 
+    val currentlyEditingBook = remember { mutableStateOf<MBook?>(null) }
+
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Top
+    ) {
+        if (loading) {
+            CircularProgressIndicator()
+        }
+        if (errorMessage?.isNotEmpty() == true) {
+            Text(text = errorMessage!!)
+        }
+        if (!loading && errorMessage?.isEmpty() == true && user != null && bookListings != null) {
+            if (currentlyEditingBook.value != null) {
+                EditBookDialog(
+                    book = currentlyEditingBook.value!!,
+                    onConfirm = { book ->
+                        viewModel.updateBook(book)
+                        currentlyEditingBook.value = null
+                    },
+                    onDismiss = { currentlyEditingBook.value = null }
+                )
+            }
+            AccountInfo(user!!)
+            Text(
+                text = "Selling",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+            )
+            Button(onClick = { navController.navigate(AppScreens.SellBookScreen.name) }) {
+                Text(
+                    text = "Create a New Listing",
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.SemiBold,
+                )
+            }
+            Text(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .align(Alignment.Start),
+                text = "My Listings:",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+            )
+            AccountListings(
+                bookListings = bookListings!!,
+                currentlyEditingBook = currentlyEditingBook
+            )
+        }
+    }
 }
