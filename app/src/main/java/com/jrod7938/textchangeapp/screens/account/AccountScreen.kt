@@ -73,7 +73,7 @@ fun AccountScreen(
 ) {
     val user by viewModel.mUser.observeAsState(initial = null)
     val bookListings by viewModel.bookListings.observeAsState(initial = null)
-    val errorMessage by viewModel.message.collectAsState(initial = "")
+    val message by viewModel.message.collectAsState(initial = "")
     val loading by viewModel.loading.observeAsState(initial = false)
 
     val currentlyEditingBook = remember { mutableStateOf<MBook?>(null) }
@@ -86,8 +86,8 @@ fun AccountScreen(
         if (loading) {
             CircularProgressIndicator()
         }
-        if (errorMessage?.isNotEmpty() == true) {
-            Text(text = errorMessage!!)
+        if (message?.isNotEmpty() == true) {
+            Text(text = message!!, color = MaterialTheme.colorScheme.onPrimaryContainer)
         }
         if (!loading && user != null && bookListings != null) {
             if (currentlyEditingBook.value != null) {
