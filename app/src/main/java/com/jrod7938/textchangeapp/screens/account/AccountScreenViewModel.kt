@@ -195,6 +195,7 @@ class AccountScreenViewModel : ViewModel() {
                 Log.d("AccountScreenViewModel", "Deleted book from users with saved book")
 
                 batch.commit().await()
+                _bookListings.value = getBookListings()
             } catch (e: Exception) {
                 Log.e("AccountScreenViewModel", "Error deleting book", e)
                 _message.tryEmit(e.localizedMessage)
@@ -232,6 +233,9 @@ class AccountScreenViewModel : ViewModel() {
                                     "AccountScreenViewModel",
                                     "Book category updated successfully"
                                 )
+                                viewModelScope.launch {
+                                    _bookListings.value = getBookListings()
+                                }
                             }
                     }.addOnFailureListener { e ->
                         Log.e("AccountScreenViewModel", "Error updating book", e)
