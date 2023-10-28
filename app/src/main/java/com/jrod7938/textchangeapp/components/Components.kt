@@ -66,6 +66,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
@@ -121,6 +122,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import coil.compose.rememberAsyncImagePainter
+import com.google.firebase.auth.FirebaseAuth
 import com.jrod7938.textchangeapp.R
 import com.jrod7938.textchangeapp.model.MBook
 import com.jrod7938.textchangeapp.model.MUser
@@ -903,12 +905,31 @@ fun AccountListings(
  * @see MUser
  */
 @Composable
-fun AccountInfo(user: MUser) {
-    Text(
-        text = "Hello, ${user.firstName} ${user.lastName}.",
-        style = MaterialTheme.typography.titleLarge,
-        fontWeight = FontWeight.Bold,
-    )
+fun AccountInfo(user: MUser, navController: NavController) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceEvenly,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = "Hello, ${user.firstName} ${user.lastName}.",
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold,
+        )
+        IconButton(
+            onClick = {
+                FirebaseAuth.getInstance().signOut()
+                navController.navigate(AppScreens.LoginScreen.name)
+            }
+        ) {
+            Icon(
+                modifier = Modifier.size(30.dp),
+                imageVector = Icons.Default.ExitToApp,
+                contentDescription = "Logout",
+                tint = MaterialTheme.colorScheme.error
+            )
+        }
+    }
     Card(
         modifier = Modifier
             .fillMaxWidth()
