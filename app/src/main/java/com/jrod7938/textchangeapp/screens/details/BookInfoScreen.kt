@@ -76,7 +76,7 @@ fun BookInfoScreen(
         }
     }
 
-    if (loading && book == null) {
+    if (loading) {
         CircularProgressIndicator()
     } else {
         Column(

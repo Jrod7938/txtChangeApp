@@ -1053,14 +1053,14 @@ fun BookInfoView(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                Button(
-                    colors = ButtonDefaults
-                        .buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-                    onClick = onContactClicked
-                ) {
-                    Text(text = "Contact Seller", fontSize = 16.sp)
-                }
                 if (user.email != book.email) {
+                    Button(
+                        colors = ButtonDefaults
+                            .buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                        onClick = onContactClicked
+                    ) {
+                        Text(text = "Contact Seller", fontSize = 16.sp)
+                    }
                     Button(onClick = {
                         if (user.savedBooks.contains(book.bookID)) {
                             viewModel.unsaveBook(book)
