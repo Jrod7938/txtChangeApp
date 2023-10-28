@@ -31,10 +31,97 @@
 
 package com.jrod7938.textchangeapp.screens.details
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import com.jrod7938.textchangeapp.components.BookInfoView
 
 @Composable
-fun BookInfoScreen(navController: NavHostController) {
+fun BookInfoScreen(
+    navController: NavHostController,
+    bookId: String? = "",
+    viewModel: BookInfoScreenViewModel = viewModel()
+) {
+    val user by viewModel.user.observeAsState(initial = null)
+    val book by viewModel.book.observeAsState(initial = null)
+    val loading by viewModel.loading.observeAsState(initial = false)
+    val message by viewModel.message.collectAsState(initial = null)
 
+    val (showContactInfo, setContactInfo) = remember { mutableStateOf(false) }
+
+    LaunchedEffect(key1 = true) {
+        bookId?.let {
+            viewModel.fetchBookDetails(it)
+            viewModel.getUser()
+        }
+    }
+
+    if (loading && book == null) {
+        CircularProgressIndicator()
+    } else {
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Top,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = "Book Info Screen",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            )
+            if (book != null && user != null) {
+                BookInfoView(
+                    book = book!!,
+                    user = user!!,
+                    onContactClicked = { setContactInfo(true) })
+            } else {
+                Text(
+                    text = "Failed to fetch book details: $message",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
+
+        if (showContactInfo) {
+            AlertDialog(
+                backgroundColor = MaterialTheme.colorScheme.background,
+                onDismissRequest = { setContactInfo(false) },
+                title = { Text(text = "Seller's Email") },
+                text = { Text(text = book?.email ?: "") },
+                buttons = {
+                    Button(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        onClick = { setContactInfo(false) }
+                    ) {
+                        Text("Close")
+                    }
+                }
+            )
+        }
+    }
 }
+
+
