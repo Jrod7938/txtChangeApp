@@ -123,7 +123,8 @@ fun AccountScreen(
             )
             AccountListings(
                 bookListings = bookListings!!,
-                currentlyEditingBook = currentlyEditingBook
+                currentlyEditingBook = currentlyEditingBook,
+                navController = navController
             )
         }
     }
