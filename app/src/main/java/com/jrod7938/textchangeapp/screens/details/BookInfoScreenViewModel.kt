@@ -32,11 +32,8 @@
 package com.jrod7938.textchangeapp.screens.details
 
 import android.util.Log
-<<<<<<< HEAD
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-=======
->>>>>>> 2ab5064ee7e2c9da329c8f2398a5d8a4a35b19a9
 import androidx.lifecycle.ViewModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
@@ -44,7 +41,6 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.jrod7938.textchangeapp.model.MBook
 import com.jrod7938.textchangeapp.model.MUser
-<<<<<<< HEAD
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import com.google.android.gms.tasks.Task
@@ -55,10 +51,6 @@ class BookInfoScreenViewModel : ViewModel() {
 
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> = _errorMessage
-=======
-
-class BookInfoScreenViewModel : ViewModel() {
->>>>>>> 2ab5064ee7e2c9da329c8f2398a5d8a4a35b19a9
 
     private val userName: String? =
         FirebaseAuth.getInstance().currentUser?.email?.split("@")?.get(0)
@@ -300,20 +292,17 @@ class BookInfoScreenViewModel : ViewModel() {
                 }
                 .addOnFailureListener { exception ->
                     Log.e(
-                    "get book document",
-                    "failure to acquire book document: $exception" +
-                        "\n $bookID"
+                        "get book document",
+                        "failure to acquire book document: $exception" +
+                                "\n $bookID"
                     )
                 }
 
 
 
-                }
-
         }
 
-<<<<<<< HEAD
+    }
 
-=======
->>>>>>> 2ab5064ee7e2c9da329c8f2398a5d8a4a35b19a9
+
 }
