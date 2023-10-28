@@ -912,18 +912,19 @@ fun AccountInfo(user: MUser, navController: NavController) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
+            modifier = Modifier.fillMaxWidth(0.7f),
             text = "Hello, ${user.firstName} ${user.lastName}.",
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold,
         )
         IconButton(
+            modifier = Modifier.size(30.dp),
             onClick = {
                 FirebaseAuth.getInstance().signOut()
                 navController.navigate(AppScreens.LoginScreen.name)
             }
         ) {
             Icon(
-                modifier = Modifier.size(30.dp),
                 imageVector = Icons.Default.ExitToApp,
                 contentDescription = "Logout",
                 tint = MaterialTheme.colorScheme.error
