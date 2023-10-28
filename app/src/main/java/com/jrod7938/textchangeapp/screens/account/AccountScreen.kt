@@ -31,6 +31,7 @@
 
 package com.jrod7938.textchangeapp.screens.account
 
+<<<<<<< HEAD
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -128,3 +129,14 @@ fun AccountScreen(
         }
     }
 }
+=======
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.navigation.NavController
+
+@Composable
+fun AccountScreen(navController: NavController) {
+    Text(text = "Account Screen")
+
+}
+>>>>>>> 2ab5064ee7e2c9da329c8f2398a5d8a4a35b19a9

@@ -33,16 +33,23 @@ package com.jrod7938.textchangeapp.screens.home
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+<<<<<<< HEAD
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CircularProgressIndicator
+=======
+import androidx.compose.foundation.layout.padding
+>>>>>>> 2ab5064ee7e2c9da329c8f2398a5d8a4a35b19a9
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+<<<<<<< HEAD
 import androidx.compose.ui.Alignment
+=======
+>>>>>>> 2ab5064ee7e2c9da329c8f2398a5d8a4a35b19a9
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -68,13 +75,24 @@ fun HomeScreen(
 ) {
     val bookCategories by viewModel.bookCategories.observeAsState(initial = HashMap())
     val errorMessage by viewModel.message.collectAsState(initial = "")
+<<<<<<< HEAD
     val loading by viewModel.loading.observeAsState(initial = false)
+=======
+>>>>>>> 2ab5064ee7e2c9da329c8f2398a5d8a4a35b19a9
 
     Column(
         modifier = Modifier
             .fillMaxSize()
+<<<<<<< HEAD
             .padding(16.dp),
     ) {
+=======
+            .padding(16.dp)
+    ) {
+        if (!errorMessage.isNullOrEmpty()) {
+            Text(text = "$errorMessage")
+        }
+>>>>>>> 2ab5064ee7e2c9da329c8f2398a5d8a4a35b19a9
         Text(
             text = "Get Started:",
             color = MaterialTheme.colorScheme.onBackground,
@@ -88,6 +106,7 @@ fun HomeScreen(
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold
         )
+<<<<<<< HEAD
         Column(
             modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally
@@ -99,6 +118,8 @@ fun HomeScreen(
                 CircularProgressIndicator()
             }
         }
+=======
+>>>>>>> 2ab5064ee7e2c9da329c8f2398a5d8a4a35b19a9
         DisplayCategories(bookCategories, navController)
     }
 }
