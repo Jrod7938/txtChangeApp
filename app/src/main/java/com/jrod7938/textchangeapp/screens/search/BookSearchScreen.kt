@@ -84,6 +84,7 @@ import com.jrod7938.textchangeapp.components.ToggleButton
 import com.jrod7938.textchangeapp.components.ToggleButtonOption
 import com.jrod7938.textchangeapp.model.MBook
 import com.jrod7938.textchangeapp.navigation.AppScreens
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -142,22 +143,38 @@ fun Search( bookList: List<MBook>, viewModel: BookSearchScreenViewModel) {
 
     // Search Functionality
 
-    LaunchedEffect(onSearchClicked){
-        launch {
-            if (filter == SearchType.ISBN) viewModel.searchBookByISBN(text)
-            else if (filter == SearchType.Title) viewModel.searchBookByTitle(text)
-            else if (filter == SearchType.Author) viewModel.searchBookByAuthor(text)
-            else viewModel.searchBookByISBN(text)
-
-            Log.d("booklist", "${bookList.size}")
-        }
-
-        // launch { searchCompleted = true}
+    fun executeSearch(){
+        if (filter == SearchType.ISBN) viewModel.searchBookByISBN(text)
+        else if (filter == SearchType.Title) viewModel.searchBookByTitle(text)
+        else if (filter == SearchType.Author) viewModel.searchBookByAuthor(text)
+        else viewModel.searchBookByISBN(text)
     }
 
-    SideEffect {
+    fun updateSearchStatus(){
         searchCompleted = true
     }
+
+    suspend fun search(){
+        executeSearch()
+        updateSearchStatus()
+    }
+
+//    LaunchedEffect(onSearchClicked){
+//        launch {
+//            if (filter == SearchType.ISBN) viewModel.searchBookByISBN(text)
+//            else if (filter == SearchType.Title) viewModel.searchBookByTitle(text)
+//            else if (filter == SearchType.Author) viewModel.searchBookByAuthor(text)
+//            else viewModel.searchBookByISBN(text)
+//
+//            Log.d("booklist", "${bookList.size}")
+//        }
+//
+//        // launch { searchCompleted = true}
+//    }
+//
+//    SideEffect {
+//        searchCompleted = true
+//    }
 
 //    LaunchedEffect(bookList.isNotEmpty()){
 //        launch { searchCompleted = true }
@@ -179,7 +196,7 @@ fun Search( bookList: List<MBook>, viewModel: BookSearchScreenViewModel) {
                 onSearch = {
                     searchBarActive = false
                     queryItems += text
-                    onSearchClicked = true },
+                    GlobalScope.launch { search() } },
                 active = searchBarActive,
                 onActiveChange = { searchBarActive = it },
                 leadingIcon = {
