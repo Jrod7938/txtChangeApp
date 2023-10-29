@@ -50,6 +50,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -65,8 +66,10 @@ import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.MoreHoriz
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Lock
@@ -102,18 +105,22 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -1121,5 +1128,125 @@ fun ToggleButton(
             selected = state.contains(last.text),
             onClick = onItemClick,
         )
+    }
+}
+
+@Composable
+fun BookThumbnail(
+    imageUrl: String,
+    title: String,
+    author: String,
+    price: Double,
+    bookCondition: String,
+
+){
+    Column(
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(30.dp)) {
+        Image(
+            painter = rememberAsyncImagePainter(model = imageUrl),
+            contentDescription = "Image of $title",
+            modifier = Modifier.size(175.dp)
+        )
+
+        Text(
+            text = title,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.primary,
+            maxLines = 1,
+            modifier = Modifier.padding(top = 20.dp)
+        )
+
+        Text(text = "by $author")
+
+
+            Text(
+            text = "Price: $$price",
+            color = MaterialTheme.colorScheme.secondary,
+            )
+
+            Text(text = "Condition: $bookCondition")
+        Column() {
+            Row() {
+                Icon(
+                    Icons.Default.Favorite,
+                    tint = Color.Red,
+                    contentDescription = "Favorite Search",
+                    modifier = Modifier
+                        .clickable {}
+                        .padding(top = 15.dp, end = 15.dp)
+                )
+                Button(
+                    onClick = { }
+                ) {
+                    Text(
+                        text = "Place Bid"
+                    )
+                }
+                Icon(
+                    Icons.Default.MoreHoriz,
+                    tint = MaterialTheme.colorScheme.primary,
+                    contentDescription = "View More",
+                    modifier = Modifier
+                        .clickable {}
+                        .padding(top = 15.dp, start = 15.dp)
+                )
+            }
+        }
+    }
+    }
+
+@Composable
+fun DisplaySearchResults(bookList: List<MBook>,
+                         searchCompleted: Boolean,
+                         searchContent: String) {
+
+    Column() {
+        if (bookList.isEmpty() && searchCompleted) {
+            Column(verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Text(
+                    text = "No results found for your query!",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 15.dp, start = 28.dp))
+            }
+        } else {
+            Column() {
+                val annotatedString = buildAnnotatedString {
+                    append("Here's what we found for: ")
+                    withStyle(
+                        style = SpanStyle(
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.Bold
+                        )
+                    ) {
+                        append("'$searchContent'")
+                    }
+                }
+                Text(text = annotatedString,
+                    modifier = Modifier.padding(top = 15.dp, start = 28.dp),
+                    softWrap = true,)
+
+                LazyColumn {
+
+                    bookList.forEach {
+                        item {
+                            BookThumbnail(
+                                imageUrl = it.imageURL,
+                                title = it.title,
+                                author = it.author,
+                                price = it.price,
+                                bookCondition = it.condition
+                            )
+                        }
+                    }
+                }
+            }
+        }
     }
 }
