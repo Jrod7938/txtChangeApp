@@ -59,6 +59,7 @@ import androidx.compose.material3.SearchBar
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
@@ -142,17 +143,25 @@ fun Search( bookList: List<MBook>, viewModel: BookSearchScreenViewModel) {
     // Search Functionality
 
     LaunchedEffect(onSearchClicked){
-        if(filter == SearchType.ISBN) viewModel.searchBookByISBN(text)
-        else if(filter == SearchType.Title) viewModel.searchBookByTitle(text)
-        else if(filter == SearchType.Author) viewModel.searchBookByAuthor(text)
-        else viewModel.searchBookByISBN(text)
+        launch {
+            if (filter == SearchType.ISBN) viewModel.searchBookByISBN(text)
+            else if (filter == SearchType.Title) viewModel.searchBookByTitle(text)
+            else if (filter == SearchType.Author) viewModel.searchBookByAuthor(text)
+            else viewModel.searchBookByISBN(text)
 
-        Log.d("booklist", "${bookList.size}")
+            Log.d("booklist", "${bookList.size}")
+        }
+
+        // launch { searchCompleted = true}
     }
 
-    LaunchedEffect(bookList.isNotEmpty()){
+    SideEffect {
         searchCompleted = true
     }
+
+//    LaunchedEffect(bookList.isNotEmpty()){
+//        launch { searchCompleted = true }
+//    }
 
 
     Column() {
@@ -264,8 +273,8 @@ fun Search( bookList: List<MBook>, viewModel: BookSearchScreenViewModel) {
             }
         }
         
-        AnimatedVisibility(visible = searchCompleted, enter = fadeIn()) {
-            DisplaySearchResults(bookList, searchCompleted, text)
+        AnimatedVisibility(visible = searchCompleted && text.isNotEmpty(), enter = fadeIn()) {
+            DisplaySearchResults(bookList, text)
             
         }
     }

@@ -1201,11 +1201,10 @@ fun BookThumbnail(
 
 @Composable
 fun DisplaySearchResults(bookList: List<MBook>,
-                         searchCompleted: Boolean,
                          searchContent: String) {
 
     Column() {
-        if (bookList.isEmpty() && searchCompleted) {
+    if(bookList.isEmpty()) {
             Column(verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
@@ -1215,7 +1214,7 @@ fun DisplaySearchResults(bookList: List<MBook>,
                         .fillMaxWidth()
                         .padding(top = 15.dp, start = 28.dp))
             }
-        } else {
+        } else  {
             Column() {
                 val annotatedString = buildAnnotatedString {
                     append("Here's what we found for: ")
