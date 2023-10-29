@@ -133,7 +133,7 @@ class BookInfoScreenViewModel : ViewModel() {
             }
 
         val categoryReference = db.collection(mBook.mCategory).document(mBook.bookID)
-        categoryReference.update("buyer_confirm", true)
+        categoryReference.update("buyer_confirm", !mBook.buyerConfirm)
             .addOnSuccessListener {
                 Log.d(
                     "buyerVerifiedBook",
@@ -173,7 +173,7 @@ class BookInfoScreenViewModel : ViewModel() {
             }
 
         val categoryReference = db.collection(mBook.mCategory).document(mBook.bookID)
-        categoryReference.update("seller_confirm", true)
+        categoryReference.update("seller_confirm", !mBook.sellerConfirm)
             .addOnSuccessListener {
                 Log.d(
                     "sellerVerifiedBook",
