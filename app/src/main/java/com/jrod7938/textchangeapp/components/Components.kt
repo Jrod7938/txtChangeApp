@@ -31,6 +31,7 @@
 
 package com.jrod7938.textchangeapp.components
 
+import android.widget.Toast
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.foundation.BorderStroke
@@ -1140,6 +1141,8 @@ fun BookThumbnail(
     bookCondition: String,
 
 ){
+    val context = LocalContext.current
+
     Column(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -1176,11 +1179,13 @@ fun BookThumbnail(
                     tint = Color.Red,
                     contentDescription = "Favorite Search",
                     modifier = Modifier
-                        .clickable {}
+                        .clickable {
+                            Toast.makeText(context, "Added to Favorites", Toast.LENGTH_SHORT).show()
+                        }
                         .padding(top = 15.dp, end = 15.dp)
                 )
                 Button(
-                    onClick = { }
+                    onClick = {}
                 ) {
                     Text(
                         text = "Place Bid"
@@ -1208,11 +1213,20 @@ fun DisplaySearchResults(bookList: List<MBook>,
             Column(verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Text(
-                    text = "No results found for your query!",
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 15.dp, start = 28.dp))
+                val annotatedString = buildAnnotatedString {
+                    append("Sorry, we couldn't find anything for: ")
+                    withStyle(
+                        style = SpanStyle(
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.Bold
+                        )
+                    ) {
+                        append("'$searchContent'")
+                    }
+                }
+                Text(text = annotatedString,
+                    modifier = Modifier.padding(top = 15.dp, start = 28.dp),
+                    softWrap = true,)
             }
         } else  {
             Column() {
