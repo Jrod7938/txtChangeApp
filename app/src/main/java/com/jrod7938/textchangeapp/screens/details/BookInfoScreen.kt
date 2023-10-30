@@ -52,6 +52,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
@@ -120,14 +121,18 @@ fun BookInfoScreen(
             AlertDialog(
                 backgroundColor = MaterialTheme.colorScheme.background,
                 onDismissRequest = { setContactInfo(false) },
-                title = { Text(text = "Seller's Email") },
-                text = { Text(text = book?.email ?: "") },
+                title = {
+                    Text(
+                        modifier = Modifier.fillMaxWidth(),
+                        text = "Contact Seller",
+                        textAlign = TextAlign.Center
+                    )
+                },
                 buttons = {
-
                     Button(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(16.dp),
+                            .padding(top = 16.dp, start = 16.dp, end = 16.dp),
                         onClick = {
                             book!!.let { book ->
                                 val emailIntent = viewModel.prepareInterestEmailIntent(book)
