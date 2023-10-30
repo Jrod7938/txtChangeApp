@@ -102,7 +102,7 @@ class BookInfoScreenViewModel : ViewModel() {
                         "details page once the sale has been completed."
             )
             putExtra(Intent.EXTRA_SUBJECT, "TxTchange: Interest in Book ${mBook.title}")
-            putExtra(Intent.EXTRA_BCC, arrayOf("TxTchangeS@gmail.com"))
+            putExtra(Intent.EXTRA_BCC, arrayOf("txtChangeTeam@gmail.com"))
             putExtra(Intent.EXTRA_EMAIL, arrayOf(mBook.email))
         }
 
