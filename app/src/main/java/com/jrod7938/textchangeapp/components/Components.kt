@@ -504,9 +504,9 @@ fun BottomNavigationBar(
                 icon = {
                     Icon(
                         modifier = Modifier.size(40.dp),
-                        imageVector = if (currentRoute == item.route) item.selectedIcon else item.unselectedIcon,
+                        imageVector = if (currentRoute?.contains(item.route) == true) item.selectedIcon else item.unselectedIcon,
                         contentDescription = null,
-                        tint = if (currentRoute == item.route) MaterialTheme.colorScheme.primary else Color.DarkGray
+                        tint = if (currentRoute?.contains(item.route) == true) MaterialTheme.colorScheme.primary else Color.DarkGray
                     )
                 },
                 label = {
