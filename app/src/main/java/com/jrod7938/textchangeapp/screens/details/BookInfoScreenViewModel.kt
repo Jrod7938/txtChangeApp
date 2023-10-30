@@ -98,7 +98,7 @@ class BookInfoScreenViewModel : ViewModel() {
             putExtra(
                 Intent.EXTRA_TEXT, "Hello, I am interested in purchasing your book " +
                         "titled '${mBook.title}' for $${mBook.price}. You can contact me at $email." +
-                        "\n\nReminder from TxTchange: Please check the confirmation boxes in the book " +
+                        "\n\nReminder from txtChange Team: Please check the confirmation boxes in the book " +
                         "details page once the sale has been completed."
             )
             putExtra(Intent.EXTRA_SUBJECT, "txtChange: Interest in Book ${mBook.title}")
