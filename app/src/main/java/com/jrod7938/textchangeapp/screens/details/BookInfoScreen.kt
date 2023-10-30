@@ -50,12 +50,23 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.jrod7938.textchangeapp.components.BookInfoView
 
+/**
+ * Screen that displays the details of a book.
+ *
+ * @param navController the navigation controller
+ * @param bookId the id of the book to display
+ * @param viewModel the view model
+ *
+ * @see BookInfoScreenViewModel
+ * @see BookInfoView
+ */
 @Composable
 fun BookInfoScreen(
     navController: NavHostController,
@@ -103,13 +114,33 @@ fun BookInfoScreen(
             }
         }
 
-        if (showContactInfo) {
+        if (showContactInfo && book != null) {
+            val context = LocalContext.current
+
             AlertDialog(
                 backgroundColor = MaterialTheme.colorScheme.background,
                 onDismissRequest = { setContactInfo(false) },
                 title = { Text(text = "Seller's Email") },
                 text = { Text(text = book?.email ?: "") },
                 buttons = {
+
+                    Button(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        onClick = {
+                            book!!.let { book ->
+                                val emailIntent = viewModel.prepareInterestEmailIntent(book)
+                                emailIntent?.let { intent ->
+                                    context.startActivity(emailIntent)
+
+                                }
+                            }
+                        }
+                    ) {
+                        Text(text = "Send Email")
+                    }
+
                     Button(
                         modifier = Modifier
                             .fillMaxWidth()

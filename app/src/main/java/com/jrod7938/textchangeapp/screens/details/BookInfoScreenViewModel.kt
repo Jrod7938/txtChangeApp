@@ -31,6 +31,7 @@
 
 package com.jrod7938.textchangeapp.screens.details
 
+import android.content.Intent
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -44,6 +45,22 @@ import com.jrod7938.textchangeapp.screens.account.AccountScreenViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
+/**
+ * ViewModel for the BookInfoScreen.
+ *
+ * @property email String? the user's email
+ * @property userName String? the user's username
+ * @property _userName String? the user's username
+ * @property loading MutableLiveData<Boolean> the loading state
+ * @property message MutableStateFlow<String?> the message state
+ * @property user MutableLiveData<MUser> the user state
+ * @property book MutableLiveData<MBook> the book state
+ * @property accountVM AccountScreenViewModel the account view model
+ *
+ * @see ViewModel
+ * @see BookInfoScreen
+ * @see MBook
+ */
 class BookInfoScreenViewModel : ViewModel() {
 
     val email = FirebaseAuth.getInstance().currentUser?.email
@@ -65,6 +82,32 @@ class BookInfoScreenViewModel : ViewModel() {
     val book: LiveData<MBook> = _book
 
     private val accountVM = AccountScreenViewModel()
+
+    /**
+     * Prepares to send an Email
+     *
+     * @param mBook MBook to be contacted about
+     *
+     * @return Intent
+     *
+     * @see Int
+     */
+    fun prepareInterestEmailIntent(mBook: MBook): Intent {
+        val emailIntent = Intent(Intent.ACTION_SEND).apply {
+            type = "text/plain"
+            putExtra(
+                Intent.EXTRA_TEXT, "Hello, I am interested in purchasing your book " +
+                        "titled '${mBook.title}' for $${mBook.price}. You can contact me at $email." +
+                        "\n\nReminder from TxTchange: Please check the confirmation boxes in the book " +
+                        "details page once the sale has been completed."
+            )
+            putExtra(Intent.EXTRA_SUBJECT, "TxTchange: Interest in Book ${mBook.title}")
+            putExtra(Intent.EXTRA_BCC, arrayOf("TxTchangeS@gmail.com"))
+            putExtra(Intent.EXTRA_EMAIL, arrayOf(mBook.email))
+        }
+
+        return emailIntent
+    }
 
     /**
      * Fetches the user details from the database
