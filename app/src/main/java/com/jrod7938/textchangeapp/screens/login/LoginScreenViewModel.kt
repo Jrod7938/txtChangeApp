@@ -51,6 +51,8 @@ import kotlinx.coroutines.launch
  * @property auth Firebase Authentication instance
  * @property _loading MutableLiveData<Boolean> to indicate if the user is being created
  * @property loading LiveData<Boolean> to observe if the user is being created
+ * @property _accountCreatedSignal MutableStateFlow<Boolean> to indicate if the user is created
+ * @property accountCreatedSignal StateFlow<Boolean> to observe if the user is created
  *
  * @constructor Creates a ViewModel for the LoginScreen
  */
@@ -63,6 +65,9 @@ class LoginScreenViewModel: ViewModel() {
 
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> = _errorMessage
+
+    private val _accountCreatedSignal = MutableStateFlow(false)
+    val accountCreatedSignal: StateFlow<Boolean> = _accountCreatedSignal
 
 
     /**
@@ -119,11 +124,10 @@ class LoginScreenViewModel: ViewModel() {
             auth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener { task ->
                     if (task.isSuccessful){
-                        // email is displayed as me@pride.hofstra.edu, split this to two strings, select the first
                         val displayName = task.result?.user?.email?.split('@')?.get(0)
                         createUser(displayName, firstName, lastName)
-
                         Log.d("Firebase", "createUserWithEmailAndPassword: Success ${task.result}")
+                        _accountCreatedSignal.value = true
                         home()
                     } else {
                         _errorMessage.value = "Failed to create user"
@@ -131,6 +135,15 @@ class LoginScreenViewModel: ViewModel() {
                     _loading.value = false
                 }
         }
+    }
+
+    /**
+     * Reset the ViewModel
+     *
+     * @return Unit
+     */
+    fun resetViewModel() {
+        _accountCreatedSignal.value = false
     }
 
     /**
