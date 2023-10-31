@@ -100,7 +100,7 @@ fun AccountScreen(
                     onDismiss = { currentlyEditingBook.value = null }
                 )
             }
-            AccountInfo(user!!)
+            AccountInfo(user!!, navController = navController)
             Text(
                 text = "Selling",
                 style = MaterialTheme.typography.titleLarge,
@@ -123,7 +123,8 @@ fun AccountScreen(
             )
             AccountListings(
                 bookListings = bookListings!!,
-                currentlyEditingBook = currentlyEditingBook
+                currentlyEditingBook = currentlyEditingBook,
+                navController = navController
             )
         }
     }

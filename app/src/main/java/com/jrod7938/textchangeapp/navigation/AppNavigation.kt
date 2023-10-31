@@ -145,6 +145,14 @@ fun AppNavigation() {
                     }
                     BookInfoScreen(navController = navController)
                 }
+                composable(route = "${AppScreens.BookInfoScreen.name}/{bookId}") {
+                    DisposableEffect(Unit) {
+                        showAppBars.value = true
+                        onDispose { }
+                    }
+                    val bookId = it.arguments?.getString("bookId")
+                    BookInfoScreen(navController = navController, bookId = bookId)
+                }
                 composable(route = AppScreens.SellBookScreen.name) {
                     DisposableEffect(Unit) {
                         showAppBars.value = true

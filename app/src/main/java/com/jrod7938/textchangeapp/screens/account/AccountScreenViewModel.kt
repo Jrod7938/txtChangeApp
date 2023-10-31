@@ -137,7 +137,7 @@ class AccountScreenViewModel : ViewModel() {
      *
      * @see MUser
      */
-    private suspend fun getUserInfo(): MUser? = withContext(Dispatchers.IO) {
+    suspend fun getUserInfo(): MUser? = withContext(Dispatchers.IO) {
         val docRef = db.collection("users").document(userDocID ?: return@withContext null)
 
         try {

@@ -37,6 +37,7 @@ import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
@@ -57,6 +58,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -67,6 +69,9 @@ import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.MoreHoriz
@@ -100,6 +105,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -124,16 +130,23 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import coil.compose.rememberAsyncImagePainter
+import com.google.firebase.auth.FirebaseAuth
 import com.jrod7938.textchangeapp.R
 import com.jrod7938.textchangeapp.model.MBook
 import com.jrod7938.textchangeapp.model.MUser
 import com.jrod7938.textchangeapp.navigation.AppScreens
 import com.jrod7938.textchangeapp.navigation.BottomNavItem
 import com.jrod7938.textchangeapp.screens.account.AccountScreenViewModel
+import com.jrod7938.textchangeapp.screens.details.BookInfoScreenViewModel
 import com.jrod7938.textchangeapp.screens.home.HomeScreen
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import com.jrod7938.textchangeapp.screens.search.SearchType
 
 
@@ -524,9 +537,9 @@ fun BottomNavigationBar(
                 icon = {
                     Icon(
                         modifier = Modifier.size(40.dp),
-                        imageVector = if (currentRoute == item.route) item.selectedIcon else item.unselectedIcon,
+                        imageVector = if (currentRoute?.contains(item.route) == true) item.selectedIcon else item.unselectedIcon,
                         contentDescription = null,
-                        tint = if (currentRoute == item.route) MaterialTheme.colorScheme.primary else Color.DarkGray
+                        tint = if (currentRoute?.contains(item.route) == true) MaterialTheme.colorScheme.primary else Color.DarkGray
                     )
                 },
                 label = {
@@ -856,7 +869,8 @@ fun EditBookDialog(book: MBook, onConfirm: (MBook) -> Unit, onDismiss: () -> Uni
 fun AccountListings(
     bookListings: List<MBook>,
     currentlyEditingBook: MutableState<MBook?>,
-    viewModel: AccountScreenViewModel = viewModel()
+    viewModel: AccountScreenViewModel = viewModel(),
+    navController: NavController
 ) {
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
@@ -885,6 +899,9 @@ fun AccountListings(
                             .fillMaxWidth()
                             .height(140.dp)
                             .padding(8.dp)
+                            .clickable {
+                                navController.navigate("${AppScreens.BookInfoScreen.name}/${book.bookID}")
+                            }
                     )
                     Text(
                         text = book.title,
@@ -924,12 +941,32 @@ fun AccountListings(
  * @see MUser
  */
 @Composable
-fun AccountInfo(user: MUser) {
-    Text(
-        text = "Hello, ${user.firstName} ${user.lastName}.",
-        style = MaterialTheme.typography.titleLarge,
-        fontWeight = FontWeight.Bold,
-    )
+fun AccountInfo(user: MUser, navController: NavController) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceEvenly,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            modifier = Modifier.fillMaxWidth(0.7f),
+            text = "Hello, ${user.firstName} ${user.lastName}.",
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold,
+        )
+        IconButton(
+            modifier = Modifier.size(30.dp),
+            onClick = {
+                FirebaseAuth.getInstance().signOut()
+                navController.navigate(AppScreens.LoginScreen.name)
+            }
+        ) {
+            Icon(
+                imageVector = Icons.Default.ExitToApp,
+                contentDescription = "Logout",
+                tint = MaterialTheme.colorScheme.error
+            )
+        }
+    }
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -999,6 +1036,158 @@ fun BookConditionDropdown(
                     }
                 }
             }
+        }
+    }
+}
+
+/**
+ * Displays the book info
+ *
+ * @param book the book to display
+ * @param user the user that is logged in
+ * @param onContactClicked callback to display the seller's email
+ * @param viewModel BookInfoScreenViewModel the viewmodel for the screen
+ *
+ * @see MBook
+ * @see MUser
+ * @see BookInfoScreenViewModel
+ */
+@Composable
+fun BookInfoView(
+    book: MBook,
+    user: MUser,
+    onContactClicked: () -> Unit,
+    viewModel: BookInfoScreenViewModel = viewModel()
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Image(
+                painter = rememberAsyncImagePainter(model = book.imageURL),
+                contentDescription = "${book.title} Image",
+                modifier = Modifier
+                    .height(200.dp)
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(12.dp))
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Text(text = book.title, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                if (user.email != book.email) {
+                    Button(
+                        colors = ButtonDefaults
+                            .buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                        onClick = onContactClicked
+                    ) {
+                        Text(text = "Contact Seller", fontSize = 16.sp)
+                    }
+                    Button(onClick = {
+                        if (user.savedBooks.contains(book.bookID)) {
+                            viewModel.unsaveBook(book)
+                            viewModel.fetchBookDetails(book.bookID)
+                            GlobalScope.launch {
+                                withContext(Dispatchers.Main) {
+                                    viewModel.getUser()
+                                }
+                            }
+                        } else {
+                            viewModel.saveBook(book)
+                            viewModel.fetchBookDetails(book.bookID)
+                            GlobalScope.launch {
+                                withContext(Dispatchers.Main) {
+                                    viewModel.getUser()
+                                }
+                            }
+                        }
+                    }) {
+                        Text(
+                            text = if (user.savedBooks.contains(book.bookID)) "Unsave" else "Save",
+                            fontSize = 16.sp
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(text = "Author: ${book.author}", fontSize = 16.sp)
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(text = "ISBN: ${book.isbn}", fontSize = 16.sp)
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(text = "Category: ${book.category}", fontSize = 16.sp)
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(text = "Condition: ${book.condition}", fontSize = 16.sp)
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(text = "Price: $${book.price}", fontSize = 16.sp)
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Column(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(text = "Status:", fontWeight = FontWeight.Bold)
+                Box(modifier = Modifier
+                    .clickable(
+                        enabled = book.email != viewModel.email
+                    ) {
+                        viewModel.buyerVerifiedBook(book)
+                        book.buyerConfirm = true
+                        viewModel.fetchBookDetails(book.bookID)
+                        viewModel.removeBookIfBothPartiesVerified(book)
+                    }
+                ) {
+                    Row {
+                        Text(text = "Buyer Verification: ")
+                        androidx.compose.material3.Icon(
+                            modifier = Modifier.border(
+                                width = 3.dp,
+                                color = MaterialTheme.colorScheme.onBackground
+                            ),
+                            imageVector = if (book.buyerConfirm) Icons.Default.Check else Icons.Default.Clear,
+                            tint = if (book.buyerConfirm) Color.Green else Color.Red,
+                            contentDescription = "Buyer Verification"
+                        )
+                    }
+                }
+
+                Box(modifier = Modifier
+                    .clickable(enabled = book.email == viewModel.email) {
+                        viewModel.sellerVerifiedBook(book)
+                        book.sellerConfirm = true
+                        viewModel.fetchBookDetails(book.bookID)
+                        viewModel.removeBookIfBothPartiesVerified(book)
+                    }
+                ) {
+                    Row {
+                        Text(text = "Seller Verification: ")
+                        androidx.compose.material3.Icon(
+                            modifier = Modifier.border(
+                                width = 3.dp,
+                                color = MaterialTheme.colorScheme.onBackground
+                            ),
+                            imageVector = if (book.sellerConfirm) Icons.Default.Check else Icons.Default.Clear,
+                            tint = if (book.sellerConfirm) Color.Green else Color.Red,
+                            contentDescription = "Buyer Verification"
+                        )
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(text = "Description: ${book.description}", fontSize = 16.sp)
         }
     }
 }

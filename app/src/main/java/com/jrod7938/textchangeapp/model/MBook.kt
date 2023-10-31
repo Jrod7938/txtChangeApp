@@ -111,8 +111,8 @@ data class MBook(
                 imageURL = document.getString("imageURL") ?: "",
                 description = document.getString("description") ?: "",
                 isbn = document.getString("isbn") ?: "",
-                sellerConfirm = document.getBoolean("sellerConfirm") ?: false,
-                buyerConfirm = document.getBoolean("buyerConfirm") ?: false
+                sellerConfirm = document.getBoolean("seller_confirm") ?: false,
+                buyerConfirm = document.getBoolean("buyer_confirm") ?: false
             )
         }
     }
