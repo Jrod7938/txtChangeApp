@@ -31,133 +31,304 @@
 
 package com.jrod7938.textchangeapp.screens.details
 
+import android.content.Intent
 import android.util.Log
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.Query
 import com.jrod7938.textchangeapp.model.MBook
+import com.jrod7938.textchangeapp.model.MUser
+import com.jrod7938.textchangeapp.screens.account.AccountScreenViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 
+/**
+ * ViewModel for the BookInfoScreen.
+ *
+ * @property email String? the user's email
+ * @property userName String? the user's username
+ * @property _userName String? the user's username
+ * @property loading MutableLiveData<Boolean> the loading state
+ * @property message MutableStateFlow<String?> the message state
+ * @property user MutableLiveData<MUser> the user state
+ * @property book MutableLiveData<MBook> the book state
+ * @property accountVM AccountScreenViewModel the account view model
+ *
+ * @see ViewModel
+ * @see BookInfoScreen
+ * @see MBook
+ */
 class BookInfoScreenViewModel : ViewModel() {
 
-    private val userName: String? =
+    val email = FirebaseAuth.getInstance().currentUser?.email
+
+    private val _userName: String? =
         FirebaseAuth.getInstance().currentUser?.email?.split("@")?.get(0)
+    val userName = _userName
+
+    private val _loading = MutableLiveData(false)
+    val loading: LiveData<Boolean> = _loading
+
+    private val _message = MutableStateFlow<String?>(null)
+    val message: StateFlow<String?> = _message
+
+    private val _user = MutableLiveData<MUser>(null)
+    val user: LiveData<MUser> = _user
+
+    private val _book = MutableLiveData<MBook>(null)
+    val book: LiveData<MBook> = _book
+
+    private val accountVM = AccountScreenViewModel()
 
     /**
-     * Queries Firestore (the Firebase database) using the input userID
-     * to delete the input bookID from the user's book_listings field.
+     * Prepares to send an Email
      *
-     * @param bookID A String corresponding to a book in the database's books collection.
-     * Assumes that each book_id field is unique for each document in the collection.
-     * @param user A String corresponding to a user in the database's users collection.
+     * @param mBook MBook to be contacted about
+     *
+     * @return Intent
+     *
+     * @see Int
+     */
+    fun prepareInterestEmailIntent(mBook: MBook): Intent {
+        val emailIntent = Intent(Intent.ACTION_SEND).apply {
+            type = "text/plain"
+            putExtra(
+                Intent.EXTRA_TEXT, "Hello, I am interested in purchasing your book " +
+                        "titled '${mBook.title}' for $${mBook.price}. You can contact me at $email." +
+                        "\n\nReminder from txtChange Team: Please check the confirmation boxes in the book " +
+                        "details page once the sale has been completed."
+            )
+            putExtra(Intent.EXTRA_SUBJECT, "txtChange: Interest in Book ${mBook.title}")
+            putExtra(Intent.EXTRA_BCC, arrayOf("txtChangeTeam@gmail.com"))
+            putExtra(Intent.EXTRA_EMAIL, arrayOf(mBook.email))
+        }
+
+        return emailIntent
+    }
+
+    /**
+     * Fetches the user details from the database
+     *
+     * @param userID String the user id
      *
      * @return Unit
      *
-     * @see deleteListing
-     * @see deleteBook
+     * @see MUser
+     * @see FirebaseFirestore
+     * @see AccountScreenViewModel
      */
-    private fun updateUserBookListings(bookID: String, user: String = userName!!) {
-        // Performs an update to the user's document by deleting the bookID from book_listings field
+    suspend fun getUser(userID: String = userName!!) {
+        _loading.postValue(true)
+        _user.value = accountVM.getUserInfo()
+        _loading.postValue(false)
+    }
+
+    /**
+     * Fetches the book details from the database
+     *
+     * @param bookId String the book id
+     *
+     * @return Unit
+     *
+     * @see MBook
+     * @see FirebaseFirestore
+     */
+    fun fetchBookDetails(bookId: String) {
+        _loading.postValue(true)
         val db = FirebaseFirestore.getInstance()
-        val userDocRef = db.collection("users").document(user)
-        userDocRef.update("book_listings", FieldValue.arrayRemove(bookID))
+        db.collection("books")
+            .document(bookId)
+            .get()
+            .addOnSuccessListener { document ->
+                val book = MBook.fromDocument(document)
+                _book.postValue(book)
+                _loading.postValue(false)
+                Log.d("fetchBookDetails", "Successfully fetched book details")
+            }.addOnFailureListener { exception ->
+                _message.value = "Failed to fetch book details: ${exception.message}"
+                _loading.postValue(false)
+                Log.e("fetchBookDetails", "Failed to fetch book details: ${exception.message}")
+            }
+    }
+
+    /**
+     * Updates the book in the database with the provided details.
+     *
+     * @param mBook MBook the edited book details.
+     *
+     * @return Unit
+     *
+     * @see MBook
+     */
+    fun buyerVerifiedBook(mBook: MBook) {
+        val db = FirebaseFirestore.getInstance()
+
+        val bookReference = db.collection("books").document(mBook.bookID)
+        bookReference.update("buyer_confirm", !mBook.buyerConfirm)
+            .addOnSuccessListener {
+                Log.d("buyerVerifiedBook", "Successfully updated buyerConfirm in books collection.")
+            }.addOnFailureListener { e ->
+                Log.e("buyerVerifiedBook", "Error updating buyerConfirm in books collection: $e")
+                _message.value = e.message
+            }
+
+        val categoryReference = db.collection(mBook.mCategory).document(mBook.bookID)
+        categoryReference.update("buyer_confirm", !mBook.buyerConfirm)
             .addOnSuccessListener {
                 Log.d(
-                    "updateUserBookListings",
-                    "Successful deletion from the current user's book_listings field." +
-                            "\nuser_id: $user \nDeleted book_id: $bookID"
+                    "buyerVerifiedBook",
+                    "Successfully updated buyerConfirm in books mCategory collection."
                 )
-            }
-            .addOnFailureListener { exception ->
+            }.addOnFailureListener { e ->
                 Log.e(
-                    "updateUserBookListings",
-                    "Error in updating the book_listings field in the user document: $exception" +
-                            "\nuser_id: $user " +
-                            "\nbook_id to delete: $bookID"
+                    "buyerVerifiedBook",
+                    "Error updating buyerConfirm in books mCategory collection: $e"
                 )
+                _message.value = e.message
             }
     }
 
     /**
-     * Queries Firestore (the Firebase database) using the input bookID & userID
-     * to delete the corresponding book from the books collection.
-     * After a successful deletion, calls the updateUserBookListings
-     * with the same bookID & userID to delete from the corresponding user.
+     * Updates the book in the database with the provided details.
      *
-     * @param bookID A String corresponding to a book in the database's books collection.
-     * Assumes that each book_id field is unique for each document in the collection.
-     * @param userID A String corresponding to a user in the database's users collection.
-     * Assumes that each user_id field is unique for each document in the collection.
+     * @param mBook MBook the edited book details.
      *
      * @return Unit
      *
-     * @see deleteListing
-     * @see updateUserBookListings
+     * @see MBook
      */
-    private fun deleteBook(bookID: String, userID: String) {
-        // Builds a query to search for the book in the books collection
-        val booksRef = FirebaseFirestore.getInstance().collection("books")
-        val bookQuery: Query =
-            booksRef.whereEqualTo("user_id", userID)
-                .whereEqualTo("book_id", bookID)
+    fun sellerVerifiedBook(mBook: MBook) {
+        val db = FirebaseFirestore.getInstance()
 
-        // Executes the book query to delete the book from the database
-        // then if successful, subsequently executes updateUserBookListings function
-        // (no parallel queries to prevent further errors in updateUserBookListings if this function fails)
-        bookQuery.get()
-            .addOnSuccessListener { documents ->
-                if (!documents.isEmpty) {
-                    val bookDocRef = documents.documents[0].reference
-                    bookDocRef.delete()
-                        .addOnSuccessListener {
-                            Log.d(
-                                "deleteBook",
-                                "Successful deletion of book document from database. " +
-                                        "\nDeleted book's book_id: $bookID \nDeleted book's user_id: $userID "
-                            )
-                            updateUserBookListings(bookID)
-                        }
-                        .addOnFailureListener { exception ->
-                            Log.e(
-                                "deleteBook", "Error in deleting book document: $exception " +
-                                        "\nbook_id: $bookID \nuser_id: $userID "
-                            )
-                        }
-                } else {
-                    Log.e("deleteBook", "Error - documents: QuerySnapshot! is empty: $documents")
+        val bookReference = db.collection("books").document(mBook.bookID)
+        bookReference.update("seller_confirm", !mBook.sellerConfirm)
+            .addOnSuccessListener {
+                Log.d(
+                    "sellerVerifiedBook",
+                    "Successfully updated sellerConfirm in books collection."
+                )
+            }.addOnFailureListener { e ->
+                Log.e("sellerVerifiedBook", "Error updating sellerConfirm in books collection: $e")
+                _message.value = e.message
+            }
+
+        val categoryReference = db.collection(mBook.mCategory).document(mBook.bookID)
+        categoryReference.update("seller_confirm", !mBook.sellerConfirm)
+            .addOnSuccessListener {
+                Log.d(
+                    "sellerVerifiedBook",
+                    "Successfully updated sellerConfirm in books mCategory collection."
+                )
+            }.addOnFailureListener { e ->
+                Log.e(
+                    "sellerVerifiedBook",
+                    "Error updating sellerConfirm in books mCategory collection: $e"
+                )
+                _message.value = e.message
+            }
+    }
+
+    /**
+     * Removes the book from the database if both buyer and seller have confirmed.
+     *
+     * @param mBook MBook the book to be checked and possibly removed.
+     *
+     * @return Unit
+     *
+     * @see MBook
+     */
+    fun removeBookIfBothPartiesVerified(mBook: MBook) {
+        val db = FirebaseFirestore.getInstance()
+
+        if (mBook.buyerConfirm && mBook.sellerConfirm) {
+
+            val userID = mBook.email.split("@")[0]
+            val userReference = db.collection("users").document(userID)
+            userReference.update("book_listings", FieldValue.arrayRemove(mBook.bookID))
+                .addOnSuccessListener {
+                    Log.d("removeBook", "Successfully removed book from user's book_listings.")
+                }.addOnFailureListener { e ->
+                    Log.e("removeBook", "Error removing book from user's book_listings: $e")
                 }
-            }
-            .addOnFailureListener { exception ->
-                Log.e(
-                    "deleteBook", "Error in searching for the book document: $exception" +
-                            "\nuser_id: $userID \nbook_id: $bookID"
-                )
-            }
-    }
 
-    /**
-     * Deletes a book listing from the current user's bookListings List
-     * by using their user ID and using the book ID inputted to delete the book
-     * from the books collections then the user's book_listings field in the database.
-     *
-     * @param bookID A String corresponding to a book in the database's books collection.
-     * Assumes that each book_id field is unique for each document in the collection.
-     *
-     * @return Unit
-     *
-     * @see MBook for bookID
-     * @see deleteBook for book collections delete query
-     * @see updateUserBookListings for user's book_listings update
-     */
-    fun deleteListing(bookID: String) {
-        // Performs a check on the current user's id then, if valid, executes deleteBook
-        val userID: String = FirebaseAuth.getInstance().currentUser?.uid ?: ""
-        if (userID.isEmpty()) {
-            Log.e("deleteListing", "Error - current user's userID is null")
-            return // Stops function here
-        } else {
-            deleteBook(bookID, userID)
+            val usersCollection = db.collection("users")
+            usersCollection.whereArrayContains("saved_books", mBook.bookID)
+                .get().addOnSuccessListener { querySnapshot ->
+                    for (document in querySnapshot) {
+                        document.reference.update(
+                            "saved_books",
+                            FieldValue.arrayRemove(mBook.bookID)
+                        )
+                    }
+                    Log.d("removeBook", "Successfully removed book from saved books of all users.")
+                }.addOnFailureListener { e ->
+                    Log.e("removeBook", "Error removing book from saved books: $e")
+                }
+
+            val categoryReference = db.collection(mBook.mCategory).document(mBook.bookID)
+            categoryReference.delete()
+                .addOnSuccessListener {
+                    Log.d("removeBook", "Successfully removed book from category collection.")
+                }.addOnFailureListener { e ->
+                    Log.e("removeBook", "Error removing book from category collection: $e")
+                }
+
+            val bookReference = db.collection("books").document(mBook.bookID)
+            bookReference.delete()
+                .addOnSuccessListener {
+                    Log.d("removeBook", "Successfully removed book from books collection.")
+                }.addOnFailureListener { e ->
+                    Log.e("removeBook", "Error removing book from books collection: $e")
+                }
         }
     }
+
+
+    /**
+     * Saves the book in the user's collection by updating the "saved_books" field.
+     *
+     * @param book MBook the book details.
+     *
+     * @return Unit
+     *
+     * @see MBook
+     */
+    fun saveBook(book: MBook) {
+        val db = FirebaseFirestore.getInstance()
+
+        val userReference = db.collection("users").document(userName!!)
+        userReference.update("saved_books", FieldValue.arrayUnion(book.bookID))
+            .addOnSuccessListener {
+                Log.d("saveBook", "Book successfully saved.")
+            }.addOnFailureListener { e ->
+                Log.e("saveBook", "Error saving book: $e")
+                _message.value = e.message
+            }
+    }
+
+    /**
+     * Removes the book from the user's saved books collection by updating the "saved_books" field.
+     *
+     * @param book MBook the book details.
+     *
+     * @return Unit
+     *
+     * @see MBook
+     */
+    fun unsaveBook(book: MBook) {
+        val db = FirebaseFirestore.getInstance()
+
+        val userReference = db.collection("users").document(userName!!)
+        userReference.update("saved_books", FieldValue.arrayRemove(book.bookID))
+            .addOnSuccessListener {
+                Log.d("unsaveBook", "Book successfully removed from saved books.")
+            }.addOnFailureListener { e ->
+                Log.e("unsaveBook", "Error removing book from saved books: $e")
+                _message.value = e.message
+            }
+    }
+
 }
