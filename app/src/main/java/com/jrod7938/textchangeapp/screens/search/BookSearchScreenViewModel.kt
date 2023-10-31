@@ -38,8 +38,11 @@ import androidx.lifecycle.viewModelScope
 import com.google.firebase.firestore.FirebaseFirestore
 import com.jrod7938.textchangeapp.model.MBook
 import kotlinx.coroutines.Dispatchers
+import com.jrod7938.textchangeapp.model.MUser
+import com.jrod7938.textchangeapp.screens.account.AccountScreenViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
@@ -54,6 +57,10 @@ import kotlinx.coroutines.withContext
  * @property message StateFlow<String?> the message to display
  * @property _books MutableLiveData<List<MBook>> the list of books
  * @property books LiveData<List<MBook>> the list of books
+ * @property _user MutableLiveData<MUser> the user
+ * @property user LiveData<MUser> the user
+ * @property userFetched Boolean if the user has been fetched
+ * @property accountVM AccountScreenViewModel the account viewmodel
  */
 class BookSearchScreenViewModel : ViewModel() {
 
@@ -67,6 +74,24 @@ class BookSearchScreenViewModel : ViewModel() {
 
     private val _books = MutableLiveData<List<MBook>>()
     val books: LiveData<List<MBook>> = _books
+
+    private val _user = MutableLiveData<MUser>()
+    val user: LiveData<MUser> = _user
+
+    private var userFetched = false
+
+    private val accountVM: AccountScreenViewModel = AccountScreenViewModel()
+
+    init {
+        if (!userFetched) {
+            viewModelScope.launch {
+                _loading.value = true
+                _user.value = accountVM.getUserInfo()
+                userFetched = true
+                _loading.value = false
+            }
+        }
+    }
 
     /**
      * Search for a book by title
@@ -85,7 +110,9 @@ class BookSearchScreenViewModel : ViewModel() {
                     val bookList = result.map { document ->
                         MBook.fromDocument(document)
                     }
-                    _books.value = bookList
+                    _books.value =
+                    bookList.filter { _user.value?.bookListings?.contains(it.bookID) == false }
+                        .sortedBy { it.price }
                 }.addOnFailureListener { exception ->
                     _message.value = exception.message
                 }.await()
@@ -107,7 +134,9 @@ class BookSearchScreenViewModel : ViewModel() {
                 val bookList = result.map { document ->
                     MBook.fromDocument(document)
                 }
-                _books.value = bookList
+                _books.value =
+                    bookList.filter { _user.value?.bookListings?.contains(it.bookID) == false }
+                        .sortedBy { it.price }
             }.addOnFailureListener { exception ->
                 _message.value = exception.message
             }
@@ -129,7 +158,9 @@ class BookSearchScreenViewModel : ViewModel() {
                     val bookList = result.map { document ->
                         MBook.fromDocument(document)
                     }
-                    _books.value = bookList
+                    _books.value =
+                    bookList.filter { _user.value?.bookListings?.contains(it.bookID) == false }
+                        .sortedBy { it.price }
                 }.addOnFailureListener { exception ->
                     _message.value = exception.message
                 }.await()
@@ -137,7 +168,6 @@ class BookSearchScreenViewModel : ViewModel() {
         }
     }
     /**
-     *
      * Search for book by author
      *
      * @param author String of the author of books to search for
@@ -154,12 +184,13 @@ class BookSearchScreenViewModel : ViewModel() {
                     val bookList = result.map { document ->
                         MBook.fromDocument(document)
                     }
-                    _books.value = bookList
+                    _books.value =
+                    bookList.filter { _user.value?.bookListings?.contains(it.bookID) == false }
+                        .sortedBy { it.price }
                 }.addOnFailureListener { exception ->
                     _message.value = exception.message
                 }.await()
             _loading.postValue(false)
         }
-
     }
 }
