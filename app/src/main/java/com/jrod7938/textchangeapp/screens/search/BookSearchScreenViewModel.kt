@@ -34,10 +34,15 @@ package com.jrod7938.textchangeapp.screens.search
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.google.firebase.firestore.FirebaseFirestore
 import com.jrod7938.textchangeapp.model.MBook
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
 
 /**
  * ViewModel for the book search screen
@@ -71,19 +76,23 @@ class BookSearchScreenViewModel : ViewModel() {
      * @return Unit
      */
     fun searchBookByTitle(title: String) {
-        db.collection("books")
-            .whereEqualTo("title", title)
-            .get()
-            .addOnSuccessListener { result ->
-                val bookList = result.map { document ->
-                    MBook.fromDocument(document)
-                }
-                _books.value = bookList
-            }.addOnFailureListener { exception ->
-                _message.value = exception.message
-            }
-    }
+        viewModelScope.launch{
+            _loading.postValue(true)
+            db.collection("books")
+                .whereEqualTo("title", title)
+                .get()
+                .addOnSuccessListener { result ->
+                    val bookList = result.map { document ->
+                        MBook.fromDocument(document)
+                    }
+                    _books.value = bookList
+                }.addOnFailureListener { exception ->
+                    _message.value = exception.message
+                }.await()
+            _loading.postValue(false)
+        }
 
+    }
     /**
      *  Search books by category
      *
@@ -111,17 +120,21 @@ class BookSearchScreenViewModel : ViewModel() {
      * @return Unit
      */
     fun searchBookByISBN(isbn : String) {
-        db.collection("books")
-            .whereEqualTo("isbn", isbn)
-            .get()
-            .addOnSuccessListener { result ->
-                val bookList = result.map { document ->
-                    MBook.fromDocument(document)
-                }
-                _books.value = bookList
-            }.addOnFailureListener { exception ->
-                _message.value = exception.message
-            }
+        viewModelScope.launch{
+            _loading.postValue(true)
+            db.collection("books")
+                .whereEqualTo("isbn", isbn)
+                .get()
+                .addOnSuccessListener { result ->
+                    val bookList = result.map { document ->
+                        MBook.fromDocument(document)
+                    }
+                    _books.value = bookList
+                }.addOnFailureListener { exception ->
+                    _message.value = exception.message
+                }.await()
+            _loading.postValue(false)
+        }
     }
     /**
      * Search for book by author
@@ -131,16 +144,21 @@ class BookSearchScreenViewModel : ViewModel() {
      * @return Unit
      */
     fun searchBookByAuthor(author : String) {
-        db.collection("books")
-            .whereEqualTo("author", author)
-            .get()
-            .addOnSuccessListener { result ->
-                val bookList = result.map { document ->
-                    MBook.fromDocument(document)
-                }
-                _books.value = bookList
-            }.addOnFailureListener { exception ->
-                _message.value = exception.message
-            }
+        viewModelScope.launch{
+            _loading.postValue(true)
+            db.collection("books")
+                .whereEqualTo("author", author)
+                .get()
+                .addOnSuccessListener { result ->
+                    val bookList = result.map { document ->
+                        MBook.fromDocument(document)
+                    }
+                    _books.value = bookList
+                }.addOnFailureListener { exception ->
+                    _message.value = exception.message
+                }.await()
+            _loading.postValue(false)
+        }
+
     }
 }

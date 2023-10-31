@@ -84,15 +84,19 @@ import com.jrod7938.textchangeapp.components.ToggleButton
 import com.jrod7938.textchangeapp.components.ToggleButtonOption
 import com.jrod7938.textchangeapp.model.MBook
 import com.jrod7938.textchangeapp.navigation.AppScreens
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 //var searchType: SearchType = SearchType.None
 //var searchText: String = ""
 
-
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchScreen(
     navController: NavHostController,
@@ -104,27 +108,6 @@ fun SearchScreen(
     val bookList by viewModel.books.observeAsState(initial = emptyList())
 
 
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        if (!errorMessage.isNullOrEmpty()) {
-            Text(text = "$errorMessage")
-        }
-        if (loading) {
-            CircularProgressIndicator()
-        }
-    }
-
-    Search(bookList, viewModel)
-
-
-
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun Search( bookList: List<MBook>, viewModel: BookSearchScreenViewModel) {
     // search input state
     var text by remember { mutableStateOf("") }
     var searchBarActive by remember { mutableStateOf(false) }
@@ -137,48 +120,16 @@ fun Search( bookList: List<MBook>, viewModel: BookSearchScreenViewModel) {
     var filter by remember { mutableStateOf(SearchType.None)}
 
     var onSearchClicked by remember { mutableStateOf(false)}
-    var searchCompleted by remember { mutableStateOf(false)}
 
+    val placeHolderText = when(filter) {
+        SearchType.ISBN -> "by ISBN..."
+        SearchType.Title -> "by Title..."
+        SearchType.Author -> "by Author..."
+        else -> ""
+    }
 
 
     // Search Functionality
-
-    fun executeSearch(){
-        if (filter == SearchType.ISBN) viewModel.searchBookByISBN(text)
-        else if (filter == SearchType.Title) viewModel.searchBookByTitle(text)
-        else if (filter == SearchType.Author) viewModel.searchBookByAuthor(text)
-        else viewModel.searchBookByISBN(text)
-    }
-
-    fun updateSearchStatus(){
-        searchCompleted = true
-    }
-
-    suspend fun search(){
-        executeSearch()
-        updateSearchStatus()
-    }
-
-//    LaunchedEffect(onSearchClicked){
-//        launch {
-//            if (filter == SearchType.ISBN) viewModel.searchBookByISBN(text)
-//            else if (filter == SearchType.Title) viewModel.searchBookByTitle(text)
-//            else if (filter == SearchType.Author) viewModel.searchBookByAuthor(text)
-//            else viewModel.searchBookByISBN(text)
-//
-//            Log.d("booklist", "${bookList.size}")
-//        }
-//
-//        // launch { searchCompleted = true}
-//    }
-//
-//    SideEffect {
-//        searchCompleted = true
-//    }
-
-//    LaunchedEffect(bookList.isNotEmpty()){
-//        launch { searchCompleted = true }
-//    }
 
 
     Column() {
@@ -190,13 +141,19 @@ fun Search( bookList: List<MBook>, viewModel: BookSearchScreenViewModel) {
         ) {
             SearchBar(
                 query = text,
-                onQueryChange = { text = it;
-                    onSearchClicked = false
-                    searchCompleted = false },
+                onQueryChange = { text = it; },
                 onSearch = {
+                    onSearchClicked = true
                     searchBarActive = false
                     queryItems += text
-                    GlobalScope.launch { search() } },
+                    GlobalScope.launch {
+                       when (filter) {
+                           SearchType.ISBN -> viewModel.searchBookByISBN(text)
+                           SearchType.Title -> viewModel.searchBookByTitle(text)
+                           SearchType.Author -> viewModel.searchBookByAuthor(text)
+                           else -> viewModel.searchBookByISBN(text)
+                       }
+                    }},
                 active = searchBarActive,
                 onActiveChange = { searchBarActive = it },
                 leadingIcon = {
@@ -216,7 +173,7 @@ fun Search( bookList: List<MBook>, viewModel: BookSearchScreenViewModel) {
 
                     }
                 },
-                placeholder = { Text("Search") }
+                placeholder = { Text("Search $placeHolderText") }
 
             ) {
                 queryItems.forEach {
@@ -237,13 +194,17 @@ fun Search( bookList: List<MBook>, viewModel: BookSearchScreenViewModel) {
         // Search Filter Title Text
 
         Row(horizontalArrangement = Arrangement.Start,
-            modifier = Modifier.padding(top = 15.dp, bottom = 15.dp, start = 28.dp)){
+            modifier = Modifier
+                .padding(top = 15.dp,
+                bottom = 15.dp,
+                start = 28.dp)){
             Text("Search Options")
             Spacer(modifier = Modifier.padding(5.dp))
             ClickableText(
                 text = AnnotatedString(text = if(filterBarActive) "Show" else "Hide"), onClick = {
                     filterBarActive = !filterBarActive },
-                style = TextStyle(color = MaterialTheme.colorScheme.primary, textDecoration = TextDecoration.Underline  )
+                style = TextStyle(color = MaterialTheme.colorScheme.primary,
+                    textDecoration = TextDecoration.Underline  )
             )
         }
 
@@ -269,17 +230,15 @@ fun Search( bookList: List<MBook>, viewModel: BookSearchScreenViewModel) {
                 ToggleButton(
                     options = options,
                     type = SelectionType.SINGLE,
-                    modifier = Modifier.padding(end = 4.dp),
-                    onClick = {
-                            selectedOption ->
-                        filter = when(selectedOption[0].text){
-                            "ISBN" -> SearchType.ISBN
-                            "Title" -> SearchType.Title
-                            "Author" -> SearchType.Author
-                            else -> SearchType.ISBN
-                        }
+                    modifier = Modifier.padding(end = 4.dp)
+                ) { selectedOption ->
+                    filter = when (selectedOption[0].text) {
+                        "ISBN" -> SearchType.ISBN
+                        "Title" -> SearchType.Title
+                        "Author" -> SearchType.Author
+                        else -> SearchType.ISBN
                     }
-                )
+                }
             }
         }
 
@@ -289,12 +248,33 @@ fun Search( bookList: List<MBook>, viewModel: BookSearchScreenViewModel) {
                 a = !a
             }
         }
-        
-        AnimatedVisibility(visible = searchCompleted && text.isNotEmpty(), enter = fadeIn()) {
-            DisplaySearchResults(bookList, text)
-            
+
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            if (!errorMessage.isNullOrEmpty()) {
+                Text(text = "$errorMessage")
+            }
+            if (loading) {
+                CircularProgressIndicator()
+            }
+        }
+
+        AnimatedVisibility(visible = !loading && onSearchClicked) {
+            DisplaySearchResults(bookList, text, filter)
+
         }
     }
+
+
+
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun Search( bookList: List<MBook>, viewModel: BookSearchScreenViewModel) {
+
 
     
 }

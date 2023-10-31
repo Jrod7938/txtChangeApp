@@ -67,7 +67,6 @@ import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.MoreHoriz
@@ -135,6 +134,7 @@ import com.jrod7938.textchangeapp.navigation.AppScreens
 import com.jrod7938.textchangeapp.navigation.BottomNavItem
 import com.jrod7938.textchangeapp.screens.account.AccountScreenViewModel
 import com.jrod7938.textchangeapp.screens.home.HomeScreen
+import com.jrod7938.textchangeapp.screens.search.SearchType
 
 
 @Composable
@@ -1205,16 +1205,22 @@ fun BookThumbnail(
     }
 
 @Composable
-fun DisplaySearchResults(bookList: List<MBook>,
-                         searchContent: String) {
-
+fun DisplaySearchResults(bookList: List<MBook>, text: String, filter: SearchType) {
+    val searchContent by remember { mutableStateOf(text)}
+    val filterCopy by remember { mutableStateOf(filter)}
+    val searchType = when(filterCopy) {
+        SearchType.ISBN -> "the ISBN: "
+        SearchType.Title -> "titles called: "
+        SearchType.Author -> "any authors named: "
+        else -> "anything to match: "
+    }
     Column() {
     if(bookList.isEmpty()) {
             Column(verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 val annotatedString = buildAnnotatedString {
-                    append("Sorry, we couldn't find anything for: ")
+                    append("Sorry, we couldn't find $searchType")
                     withStyle(
                         style = SpanStyle(
                             color = MaterialTheme.colorScheme.primary,
@@ -1225,7 +1231,8 @@ fun DisplaySearchResults(bookList: List<MBook>,
                     }
                 }
                 Text(text = annotatedString,
-                    modifier = Modifier.padding(top = 15.dp, start = 28.dp),
+                    modifier = Modifier.padding(top = 15.dp, start = 30.dp)
+                        .fillMaxWidth(),
                     softWrap = true,)
             }
         } else  {
