@@ -72,7 +72,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextDecoration
@@ -128,7 +131,6 @@ fun SearchScreen(
         else -> ""
     }
 
-
     // Search Functionality
 
 
@@ -173,7 +175,8 @@ fun SearchScreen(
 
                     }
                 },
-                placeholder = { Text("Search $placeHolderText") }
+                placeholder = { Text("Search $placeHolderText") },
+                modifier = Modifier.semantics { contentDescription = "txtChange search bar" }
 
             ) {
                 queryItems.forEach {
@@ -187,7 +190,6 @@ fun SearchScreen(
                     }
                 }
             }
-
 
         }
 
@@ -230,7 +232,9 @@ fun SearchScreen(
                 ToggleButton(
                     options = options,
                     type = SelectionType.SINGLE,
-                    modifier = Modifier.padding(end = 4.dp)
+                    modifier = Modifier
+                        .padding(end = 4.dp)
+                        .semantics { contentDescription = "Toggle Button"}
                 ) { selectedOption ->
                     filter = when (selectedOption[0].text) {
                         "ISBN" -> SearchType.ISBN
@@ -271,25 +275,6 @@ fun SearchScreen(
 
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun Search( bookList: List<MBook>, viewModel: BookSearchScreenViewModel) {
-
-
-    
-}
-
-@Composable
-fun SearchBy(){
-
-
-}
-
-@Composable
-fun SearchFilterBar(){
-    val context = LocalContext.current
-
-}
 
 enum class SearchType {
     None,

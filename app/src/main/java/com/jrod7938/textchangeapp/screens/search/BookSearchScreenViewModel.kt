@@ -137,6 +137,7 @@ class BookSearchScreenViewModel : ViewModel() {
         }
     }
     /**
+     *
      * Search for book by author
      *
      * @param author String of the author of books to search for

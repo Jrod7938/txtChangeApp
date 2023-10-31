@@ -100,7 +100,6 @@ class LoginScreenTest {
             .assertExists()
             .performClick()
 
-<<<<<<< HEAD
         rule.onNodeWithText("First Name")
             .assertExists()
             .performTextInput("Test")
@@ -109,8 +108,6 @@ class LoginScreenTest {
             .assertExists()
             .performTextInput("Tester")
 
-=======
->>>>>>> 2ab5064ee7e2c9da329c8f2398a5d8a4a35b19a9
         rule.onNodeWithText("Email")
             .assertExists()
             .performTextInput("testemail@pride.hofstra.edu")
@@ -207,8 +204,4 @@ class LoginScreenTest {
         rule.onNodeWithText("Welcome, please login to continue!")
             .assertExists()
     }
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> 2ab5064ee7e2c9da329c8f2398a5d8a4a35b19a9
