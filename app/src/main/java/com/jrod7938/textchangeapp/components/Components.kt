@@ -31,9 +31,18 @@
 
 package com.jrod7938.textchangeapp.components
 
+import android.annotation.SuppressLint
 import android.widget.Toast
+import androidx.compose.animation.animateColor
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector1D
+import androidx.compose.animation.core.FastOutLinearInEasing
+import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateDp
+import androidx.compose.animation.core.keyframes
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -67,15 +76,18 @@ import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.Icon
+import androidx.compose.material.IconToggleButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.MoreHoriz
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.outlined.ErrorOutline
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.Person
@@ -95,8 +107,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -111,6 +125,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
@@ -1323,14 +1338,17 @@ fun ToggleButton(
 
 @Composable
 fun BookThumbnail(
-    imageUrl: String,
-    title: String,
-    author: String,
-    price: Double,
-    bookCondition: String,
-
+    book: MBook,
+    isSaved: Boolean,
+    viewModel: BookInfoScreenViewModel = viewModel(),
     ){
     val context = LocalContext.current
+    val user by viewModel.user.observeAsState(initial = null)
+
+    val (isChecked, setChecked) = remember { mutableStateOf(isSaved)}
+
+    LaunchedEffect(true){viewModel.getUser()}
+
 
     Column(
         verticalArrangement = Arrangement.Center,
@@ -1339,39 +1357,41 @@ fun BookThumbnail(
             .fillMaxWidth()
             .padding(30.dp)) {
         Image(
-            painter = rememberAsyncImagePainter(model = imageUrl),
-            contentDescription = "Image of $title",
+            painter = rememberAsyncImagePainter(model = book.imageURL),
+            contentDescription = "Image of ${book.title}",
             modifier = Modifier.size(175.dp)
         )
 
         Text(
-            text = title,
+            text = book.title,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.primary,
             maxLines = 1,
             modifier = Modifier.padding(top = 20.dp)
         )
 
-        Text(text = "by $author")
+        Text(text = "by ${book.author}")
 
 
         Text(
-            text = "Price: $$price",
+            text = "Price: $${book.price}",
             color = MaterialTheme.colorScheme.secondary,
         )
-
-        Text(text = "Condition: $bookCondition")
+        Text(text = "Condition: ${book.condition}")
         Column() {
             Row() {
-                Icon(
-                    Icons.Default.Favorite,
-                    tint = Color.Red,
-                    contentDescription = "Favorite Search",
-                    modifier = Modifier
-                        .clickable {
-                            Toast.makeText(context, "Added to Favorites", Toast.LENGTH_SHORT).show()
+                SavedToFavoritesButton(
+                    isChecked = isChecked,
+                    onClick = {
+                        if (user?.savedBooks?.contains(book.bookID)!!) {
+                            viewModel.unsaveBook(book)
+                        } else {
+                            viewModel.saveBook(book)
                         }
-                        .padding(top = 15.dp, end = 15.dp)
+
+                        setChecked(!isChecked)
+                    }
+
                 )
                 Button(
                     onClick = {}
@@ -1394,15 +1414,22 @@ fun BookThumbnail(
 }
 
 @Composable
-fun DisplaySearchResults(bookList: List<MBook>, text: String, filter: SearchType) {
-    val searchContent by remember { mutableStateOf(text)}
-    val filterCopy by remember { mutableStateOf(filter)}
-    val searchType = when(filterCopy) {
+fun DisplaySearchResults(
+    bookList: List<MBook>,
+    text: String,
+    filter: SearchType,
+    viewModel: BookInfoScreenViewModel = viewModel()
+) {
+    val searchType = when(filter) {
         SearchType.ISBN -> "the ISBN: "
         SearchType.Title -> "titles called: "
         SearchType.Author -> "any authors named: "
         else -> "anything to match: "
     }
+
+    val user by viewModel.user.observeAsState()
+    LaunchedEffect(true){ viewModel.getUser() }
+
     Column() {
         if(bookList.isEmpty()) {
             Column(verticalArrangement = Arrangement.Center,
@@ -1416,11 +1443,12 @@ fun DisplaySearchResults(bookList: List<MBook>, text: String, filter: SearchType
                             fontWeight = FontWeight.Bold
                         )
                     ) {
-                        append("'$searchContent'")
+                        append("'$text'")
                     }
                 }
                 Text(text = annotatedString,
-                    modifier = Modifier.padding(top = 15.dp, start = 30.dp)
+                    modifier = Modifier
+                        .padding(top = 15.dp, start = 30.dp)
                         .fillMaxWidth(),
                     softWrap = true,)
             }
@@ -1434,7 +1462,7 @@ fun DisplaySearchResults(bookList: List<MBook>, text: String, filter: SearchType
                             fontWeight = FontWeight.Bold
                         )
                     ) {
-                        append("'$searchContent'")
+                        append("'$text'")
                     }
                 }
                 Text(text = annotatedString,
@@ -1444,18 +1472,58 @@ fun DisplaySearchResults(bookList: List<MBook>, text: String, filter: SearchType
                 LazyColumn {
 
                     bookList.forEach {
+                        val isSaved = user!!.savedBooks.contains(it.bookID)
                         item {
-                            BookThumbnail(
-                                imageUrl = it.imageURL,
-                                title = it.title,
-                                author = it.author,
-                                price = it.price,
-                                bookCondition = it.condition
-                            )
+                            BookThumbnail(it, isSaved)
                         }
+                    }
                     }
                 }
             }
         }
+    }
+
+
+@SuppressLint("UnusedTransitionTargetStateParameter")
+@Composable
+fun SavedToFavoritesButton(
+    isChecked: Boolean,
+    onClick: () -> Unit
+) {
+    IconToggleButton(
+        checked = isChecked,
+        onCheckedChange = { onClick() }
+    ) {
+        val transition = updateTransition(isChecked, label = "Checked indicator")
+
+        val tint by transition.animateColor(
+            label = "Tint"
+        ) { isChecked ->
+            if (isChecked) Color.Red else MaterialTheme.colorScheme.primary
+        }
+
+        val size by transition.animateDp(
+            transitionSpec = {
+                if (false isTransitioningTo true) {
+                    keyframes {
+                        durationMillis = 250
+                        30.dp at 0 with LinearOutSlowInEasing // for 0-15 ms
+                        35.dp at 15 with FastOutLinearInEasing // for 15-75 ms
+                        40.dp at 75 // ms
+                        35.dp at 150 // ms
+                    }
+                } else {
+                    spring(stiffness = Spring.StiffnessVeryLow)
+                }
+            },
+            label = "Size"
+        ) { 30.dp }
+
+        Icon(
+            imageVector = if (isChecked) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
+            contentDescription = null,
+            tint = tint,
+            modifier = Modifier.size(size)
+        )
     }
 }

@@ -110,8 +110,6 @@ fun SearchScreen(
     val errorMessage by viewModel.message.collectAsState()
     val bookList by viewModel.books.observeAsState(initial = emptyList())
 
-
-
     // search input state
     var text by remember { mutableStateOf("") }
     var searchBarActive by remember { mutableStateOf(false) }
@@ -129,7 +127,7 @@ fun SearchScreen(
         SearchType.ISBN -> "by ISBN..."
         SearchType.Title -> "by Title..."
         SearchType.Author -> "by Author..."
-        else -> "ISBN..."
+        else -> "by ISBN..."
     }
 
     // Search Functionality
