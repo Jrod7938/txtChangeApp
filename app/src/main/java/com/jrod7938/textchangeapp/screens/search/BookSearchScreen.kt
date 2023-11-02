@@ -265,7 +265,7 @@ fun SearchScreen(
         }
 
         AnimatedVisibility(visible = !loading && onSearchClicked) {
-            DisplaySearchResults(bookList, text, filter)
+            DisplaySearchResults(bookList, text, filter, navController = navController)
 
         }
     }

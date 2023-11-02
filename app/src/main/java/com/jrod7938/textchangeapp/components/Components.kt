@@ -1342,6 +1342,7 @@ fun ToggleButton(
 fun BookThumbnail(
     book: MBook,
     viewModel: BookInfoScreenViewModel = viewModel(),
+    navController: NavHostController
     ){
 
     val user by viewModel.user.observeAsState()
@@ -1411,7 +1412,7 @@ fun BookThumbnail(
                     tint = MaterialTheme.colorScheme.primary,
                     contentDescription = "View More",
                     modifier = Modifier
-                        .clickable { /* Log.d("redirectJes", "$bookIndex" )*/}
+                        .clickable { navController.navigate("${AppScreens.BookInfoScreen.name}/${book.bookID}")}
                         .padding(top = 15.dp, start = 15.dp)
                 )
             }
@@ -1425,6 +1426,7 @@ fun DisplaySearchResults(
     text: String,
     filter: SearchType,
     viewModel: BookInfoScreenViewModel = viewModel(),
+    navController: NavHostController,
 ) {
     val searchType = when(filter) {
         SearchType.ISBN -> "the ISBN: "
@@ -1479,7 +1481,7 @@ fun DisplaySearchResults(
 
                     bookList.forEach {
                         item {
-                            BookThumbnail(it)
+                            BookThumbnail(it, navController = navController)
                         }
                     }
                     }
