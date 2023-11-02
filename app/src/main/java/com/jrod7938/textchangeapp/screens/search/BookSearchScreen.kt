@@ -150,6 +150,7 @@ fun SearchScreen(
                         queryItems.reverse()
                         queryItems[9] = text
                         queryItems.reverse()
+                        // maintain a history of 10 items or less
                     } else { queryItems += text }
                     GlobalScope.launch {
                        when (filter) {
@@ -202,7 +203,7 @@ fun SearchScreen(
             modifier = Modifier
                 .padding(top = 15.dp,
                 bottom = 15.dp,
-                start = 28.dp)){
+                start = 30.dp)){
             Text("Search Options")
             Spacer(modifier = Modifier.padding(5.dp))
             ClickableText(

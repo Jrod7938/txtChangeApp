@@ -1347,21 +1347,13 @@ fun ToggleButton(
 fun BookThumbnail(
     book: MBook,
     viewModel: BookInfoScreenViewModel = viewModel(),
-    navController: NavHostController
+    navController: NavHostController,
+    isSaved: Boolean,
     ){
 
-    val user by viewModel.user.observeAsState()
-    var stateBool by remember { mutableStateOf(false) }
-
-    LaunchedEffect(true) { viewModel.getUser() }
-
     Log.d("bookName", book.bookID)
-    user?.savedBooks?.forEach{
-        if(it == book.bookID){
-            stateBool = true
-        }
-    }
-    val (isChecked, setChecked) = remember { mutableStateOf(stateBool) }
+
+    val (isChecked, setChecked) = remember { mutableStateOf(isSaved) }
     val (view, setView) = remember { mutableStateOf(false)}
 
     val context = LocalContext.current
@@ -1395,11 +1387,13 @@ fun BookThumbnail(
         )
         Text(text = "Condition: ${book.condition}")
         Column() {
-            Row() {
+            Row(verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center,
+                modifier = Modifier.fillMaxWidth()) {
                 SavedToFavoritesButton(
                     isChecked = isChecked,
                     onClick = {
-                        if(user?.savedBooks?.contains(book.bookID)!!){
+                        if(isSaved){
                             viewModel.unsaveBook(book)
                             Toast.makeText(
                                 context,
@@ -1420,9 +1414,7 @@ fun BookThumbnail(
                 Button(
                     onClick = { setView(true) }
                 ) {
-                    Text(
-                        text = "Place Bid"
-                    )
+                    Text(text = "Purchase")
                 }
                 Icon(
                     Icons.Default.MoreHoriz,
@@ -1442,7 +1434,7 @@ fun BookThumbnail(
             onDismissRequest = { setView(false) },
             dismissButton = {
                 TextButton(onClick = { setView(false) }) {
-                    Text("No Thanks", fontWeight = FontWeight.Bold)
+                    Text("Cancel", fontWeight = FontWeight.Bold)
                 }
             },
             confirmButton = {
@@ -1453,7 +1445,7 @@ fun BookThumbnail(
                             context.startActivity(emailIntent)
                         }
                     }
-                }) { Text("Sure", fontWeight = FontWeight.Bold) }
+                }) { Text("Continue", fontWeight = FontWeight.Bold) }
 
             },
             title = {
@@ -1473,7 +1465,12 @@ fun DisplaySearchResults(
     bookList: List<MBook>,
     text: String,
     navController: NavHostController,
+    viewModel: BookInfoScreenViewModel = viewModel()
 ) {
+    val user by viewModel.user.observeAsState(initial = null)
+    var stateBool = false
+
+    LaunchedEffect(true) { viewModel.getUser() }
 
     Column() {
         if(bookList.isEmpty()) {
@@ -1483,7 +1480,7 @@ fun DisplaySearchResults(
                 Text(text = "Sorry, we couldn't find anything for your query",
                     modifier = Modifier
                         .padding(top = 15.dp, start = 30.dp)
-                        .fillMaxWidth(),
+                        .fillMaxWidth(0.70f),
                     fontSize = 15.sp,
                     softWrap = true,)
             }
@@ -1501,14 +1498,21 @@ fun DisplaySearchResults(
                     }
                 }
                 Text(text = annotatedString,
-                    modifier = Modifier.padding(top = 15.dp, start = 28.dp),
+                    modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 15.dp, bottom = 15.dp).fillMaxWidth(),
+                    textAlign = TextAlign.Center,
                     softWrap = true,)
 
                 LazyColumn {
 
-                    bookList.forEach {
+                    bookList.forEach { book ->
+                        user?.savedBooks?.forEach{ id ->
+                            if(id == book.bookID){
+                                stateBool = true
+                            }
+                        }
+
                         item {
-                            BookThumbnail(it, navController = navController)
+                            BookThumbnail(book, navController = navController, isSaved = stateBool)
                         }
                     }
                     }
