@@ -1346,7 +1346,7 @@ fun BookThumbnail(
     ){
 
     val user by viewModel.user.observeAsState()
-    var stateBool = false
+    var stateBool by remember { mutableStateOf(false) }
 
     LaunchedEffect(true) { viewModel.getUser() }
 
@@ -1357,6 +1357,8 @@ fun BookThumbnail(
         }
     }
     val (isChecked, setChecked) = remember { mutableStateOf(stateBool) }
+
+    val context = LocalContext.current
 
 
 
@@ -1395,8 +1397,19 @@ fun BookThumbnail(
                     onClick = {
                         if(user?.savedBooks?.contains(book.bookID)!!){
                             viewModel.unsaveBook(book)
+                            Toast.makeText(
+                                context,
+                                "Removed from Saved",
+                                Toast.LENGTH_SHORT
+                            ).show()
+
                         } else {
                             viewModel.saveBook(book)
+                            Toast.makeText(
+                                context,
+                                "Added to Saved",
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
                             setChecked(!isChecked)
                     })
