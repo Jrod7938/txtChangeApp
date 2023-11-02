@@ -42,8 +42,10 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.jrod7938.textchangeapp.model.MBook
 import com.jrod7938.textchangeapp.model.MUser
 import com.jrod7938.textchangeapp.screens.account.AccountScreenViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.withContext
 
 /**
  * ViewModel for the BookInfoScreen.
@@ -121,9 +123,14 @@ class BookInfoScreenViewModel : ViewModel() {
      * @see AccountScreenViewModel
      */
     suspend fun getUser(userID: String = userName!!) {
-        _loading.postValue(true)
-        _user.value = accountVM.getUserInfo()
-        _loading.postValue(false)
+        withContext(Dispatchers.Main) {
+            _loading.value = true
+        }
+        // fetch user data asynchronously
+        withContext(Dispatchers.Main) {
+            _user.value = accountVM.getUserInfo()
+            _loading.value = false
+        }
     }
 
     /**

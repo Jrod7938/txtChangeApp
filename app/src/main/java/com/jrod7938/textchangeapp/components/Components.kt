@@ -70,6 +70,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.AlertDialog
 import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.DropdownMenu
@@ -88,7 +89,6 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -139,6 +139,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
@@ -1340,23 +1341,29 @@ fun BookThumbnail(
     book: MBook,
     viewModel: BookInfoScreenViewModel = viewModel(),
     navController: NavHostController,
-    ){
+    ) {
 
     val user by viewModel.user.observeAsState(initial = null)
-
-    LaunchedEffect(true) { viewModel.getUser() }
-
-    val (isChecked, setChecked) = remember { mutableStateOf(false) }
-    val (view, setView) = remember { mutableStateOf(false)}
+    val isBookSaved = user?.savedBooks?.contains(book.bookID) == true
+    val (isChecked, setChecked) = remember(isBookSaved) { mutableStateOf(isBookSaved) }
+    val (view, setView) = remember { mutableStateOf(false) }
 
     val context = LocalContext.current
+
+    LaunchedEffect(user) {
+        setChecked(user?.savedBooks?.contains(book.bookID) == true)
+    }
+    LaunchedEffect(true) {
+        viewModel.getUser()
+    }
 
     Column(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(30.dp)) {
+            .padding(30.dp)
+    ) {
         Image(
             painter = rememberAsyncImagePainter(model = book.imageURL),
             contentDescription = "Image of ${book.title}",
@@ -1388,6 +1395,7 @@ fun BookThumbnail(
                     onClick = {
                         if(user?.savedBooks?.contains(book.bookID)!!){
                             viewModel.unsaveBook(book)
+                            viewModel.viewModelScope.launch { viewModel.getUser() }
                             Toast.makeText(
                                 context,
                                 "Removed from Saved",
@@ -1396,6 +1404,7 @@ fun BookThumbnail(
 
                         } else {
                             viewModel.saveBook(book)
+                            viewModel.viewModelScope.launch { viewModel.getUser() }
                             Toast.makeText(
                                 context,
                                 "Added to Saved",
@@ -1518,7 +1527,9 @@ fun DisplaySearchResults(
                     }
                 }
                 Text(text = annotatedString,
-                    modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 15.dp, bottom = 15.dp).fillMaxWidth(),
+                    modifier = Modifier
+                        .padding(start = 20.dp, end = 20.dp, top = 15.dp, bottom = 15.dp)
+                        .fillMaxWidth(),
                     textAlign = TextAlign.Center,
                     softWrap = true,)
 
