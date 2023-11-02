@@ -32,6 +32,7 @@
 package com.jrod7938.textchangeapp.components
 
 import android.annotation.SuppressLint
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.animation.animateColor
 import androidx.compose.animation.core.Animatable
@@ -163,6 +164,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import com.jrod7938.textchangeapp.screens.search.SearchType
+import java.util.Optional
 
 
 @Composable
@@ -1339,15 +1341,22 @@ fun ToggleButton(
 @Composable
 fun BookThumbnail(
     book: MBook,
-    isSaved: Boolean,
     viewModel: BookInfoScreenViewModel = viewModel(),
     ){
-    val context = LocalContext.current
-    val user by viewModel.user.observeAsState(initial = null)
 
-    val (isChecked, setChecked) = remember { mutableStateOf(isSaved)}
+    val user by viewModel.user.observeAsState()
+    var stateBool = false
 
-    LaunchedEffect(true){viewModel.getUser()}
+    LaunchedEffect(true) { viewModel.getUser() }
+
+    Log.d("bookName", book.bookID)
+    user?.savedBooks?.forEach{
+        if(it == book.bookID){
+            stateBool = true
+        }
+    }
+    val (isChecked, setChecked) = remember { mutableStateOf(stateBool) }
+
 
 
     Column(
@@ -1383,18 +1392,15 @@ fun BookThumbnail(
                 SavedToFavoritesButton(
                     isChecked = isChecked,
                     onClick = {
-                        if (user?.savedBooks?.contains(book.bookID)!!) {
+                        if(user?.savedBooks?.contains(book.bookID)!!){
                             viewModel.unsaveBook(book)
                         } else {
                             viewModel.saveBook(book)
                         }
-
-                        setChecked(!isChecked)
-                    }
-
-                )
+                            setChecked(!isChecked)
+                    })
                 Button(
-                    onClick = {}
+                    onClick = { }
                 ) {
                     Text(
                         text = "Place Bid"
@@ -1405,7 +1411,7 @@ fun BookThumbnail(
                     tint = MaterialTheme.colorScheme.primary,
                     contentDescription = "View More",
                     modifier = Modifier
-                        .clickable {}
+                        .clickable { /* Log.d("redirectJes", "$bookIndex" )*/}
                         .padding(top = 15.dp, start = 15.dp)
                 )
             }
@@ -1418,7 +1424,7 @@ fun DisplaySearchResults(
     bookList: List<MBook>,
     text: String,
     filter: SearchType,
-    viewModel: BookInfoScreenViewModel = viewModel()
+    viewModel: BookInfoScreenViewModel = viewModel(),
 ) {
     val searchType = when(filter) {
         SearchType.ISBN -> "the ISBN: "
@@ -1472,9 +1478,8 @@ fun DisplaySearchResults(
                 LazyColumn {
 
                     bookList.forEach {
-                        val isSaved = user!!.savedBooks.contains(it.bookID)
                         item {
-                            BookThumbnail(it, isSaved)
+                            BookThumbnail(it)
                         }
                     }
                     }
