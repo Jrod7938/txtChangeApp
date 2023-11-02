@@ -921,7 +921,10 @@ fun AccountInfo(user: MUser, navController: NavController) {
             modifier = Modifier.size(30.dp),
             onClick = {
                 FirebaseAuth.getInstance().signOut()
-                navController.navigate(AppScreens.LoginScreen.name)
+                navController.navigate(AppScreens.LoginScreen.name) {
+                    popUpTo(navController.graph.startDestinationRoute!!) { inclusive = true }
+                    launchSingleTop = true
+                }
             }
         ) {
             Icon(
