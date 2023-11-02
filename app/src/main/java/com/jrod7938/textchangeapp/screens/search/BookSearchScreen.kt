@@ -154,7 +154,7 @@ fun SearchScreen(
                            SearchType.Author -> viewModel.searchBookByAuthor(text)
                            else -> viewModel.searchBookByISBN(text)
                        }
-                    }},
+                    } },
                 active = searchBarActive,
                 onActiveChange = { searchBarActive = it },
                 leadingIcon = {
@@ -185,7 +185,8 @@ fun SearchScreen(
                             contentDescription = "History",
                             modifier = Modifier.padding(end = 15.dp)
                         )
-                        Text(text = it)
+                        Text(text = it,
+                            modifier = Modifier.clickable { text = it })
                     }
                 }
             }
@@ -265,7 +266,7 @@ fun SearchScreen(
         }
 
         AnimatedVisibility(visible = !loading && onSearchClicked) {
-            DisplaySearchResults(bookList, text, filter, navController = navController)
+            DisplaySearchResults(bookList, text, navController = navController)
 
         }
     }

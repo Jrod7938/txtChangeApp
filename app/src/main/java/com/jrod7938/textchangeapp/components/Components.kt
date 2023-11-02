@@ -1414,7 +1414,7 @@ fun BookThumbnail(
                             setChecked(!isChecked)
                     })
                 Button(
-                    onClick = { }
+                    onClick = {}
                 ) {
                     Text(
                         text = "Place Bid"
@@ -1437,37 +1437,15 @@ fun BookThumbnail(
 fun DisplaySearchResults(
     bookList: List<MBook>,
     text: String,
-    filter: SearchType,
-    viewModel: BookInfoScreenViewModel = viewModel(),
     navController: NavHostController,
 ) {
-    val searchType = when(filter) {
-        SearchType.ISBN -> "the ISBN: "
-        SearchType.Title -> "titles called: "
-        SearchType.Author -> "any authors named: "
-        else -> "anything to match: "
-    }
-
-    val user by viewModel.user.observeAsState()
-    LaunchedEffect(true){ viewModel.getUser() }
 
     Column() {
         if(bookList.isEmpty()) {
             Column(verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                val annotatedString = buildAnnotatedString {
-                    append("Sorry, we couldn't find $searchType")
-                    withStyle(
-                        style = SpanStyle(
-                            color = MaterialTheme.colorScheme.primary,
-                            fontWeight = FontWeight.Bold
-                        )
-                    ) {
-                        append("'$text'")
-                    }
-                }
-                Text(text = annotatedString,
+                Text(text = "Sorry, we couldn't find anything for your query",
                     modifier = Modifier
                         .padding(top = 15.dp, start = 30.dp)
                         .fillMaxWidth(),
