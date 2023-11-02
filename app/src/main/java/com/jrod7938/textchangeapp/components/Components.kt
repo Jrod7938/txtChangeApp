@@ -1430,6 +1430,7 @@ fun BookThumbnail(
     if(view) {
 
         AlertDialog(
+            backgroundColor = MaterialTheme.colorScheme.background,
             shape = MaterialTheme.shapes.medium,
             onDismissRequest = { setView(false) },
             dismissButton = {
@@ -1464,11 +1465,17 @@ fun BookThumbnail(
 fun DisplaySearchResults(
     bookList: List<MBook>,
     text: String,
+    filter: SearchType,
     navController: NavHostController,
     viewModel: BookInfoScreenViewModel = viewModel()
 ) {
     val user by viewModel.user.observeAsState(initial = null)
     var stateBool = false
+
+    val (searchText, setSearchText ) = remember { mutableStateOf("")}
+    val (searchType, setSearchType) = remember { mutableStateOf(filter)}
+
+    setSearchType(filter)
 
     LaunchedEffect(true) { viewModel.getUser() }
 
@@ -1485,6 +1492,28 @@ fun DisplaySearchResults(
                     softWrap = true,)
             }
         } else  {
+
+            // check if this display needs to be changed
+
+            if(searchText != text && text.isNotEmpty()){
+                if(((searchType == SearchType.ISBN) || (searchType == SearchType.None)) && searchText != bookList[0].isbn){
+                    setSearchType(SearchType.ISBN)
+                    if(searchType == filter && text == bookList[0].isbn) setSearchText(text)
+
+                }
+                else if((searchType == SearchType.Title) && searchText != bookList[0].title){
+                    setSearchType(SearchType.Title)
+                    if(searchType == filter && text == bookList[0].title) setSearchText(text)
+
+                }
+                else if((searchType == SearchType.Author) && searchText != bookList[0].author){
+                    setSearchType(SearchType.Author)
+                    if(searchType == filter && text == bookList[0].author) setSearchText(text)
+                }
+
+
+            }
+
             Column() {
                 val annotatedString = buildAnnotatedString {
                     append("Here's what we found for: ")
@@ -1494,7 +1523,7 @@ fun DisplaySearchResults(
                             fontWeight = FontWeight.Bold
                         )
                     ) {
-                        append("'$text'")
+                        append("'$searchText'")
                     }
                 }
                 Text(text = annotatedString,
@@ -1564,15 +1593,5 @@ fun SavedToFavoritesButton(
             modifier = Modifier.size(size)
         )
     }
-}
-
-
-@Composable
-fun ContactAlertDialog(book: MBook,
-                       show: Boolean,
-                       viewModel:BookInfoScreenViewModel = viewModel() ){
-    val context = LocalContext.current
-    val (view, setView) = remember { mutableStateOf(show)}
-
 }
 
