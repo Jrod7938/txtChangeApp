@@ -88,11 +88,15 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.MoreHoriz
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.outlined.ErrorOutline
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material.AlertDialog
+import androidx.compose.material.icons.filled.Mail
+import androidx.compose.material.icons.filled.MailOutline
+import androidx.compose.material.icons.outlined.Mail
+import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -1338,6 +1342,7 @@ fun ToggleButton(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BookThumbnail(
     book: MBook,
@@ -1357,10 +1362,9 @@ fun BookThumbnail(
         }
     }
     val (isChecked, setChecked) = remember { mutableStateOf(stateBool) }
+    val (view, setView) = remember { mutableStateOf(false)}
 
     val context = LocalContext.current
-
-
 
     Column(
         verticalArrangement = Arrangement.Center,
@@ -1414,7 +1418,7 @@ fun BookThumbnail(
                             setChecked(!isChecked)
                     })
                 Button(
-                    onClick = {}
+                    onClick = { setView(true) }
                 ) {
                     Text(
                         text = "Place Bid"
@@ -1425,11 +1429,42 @@ fun BookThumbnail(
                     tint = MaterialTheme.colorScheme.primary,
                     contentDescription = "View More",
                     modifier = Modifier
-                        .clickable { navController.navigate("${AppScreens.BookInfoScreen.name}/${book.bookID}")}
+                        .clickable { navController.navigate("${AppScreens.BookInfoScreen.name}/${book.bookID}") }
                         .padding(top = 15.dp, start = 15.dp)
                 )
             }
         }
+    }
+    if(view) {
+
+        AlertDialog(
+            shape = MaterialTheme.shapes.medium,
+            onDismissRequest = { setView(false) },
+            dismissButton = {
+                TextButton(onClick = { setView(false) }) {
+                    Text("No Thanks", fontWeight = FontWeight.Bold)
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    book.let { book ->
+                        val emailIntent = viewModel.prepareInterestEmailIntent(book)
+                        emailIntent.let {
+                            context.startActivity(emailIntent)
+                        }
+                    }
+                }) { Text("Sure", fontWeight = FontWeight.Bold) }
+
+            },
+            title = {
+                Text("Contact Seller?",
+                    fontSize = 14.sp,
+                    color = MaterialTheme.colorScheme.primary) },
+            text = {
+                Text("Email the seller of this listing to the begin transaction.",
+                fontSize = 15.sp,
+                color = MaterialTheme.colorScheme.primary) }
+        )
     }
 }
 
@@ -1449,6 +1484,7 @@ fun DisplaySearchResults(
                     modifier = Modifier
                         .padding(top = 15.dp, start = 30.dp)
                         .fillMaxWidth(),
+                    fontSize = 15.sp,
                     softWrap = true,)
             }
         } else  {
@@ -1525,3 +1561,14 @@ fun SavedToFavoritesButton(
         )
     }
 }
+
+
+@Composable
+fun ContactAlertDialog(book: MBook,
+                       show: Boolean,
+                       viewModel:BookInfoScreenViewModel = viewModel() ){
+    val context = LocalContext.current
+    val (view, setView) = remember { mutableStateOf(show)}
+
+}
+

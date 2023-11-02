@@ -146,7 +146,11 @@ fun SearchScreen(
                 onSearch = {
                     onSearchClicked = true
                     searchBarActive = false
-                    queryItems += text
+                    if(queryItems.size == 10) {
+                        queryItems.reverse()
+                        queryItems[9] = text
+                        queryItems.reverse()
+                    } else { queryItems += text }
                     GlobalScope.launch {
                        when (filter) {
                            SearchType.ISBN -> viewModel.searchBookByISBN(text)
@@ -179,14 +183,13 @@ fun SearchScreen(
 
             ) {
                 queryItems.forEach {
-                    Row(modifier = Modifier.padding(14.dp)) {
+                    Row(modifier = Modifier.padding(14.dp).clickable { text = it}.fillMaxWidth()) {
                         Icon(
                             imageVector = Icons.Default.History,
                             contentDescription = "History",
                             modifier = Modifier.padding(end = 15.dp)
                         )
-                        Text(text = it,
-                            modifier = Modifier.clickable { text = it })
+                        Text(text = it)
                     }
                 }
             }
