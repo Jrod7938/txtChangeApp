@@ -30,7 +30,6 @@
  */
 
 package com.jrod7938.textchangeapp.components
-import AccountScreenViewModel
 import android.annotation.SuppressLint
 import android.widget.Toast
 import androidx.compose.animation.animateColor
@@ -151,6 +150,7 @@ import com.jrod7938.textchangeapp.model.MBook
 import com.jrod7938.textchangeapp.model.MUser
 import com.jrod7938.textchangeapp.navigation.AppScreens
 import com.jrod7938.textchangeapp.navigation.BottomNavItem
+import com.jrod7938.textchangeapp.screens.account.AccountScreenViewModel
 import com.jrod7938.textchangeapp.screens.details.BookInfoScreenViewModel
 import com.jrod7938.textchangeapp.screens.home.HomeScreen
 import com.jrod7938.textchangeapp.screens.search.SearchType
@@ -166,7 +166,7 @@ fun NamePlate(
     overrideTopPadding: Dp = 50.dp,
     isRegistered: Boolean = true,
 ){
-    var getResourceId = if(isRegistered){
+    val getResourceId = if(isRegistered){
         if(isSystemInDarkTheme()) R.drawable.suppreg_dark else R.drawable.suppreg_light
     } else if(isSystemInDarkTheme()) R.drawable.supp_unreg_dark else R.drawable.supp_unreg_light
 
