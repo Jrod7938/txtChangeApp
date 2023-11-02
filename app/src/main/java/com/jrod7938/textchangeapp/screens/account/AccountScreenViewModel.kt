@@ -120,7 +120,7 @@ class AccountScreenViewModel : ViewModel() {
                     }
                 }
 
-                return@withContext books
+                return@withContext books.sortedBy { it.title }
             }
         } catch (e: Exception) {
             Log.e("AccountScreenViewModel", "Error fetching book listings", e)

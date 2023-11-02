@@ -88,25 +88,27 @@ class HomeScreenViewModel : ViewModel() {
      *
      * @return HashMap<String, List<MBook>>
      */
-    private suspend fun getBookCategories(): HashMap<String, MBook> = withContext(Dispatchers.IO) {
-        val bookCategories = HashMap<String, MBook>()
+    private suspend fun getBookCategories(): LinkedHashMap<String, MBook> =
+        withContext(Dispatchers.IO) {
+            val bookCategories = HashMap<String, MBook>()
 
-        MCategory.categories.forEach { category ->
-            try {
-                val querySnapshot = db.collection(category.toString())
-                    .limit(1)
-                    .get()
-                    .await()
+            MCategory.categories.forEach { category ->
+                try {
+                    val querySnapshot = db.collection(category.toString())
+                        .limit(1)
+                        .get()
+                        .await()
 
-                querySnapshot.documents.firstOrNull()?.let {
-                    val book = MBook.fromDocument(it)
-                    bookCategories[category.toString()] = book
+                    querySnapshot.documents.firstOrNull()?.let {
+                        val book = MBook.fromDocument(it)
+                        bookCategories[category.toString()] = book
+                    }
+                } catch (e: Exception) {
+                    Log.e("GetBooksCategories", "Error: $e")
+                    _message.value = "Error: ${e.message}"
                 }
-            } catch (e: Exception) {
-                Log.e("GetBooksCategories", "Error: $e")
-                _message.value = "Error: ${e.message}"
             }
-        }
-        return@withContext bookCategories
+            val sortedEntries = bookCategories.entries.sortedBy { (_, book) -> book.mCategory }
+            return@withContext LinkedHashMap(sortedEntries.associateBy({ it.key }, { it.value }))
     }
 }

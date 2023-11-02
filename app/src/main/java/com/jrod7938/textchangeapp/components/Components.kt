@@ -30,7 +30,7 @@
  */
 
 package com.jrod7938.textchangeapp.components
-
+import AccountScreenViewModel
 import android.annotation.SuppressLint
 import android.widget.Toast
 import androidx.compose.animation.animateColor
@@ -81,7 +81,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Lock
@@ -152,7 +151,6 @@ import com.jrod7938.textchangeapp.model.MBook
 import com.jrod7938.textchangeapp.model.MUser
 import com.jrod7938.textchangeapp.navigation.AppScreens
 import com.jrod7938.textchangeapp.navigation.BottomNavItem
-import com.jrod7938.textchangeapp.screens.account.AccountScreenViewModel
 import com.jrod7938.textchangeapp.screens.details.BookInfoScreenViewModel
 import com.jrod7938.textchangeapp.screens.home.HomeScreen
 import com.jrod7938.textchangeapp.screens.search.SearchType
@@ -969,7 +967,10 @@ fun AccountInfo(user: MUser, navController: NavController) {
             modifier = Modifier.size(30.dp),
             onClick = {
                 FirebaseAuth.getInstance().signOut()
-                navController.navigate(AppScreens.LoginScreen.name)
+                navController.navigate(AppScreens.LoginScreen.name) {
+                    popUpTo(navController.graph.startDestinationRoute!!) { inclusive = true }
+                    launchSingleTop = true
+                }
             }
         ) {
             Icon(
@@ -1461,7 +1462,6 @@ fun DisplaySearchResults(
     navController: NavHostController,
     viewModel: BookInfoScreenViewModel = viewModel()
 ) {
-    var stateBool = false
 
     val (searchText, setSearchText ) = remember { mutableStateOf("")}
     val (searchType, setSearchType) = remember { mutableStateOf(filter)}
