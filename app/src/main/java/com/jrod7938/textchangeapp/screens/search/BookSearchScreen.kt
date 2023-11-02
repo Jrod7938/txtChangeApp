@@ -208,7 +208,8 @@ fun SearchScreen(
             Spacer(modifier = Modifier.padding(5.dp))
             ClickableText(
                 text = AnnotatedString(text = if(filterBarActive) "Show" else "Hide"), onClick = {
-                    filterBarActive = !filterBarActive },
+                    filterBarActive = !filterBarActive
+                    filter = SearchType.ISBN},
                 style = TextStyle(color = MaterialTheme.colorScheme.primary,
                     textDecoration = TextDecoration.Underline  )
             )
