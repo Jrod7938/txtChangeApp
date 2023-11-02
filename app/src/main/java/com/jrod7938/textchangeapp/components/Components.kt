@@ -1348,12 +1348,13 @@ fun BookThumbnail(
     book: MBook,
     viewModel: BookInfoScreenViewModel = viewModel(),
     navController: NavHostController,
-    isSaved: Boolean,
     ){
 
-    Log.d("bookName", book.bookID)
+    val user by viewModel.user.observeAsState(initial = null)
 
-    val (isChecked, setChecked) = remember { mutableStateOf(isSaved) }
+    LaunchedEffect(true) { viewModel.getUser() }
+
+    val (isChecked, setChecked) = remember { mutableStateOf(false) }
     val (view, setView) = remember { mutableStateOf(false)}
 
     val context = LocalContext.current
@@ -1393,7 +1394,7 @@ fun BookThumbnail(
                 SavedToFavoritesButton(
                     isChecked = isChecked,
                     onClick = {
-                        if(isSaved){
+                        if(user?.savedBooks?.contains(book.bookID)!!){
                             viewModel.unsaveBook(book)
                             Toast.makeText(
                                 context,
@@ -1469,7 +1470,6 @@ fun DisplaySearchResults(
     navController: NavHostController,
     viewModel: BookInfoScreenViewModel = viewModel()
 ) {
-    val user by viewModel.user.observeAsState(initial = null)
     var stateBool = false
 
     val (searchText, setSearchText ) = remember { mutableStateOf("")}
@@ -1534,14 +1534,8 @@ fun DisplaySearchResults(
                 LazyColumn {
 
                     bookList.forEach { book ->
-                        user?.savedBooks?.forEach{ id ->
-                            if(id == book.bookID){
-                                stateBool = true
-                            }
-                        }
-
                         item {
-                            BookThumbnail(book, navController = navController, isSaved = stateBool)
+                            BookThumbnail(book, navController = navController)
                         }
                     }
                     }
