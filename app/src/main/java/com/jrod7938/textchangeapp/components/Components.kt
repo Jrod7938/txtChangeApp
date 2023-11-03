@@ -150,6 +150,7 @@ import coil.compose.rememberAsyncImagePainter
 import com.google.firebase.auth.FirebaseAuth
 import com.jrod7938.textchangeapp.R
 import com.jrod7938.textchangeapp.model.MBook
+import com.jrod7938.textchangeapp.model.MCondition
 import com.jrod7938.textchangeapp.model.MUser
 import com.jrod7938.textchangeapp.navigation.AppScreens
 import com.jrod7938.textchangeapp.navigation.BottomNavItem
@@ -1059,14 +1060,14 @@ fun BookConditionDropdown(
                 expanded = isDropdownExpanded,
                 onDismissRequest = { isDropdownExpanded = false }
             ) {
-                listOf("New", "Used", "Worn").forEach { condition ->
+                MCondition.conditions.forEach { condition ->
                     DropdownMenuItem(
                         onClick = {
-                            onConditionSelected(condition)
+                            onConditionSelected(condition.toString())
                             isDropdownExpanded = false
                         }
                     ) {
-                        Text(condition, color = Color.Black)
+                        Text(condition.toString(), color = Color.Black)
                     }
                 }
             }
