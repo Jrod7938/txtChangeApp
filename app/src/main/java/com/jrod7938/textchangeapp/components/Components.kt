@@ -30,6 +30,7 @@
  */
 
 package com.jrod7938.textchangeapp.components
+
 import android.annotation.SuppressLint
 import android.widget.Toast
 import androidx.compose.animation.animateColor
@@ -60,6 +61,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -70,7 +72,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.AlertDialog
 import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.DropdownMenu
@@ -89,6 +90,7 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -121,7 +123,6 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
@@ -135,6 +136,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -154,12 +156,11 @@ import com.jrod7938.textchangeapp.navigation.BottomNavItem
 import com.jrod7938.textchangeapp.screens.account.AccountScreenViewModel
 import com.jrod7938.textchangeapp.screens.details.BookInfoScreenViewModel
 import com.jrod7938.textchangeapp.screens.home.HomeScreen
-import com.jrod7938.textchangeapp.screens.saved.SearchType
+import com.jrod7938.textchangeapp.screens.search.SearchType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-
 
 @Composable
 fun NamePlate(
@@ -173,11 +174,11 @@ fun NamePlate(
 
     Surface(
         modifier = Modifier
-            .size(size)
+            .width(size)
             .padding(top = overrideTopPadding)
     ){
         Image(
-            modifier = Modifier.size(10.dp),
+            modifier = Modifier.size(60.dp),
             painter = painterResource(id = getResourceId),
             contentDescription = "Supplementary Name Plate"
         )
@@ -363,13 +364,13 @@ fun UserForm(
                 && password.value.length >= 6
     }
 
-    val modifier = Modifier
-        .fillMaxHeight(.6f)
-        .background(color = MaterialTheme.colorScheme.background)
-        .verticalScroll(rememberScrollState())
+    val scrollState = rememberScrollState()
 
     Column(
-        modifier = modifier,
+        modifier = Modifier
+            .fillMaxHeight(.6f)
+            .background(color = MaterialTheme.colorScheme.background)
+            .verticalScroll(scrollState),
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -646,6 +647,11 @@ fun CategoryCard(
             .size(200.dp)
             .clickable(onClick = { navController.navigate("${AppScreens.SearchScreen.name}/$category") }),
         shape = MaterialTheme.shapes.small,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.background,
+            contentColor = MaterialTheme.colorScheme.onBackground
+        ),
+        border = BorderStroke(2.dp, MaterialTheme.colorScheme.primary),
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
     ) {
         Column(
@@ -664,9 +670,10 @@ fun CategoryCard(
             )
             Text(
                 text = category,
-                style = MaterialTheme.typography.titleSmall.copy(fontSize = 20.sp),
+                style = MaterialTheme.typography.titleSmall.copy(fontSize = 18.sp),
                 textAlign = TextAlign.Center,
-                maxLines = 2
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
             )
         }
     }
@@ -894,6 +901,11 @@ fun AccountListings(
                     .padding(8.dp)
                     .height(250.dp)
                     .fillMaxWidth(),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.background,
+                    contentColor = MaterialTheme.colorScheme.onBackground
+                ),
+                border = BorderStroke(2.dp, MaterialTheme.colorScheme.primary),
                 elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
             ) {
                 Column(
@@ -915,24 +927,25 @@ fun AccountListings(
                             }
                     )
                     Text(
+                        modifier = Modifier.height(40.dp),
                         text = book.title,
                         style = MaterialTheme.typography.bodyMedium,
-                        textAlign = TextAlign.Center
+                        textAlign = TextAlign.Center,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
                     )
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Button(
-                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
-                            shape = RectangleShape,
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                             onClick = { currentlyEditingBook.value = book }
                         ) {
                             Text(text = "Edit", fontSize = 12.sp)
                         }
                         Button(
-                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
-                            shape = RectangleShape,
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                             onClick = { viewModel.deleteBook(book) }
                         ) {
                             Text(text = "Delete", fontSize = 12.sp)
@@ -963,6 +976,8 @@ fun AccountInfo(user: MUser, navController: NavController) {
             text = "Hello, ${user.firstName} ${user.lastName}.",
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
         )
         IconButton(
             modifier = Modifier.size(30.dp),
@@ -985,6 +1000,11 @@ fun AccountInfo(user: MUser, navController: NavController) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.background,
+            contentColor = MaterialTheme.colorScheme.onBackground
+        ),
+        border = BorderStroke(2.dp, MaterialTheme.colorScheme.primary),
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
     ) {
         Column(
@@ -1076,7 +1096,12 @@ fun BookInfoView(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp)
+            .padding(8.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.background,
+            contentColor = MaterialTheme.colorScheme.onBackground
+        ),
+        border = BorderStroke(2.dp, MaterialTheme.colorScheme.primary),
     ) {
         Column(
             modifier = Modifier
@@ -1143,7 +1168,7 @@ fun BookInfoView(
             Spacer(modifier = Modifier.height(8.dp))
             Text(text = "ISBN: ${book.isbn}", fontSize = 16.sp)
             Spacer(modifier = Modifier.height(8.dp))
-            Text(text = "Category: ${book.category}", fontSize = 16.sp)
+            Text(text = "Category: ${book.mCategory}", fontSize = 16.sp)
             Spacer(modifier = Modifier.height(8.dp))
             Text(text = "Condition: ${book.condition}", fontSize = 16.sp)
             Spacer(modifier = Modifier.height(8.dp))
@@ -1432,7 +1457,6 @@ fun BookThumbnail(
     if(view) {
 
         AlertDialog(
-            backgroundColor = MaterialTheme.colorScheme.background,
             shape = MaterialTheme.shapes.medium,
             onDismissRequest = { setView(false) },
             dismissButton = {
