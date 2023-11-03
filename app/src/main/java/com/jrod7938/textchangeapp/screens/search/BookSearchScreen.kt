@@ -263,10 +263,4 @@ fun SearchScreen(
 
         }
     }
-
-
-
 }
-
-
-
