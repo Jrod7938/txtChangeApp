@@ -37,15 +37,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.firestore.FirebaseFirestore
 import com.jrod7938.textchangeapp.model.MBook
-import kotlinx.coroutines.Dispatchers
 import com.jrod7938.textchangeapp.model.MUser
 import com.jrod7938.textchangeapp.screens.account.AccountScreenViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
-import kotlinx.coroutines.withContext
 
 /**
  * ViewModel for the book search screen
@@ -141,6 +138,7 @@ class BookSearchScreenViewModel : ViewModel() {
                 _message.value = exception.message
             }
     }
+
     /**
      * Search for book by isbn
      *

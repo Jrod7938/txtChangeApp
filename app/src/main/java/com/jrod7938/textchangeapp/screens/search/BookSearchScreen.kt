@@ -72,18 +72,14 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.jrod7938.textchangeapp.components.DisplaySearchResults
 import com.jrod7938.textchangeapp.components.SelectionType
 import com.jrod7938.textchangeapp.components.ToggleButton
 import com.jrod7938.textchangeapp.components.ToggleButtonOption
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-
-
-//var searchType: SearchType = SearchType.None
-//var searchText: String = ""
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -102,148 +98,187 @@ fun SearchScreen(
     val initQuery: Array<String> = arrayOf<String>()
     var queryItems by remember { mutableStateOf(initQuery) }
 
-    var filterBarActive by remember { mutableStateOf(false)}
-    var filterBarView by remember { mutableStateOf(false)}
+    var filterBarActive by remember { mutableStateOf(false) }
+    var filterBarView by remember { mutableStateOf(false) }
 
-    var filter by remember { mutableStateOf(SearchType.None)}
+    var filter by remember { mutableStateOf(SearchType.None) }
 
-    var onSearchClicked by remember { mutableStateOf(false)}
+    var onSearchClicked by remember { mutableStateOf(false) }
 
-    val placeHolderText = when(filter) {
+    val placeHolderText = when (filter) {
         SearchType.ISBN -> "by ISBN..."
         SearchType.Title -> "by Title..."
         SearchType.Author -> "by Author..."
+        SearchType.Category -> "by Category..."
         else -> "by ISBN..."
     }
 
     // Search Functionality
-
-
-    Column() {
-        // Search Bar Display
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceAround,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            SearchBar(
-                query = text,
-                onQueryChange = { text = it; },
-                onSearch = {
-                    onSearchClicked = true
-                    searchBarActive = false
-                    if(queryItems.size == 10) {
-                        queryItems.reverse()
-                        queryItems[9] = text
-                        queryItems.reverse()
-                        // maintain a history of 10 items or less
-                    } else { queryItems += text }
-                    GlobalScope.launch {
-                       when (filter) {
-                           SearchType.ISBN -> viewModel.searchBookByISBN(text)
-                           SearchType.Title -> viewModel.searchBookByTitle(text)
-                           SearchType.Author -> viewModel.searchBookByAuthor(text)
-                           else -> viewModel.searchBookByISBN(text)
-                       }
-                    } },
-                active = searchBarActive,
-                onActiveChange = { searchBarActive = it },
-                leadingIcon = {
-                    Icon(
-                        Icons.Outlined.Search,
-                        tint = MaterialTheme.colorScheme.primary,
-                        contentDescription = "Search Icon"
-                    )
-                },
-                trailingIcon = {
-                    IconButton(onClick = { if (text.isNotEmpty()) text = "" else searchBarActive = false }) {
-                        Icon(
-                            Icons.Outlined.Clear,
-                            tint = MaterialTheme.colorScheme.primary,
-                            contentDescription = "Close Search"
-                        )
-
-                    }
-                },
-                placeholder = { Text("Search $placeHolderText") },
-                modifier = Modifier.semantics { contentDescription = "txtChange search bar" }
-
+    if (category.isNullOrEmpty()) {
+        Column() {
+            // Search Bar Display
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceAround,
+                modifier = Modifier.fillMaxWidth()
             ) {
-                queryItems.forEach {
-                    Row(modifier = Modifier.padding(14.dp).clickable { text = it}.fillMaxWidth()) {
+                SearchBar(
+                    query = text,
+                    onQueryChange = { text = it; },
+                    onSearch = {
+                        onSearchClicked = true
+                        searchBarActive = false
+                        if (queryItems.size == 10) {
+                            queryItems.reverse()
+                            queryItems[9] = text
+                            queryItems.reverse()
+                            // maintain a history of 10 items or less
+                        } else {
+                            queryItems += text
+                        }
+                        viewModel.viewModelScope.launch {
+                            when (filter) {
+                                SearchType.ISBN -> viewModel.searchBookByISBN(text)
+                                SearchType.Title -> viewModel.searchBookByTitle(text)
+                                SearchType.Author -> viewModel.searchBookByAuthor(text)
+                                else -> viewModel.searchBookByISBN(text)
+                            }
+                        }
+                    },
+                    active = searchBarActive,
+                    onActiveChange = { searchBarActive = it },
+                    leadingIcon = {
                         Icon(
-                            imageVector = Icons.Default.History,
-                            contentDescription = "History",
-                            modifier = Modifier.padding(end = 15.dp)
+                            Icons.Outlined.Search,
+                            tint = MaterialTheme.colorScheme.primary,
+                            contentDescription = "Search Icon"
                         )
-                        Text(text = it)
+                    },
+                    trailingIcon = {
+                        IconButton(onClick = {
+                            if (text.isNotEmpty()) text = "" else searchBarActive = false
+                        }) {
+                            Icon(
+                                Icons.Outlined.Clear,
+                                tint = MaterialTheme.colorScheme.primary,
+                                contentDescription = "Close Search"
+                            )
+
+                        }
+                    },
+                    placeholder = { Text("Search $placeHolderText") },
+                    modifier = Modifier.semantics { contentDescription = "txtChange search bar" }
+
+                ) {
+                    queryItems.forEach {
+                        Row(modifier = Modifier
+                            .padding(14.dp)
+                            .clickable { text = it }
+                            .fillMaxWidth()) {
+                            Icon(
+                                imageVector = Icons.Default.History,
+                                contentDescription = "History",
+                                modifier = Modifier.padding(end = 15.dp)
+                            )
+                            Text(text = it)
+                        }
                     }
                 }
+
             }
 
-        }
+            // Search Filter Title Text
 
-        // Search Filter Title Text
-
-        Row(horizontalArrangement = Arrangement.Start,
-            modifier = Modifier
-                .padding(top = 15.dp,
-                bottom = 15.dp,
-                start = 30.dp)){
-            Text("Search Options")
-            Spacer(modifier = Modifier.padding(5.dp))
-            ClickableText(
-                text = AnnotatedString(text = if(filterBarActive) "Show" else "Hide"), onClick = {
-                    filterBarActive = !filterBarActive
-                    filter = SearchType.ISBN},
-                style = TextStyle(color = MaterialTheme.colorScheme.primary,
-                    textDecoration = TextDecoration.Underline  )
-            )
-        }
-
-        // Bar
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            AnimatedVisibility(visible = filterBarView,
-                enter = slideInVertically(
-                    initialOffsetY = { -40 }
-                ) + fadeIn(initialAlpha = 0.3f),
-                exit = slideOutVertically() + fadeOut()) {
-
-
-                val options = arrayOf(
-                    ToggleButtonOption("ISBN", iconRes = null),
-                    ToggleButtonOption("Title", iconRes = null),
-                    ToggleButtonOption("Author", iconRes = null)
+            Row(
+                horizontalArrangement = Arrangement.Start,
+                modifier = Modifier
+                    .padding(
+                        top = 15.dp,
+                        bottom = 15.dp,
+                        start = 30.dp
+                    )
+            ) {
+                Text("Search Options")
+                Spacer(modifier = Modifier.padding(5.dp))
+                ClickableText(
+                    text = AnnotatedString(text = if (filterBarActive) "Show" else "Hide"),
+                    onClick = {
+                        filterBarActive = !filterBarActive
+                        filter = SearchType.ISBN
+                    },
+                    style = TextStyle(
+                        color = MaterialTheme.colorScheme.primary,
+                        textDecoration = TextDecoration.Underline
+                    )
                 )
+            }
 
-                ToggleButton(
-                    options = options,
-                    type = SelectionType.SINGLE,
-                    modifier = Modifier
-                        .padding(end = 4.dp)
-                        .semantics { contentDescription = "Toggle Button"}
-                ) { selectedOption ->
-                    filter = when (selectedOption[0].text) {
-                        "ISBN" -> SearchType.ISBN
-                        "Title" -> SearchType.Title
-                        "Author" -> SearchType.Author
-                        else -> SearchType.ISBN
+            // Bar
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                AnimatedVisibility(visible = filterBarView,
+                    enter = slideInVertically(
+                        initialOffsetY = { -40 }
+                    ) + fadeIn(initialAlpha = 0.3f),
+                    exit = slideOutVertically() + fadeOut()) {
+
+
+                    val options = arrayOf(
+                        ToggleButtonOption("ISBN", iconRes = null),
+                        ToggleButtonOption("Title", iconRes = null),
+                        ToggleButtonOption("Author", iconRes = null)
+                    )
+
+                    ToggleButton(
+                        options = options,
+                        type = SelectionType.SINGLE,
+                        modifier = Modifier
+                            .padding(end = 4.dp)
+                            .semantics { contentDescription = "Toggle Button" }
+                    ) { selectedOption ->
+                        filter = when (selectedOption[0].text) {
+                            "ISBN" -> SearchType.ISBN
+                            "Title" -> SearchType.Title
+                            "Author" -> SearchType.Author
+                            else -> SearchType.ISBN
+                        }
                     }
                 }
             }
-        }
 
 
-        LaunchedEffect(filterBarActive) {
-            launch {
-                filterBarView = !filterBarView
+            LaunchedEffect(filterBarActive) {
+                launch {
+                    filterBarView = !filterBarView
+                }
+            }
+
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                if (!errorMessage.isNullOrEmpty()) {
+                    Text(text = "$errorMessage")
+                }
+                if (loading) {
+                    CircularProgressIndicator()
+                }
+            }
+
+            AnimatedVisibility(visible = !loading && onSearchClicked) {
+                DisplaySearchResults(bookList, text, navController = navController, filter = filter)
+
             }
         }
-
+    } else {
+        LaunchedEffect(key1 = true) {
+            viewModel.viewModelScope.launch {
+                viewModel.searchBooksByCategory(category)
+            }
+        }
         Column(
             modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally
@@ -255,10 +290,10 @@ fun SearchScreen(
                 CircularProgressIndicator()
             }
         }
-
-        AnimatedVisibility(visible = !loading && onSearchClicked) {
-            DisplaySearchResults(bookList, text, navController = navController, filter = filter)
-
+        AnimatedVisibility(visible = !loading) {
+            DisplaySearchResults(bookList, category, navController = navController, filter = filter)
         }
     }
+
+
 }

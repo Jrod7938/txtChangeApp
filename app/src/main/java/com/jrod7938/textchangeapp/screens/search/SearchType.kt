@@ -35,5 +35,6 @@ enum class SearchType {
     None,
     ISBN,
     Title,
+    Category,
     Author
 }

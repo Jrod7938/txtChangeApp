@@ -1524,18 +1524,16 @@ fun DisplaySearchResults(
                     setSearchType(SearchType.ISBN)
                     if(searchType == filter && text == bookList[0].isbn) setSearchText(text)
 
-                }
-                else if((searchType == SearchType.Title) && searchText != bookList[0].title){
+                } else if ((searchType == SearchType.Title) && searchText != bookList[0].title) {
                     setSearchType(SearchType.Title)
-                    if(searchType == filter && text == bookList[0].title) setSearchText(text)
+                    if (searchType == filter && text == bookList[0].title) setSearchText(text)
 
-                }
-                else if((searchType == SearchType.Author) && searchText != bookList[0].author){
+                } else if ((searchType == SearchType.Author) && searchText != bookList[0].author) {
                     setSearchType(SearchType.Author)
-                    if(searchType == filter && text == bookList[0].author) setSearchText(text)
+                    if (searchType == filter && text == bookList[0].author) setSearchText(text)
                 }
-
-
+            } else {
+                setSearchText(text)
             }
 
             Column() {
@@ -1547,7 +1545,7 @@ fun DisplaySearchResults(
                             fontWeight = FontWeight.Bold
                         )
                     ) {
-                        append("'$searchText'")
+                        append("'${if (searchText.isNotEmpty()) searchText else text}'")
                     }
                 }
                 Text(text = annotatedString,
