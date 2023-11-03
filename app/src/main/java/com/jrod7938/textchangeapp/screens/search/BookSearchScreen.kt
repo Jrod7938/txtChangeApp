@@ -79,6 +79,7 @@ import com.jrod7938.textchangeapp.components.DisplaySearchResults
 import com.jrod7938.textchangeapp.components.SelectionType
 import com.jrod7938.textchangeapp.components.ToggleButton
 import com.jrod7938.textchangeapp.components.ToggleButtonOption
+import com.jrod7938.textchangeapp.screens.saved.SearchType
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
@@ -265,13 +266,6 @@ fun SearchScreen(
 
 
 
-}
-
-enum class SearchType {
-    None,
-    ISBN,
-    Title,
-    Author
 }
 
 

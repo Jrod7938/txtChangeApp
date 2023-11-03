@@ -154,7 +154,7 @@ import com.jrod7938.textchangeapp.navigation.BottomNavItem
 import com.jrod7938.textchangeapp.screens.account.AccountScreenViewModel
 import com.jrod7938.textchangeapp.screens.details.BookInfoScreenViewModel
 import com.jrod7938.textchangeapp.screens.home.HomeScreen
-import com.jrod7938.textchangeapp.screens.search.SearchType
+import com.jrod7938.textchangeapp.screens.saved.SearchType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
