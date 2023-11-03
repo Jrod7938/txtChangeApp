@@ -83,6 +83,7 @@ import com.jrod7938.textchangeapp.components.SelectionType
 import com.jrod7938.textchangeapp.components.ToggleButton
 import com.jrod7938.textchangeapp.components.ToggleButtonOption
 import com.jrod7938.textchangeapp.navigation.AppScreens
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
 /**
@@ -289,7 +290,11 @@ fun SearchScreen(
         }
     } else {
         LaunchedEffect(key1 = true) {
-            viewModel.viewModelScope.launch {
+            GlobalScope.launch {
+                while (viewModel.user.value == null) {
+                    // sleep until user is loaded
+                    Thread.sleep(1000)
+                }
                 viewModel.searchBooksByCategory(category)
             }
         }
@@ -300,45 +305,44 @@ fun SearchScreen(
             if (!errorMessage.isNullOrEmpty()) {
                 Text(text = "$errorMessage")
             }
-            if (loading) {
+            if (loading || bookList.isEmpty() || viewModel.user.value == null) {
                 CircularProgressIndicator()
-            }
-        }
-        AnimatedVisibility(visible = !loading) {
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Row(
-                    modifier = Modifier
-                        .padding(16.dp)
-                        .clickable { navController.navigate(AppScreens.SearchScreen.name) },
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.Search,
-                        contentDescription = "Search for a Book",
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(30.dp)
-                    )
-                    Spacer(modifier = Modifier.padding(5.dp))
-                    Text(
-                        text = "Search for a Book",
-                        color = MaterialTheme.colorScheme.primary,
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = MaterialTheme.typography.titleLarge.fontSize
-                    )
+            } else {
+                AnimatedVisibility(visible = !loading) {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .padding(16.dp)
+                                .clickable { navController.navigate(AppScreens.SearchScreen.name) },
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.Search,
+                                contentDescription = "Search for a Book",
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(30.dp)
+                            )
+                            Spacer(modifier = Modifier.padding(5.dp))
+                            Text(
+                                text = "Search for a Book",
+                                color = MaterialTheme.colorScheme.primary,
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = MaterialTheme.typography.titleLarge.fontSize
+                            )
+                        }
+                        DisplaySearchResults(
+                            bookList,
+                            category,
+                            navController = navController,
+                            filter = filter
+                        )
+                    }
                 }
-                DisplaySearchResults(
-                    bookList,
-                    category,
-                    navController = navController,
-                    filter = filter
-                )
             }
         }
     }
-
-
 }
