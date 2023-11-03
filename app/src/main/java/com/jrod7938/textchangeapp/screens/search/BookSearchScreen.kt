@@ -104,7 +104,7 @@ fun SearchScreen(
     var queryItems by remember { mutableStateOf(initQuery) }
 
     var filterBarActive by remember { mutableStateOf(false)}
-    var a by remember { mutableStateOf(false)}
+    var filterBarView by remember { mutableStateOf(false)}
 
     var filter by remember { mutableStateOf(SearchType.None)}
 
@@ -208,7 +208,7 @@ fun SearchScreen(
             verticalArrangement = Arrangement.Center,
             modifier = Modifier.fillMaxWidth()
         ) {
-            AnimatedVisibility(visible = a,
+            AnimatedVisibility(visible = filterBarView,
                 enter = slideInVertically(
                     initialOffsetY = { -40 }
                 ) + fadeIn(initialAlpha = 0.3f),
@@ -241,7 +241,7 @@ fun SearchScreen(
 
         LaunchedEffect(filterBarActive) {
             launch {
-                a = !a
+                filterBarView = !filterBarView
             }
         }
 
