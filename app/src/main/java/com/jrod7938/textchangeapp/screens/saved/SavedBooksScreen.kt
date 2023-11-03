@@ -31,6 +31,7 @@
 
 package com.jrod7938.textchangeapp.screens.saved
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -42,6 +43,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -51,8 +53,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
@@ -99,7 +101,12 @@ fun SavedBooksScreen(
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(8.dp)
+                            .padding(8.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.background,
+                            contentColor = MaterialTheme.colorScheme.onBackground
+                        ),
+                        border = BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
                     ) {
                         Row(
                             modifier = Modifier.padding(16.dp),
@@ -119,14 +126,26 @@ fun SavedBooksScreen(
                                 modifier = Modifier.weight(1f),
                                 verticalArrangement = Arrangement.SpaceBetween
                             ) {
-                                Text(text = "Title: ${savedBooks[it].title}")
-                                Text(text = "Author: ${savedBooks[it].author}")
-                                Text(text = "Price: $${savedBooks[it].price}")
+                                Text(
+                                    text = "Title: ${savedBooks[it].title}",
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                                Text(
+                                    text = "Author: ${savedBooks[it].author}",
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                                Text(
+                                    text = "Price: $${savedBooks[it].price}",
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
                                 Button(
-                                    shape = RectangleShape,
+                                    modifier = Modifier.fillMaxWidth(),
                                     onClick = { navController.navigate("${AppScreens.BookInfoScreen.name}/${savedBooks[it].bookID}") }
                                 ) {
-                                    Text(text = "View info")
+                                    Text(text = "View Info")
                                 }
                             }
                         }
