@@ -106,7 +106,9 @@ fun AccountScreen(
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
             )
-            Button(onClick = { navController.navigate(AppScreens.SellBookScreen.name) }) {
+            Button(
+                onClick = { navController.navigate(AppScreens.SellBookScreen.name) }
+            ) {
                 Text(
                     text = "Create a New Listing",
                     style = MaterialTheme.typography.bodyMedium,

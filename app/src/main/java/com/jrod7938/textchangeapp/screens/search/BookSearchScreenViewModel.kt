@@ -37,15 +37,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.firestore.FirebaseFirestore
 import com.jrod7938.textchangeapp.model.MBook
-import kotlinx.coroutines.Dispatchers
 import com.jrod7938.textchangeapp.model.MUser
 import com.jrod7938.textchangeapp.screens.account.AccountScreenViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
-import kotlinx.coroutines.withContext
 
 /**
  * ViewModel for the book search screen
@@ -84,12 +81,19 @@ class BookSearchScreenViewModel : ViewModel() {
 
     init {
         if (!userFetched) {
-            viewModelScope.launch {
-                _loading.value = true
-                _user.value = accountVM.getUserInfo()
-                userFetched = true
-                _loading.value = false
-            }
+            getUserInfo()
+        }
+    }
+
+    /**
+     * Get the user info
+     */
+    fun getUserInfo() {
+        viewModelScope.launch {
+            _loading.value = true
+            _user.value = accountVM.getUserInfo()
+            userFetched = true
+            _loading.value = false
         }
     }
 
@@ -101,7 +105,7 @@ class BookSearchScreenViewModel : ViewModel() {
      * @return Unit
      */
     fun searchBookByTitle(title: String) {
-        viewModelScope.launch{
+        viewModelScope.launch {
             _loading.postValue(true)
             db.collection("books")
                 .whereEqualTo("title", title)
@@ -128,7 +132,7 @@ class BookSearchScreenViewModel : ViewModel() {
      *  @return Unit
      */
     fun searchBooksByCategory(category: String) {
-        db.collection(category)
+        db.collection(category.trim())
             .get()
             .addOnSuccessListener { result ->
                 val bookList = result.map { document ->
@@ -141,6 +145,7 @@ class BookSearchScreenViewModel : ViewModel() {
                 _message.value = exception.message
             }
     }
+
     /**
      * Search for book by isbn
      *
