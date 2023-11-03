@@ -31,17 +31,236 @@
 
 package com.jrod7938.textchangeapp.screens.search
 
+
+import android.util.Log
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.ClickableText
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.outlined.Clear
+import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SearchBar
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.unit.dp
+import com.jrod7938.textchangeapp.components.DisplaySearchResults
+import com.jrod7938.textchangeapp.components.SelectionType
+import com.jrod7938.textchangeapp.components.ToggleButton
+import com.jrod7938.textchangeapp.components.ToggleButtonOption
+import com.jrod7938.textchangeapp.screens.saved.SearchType
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
+
+//var searchType: SearchType = SearchType.None
+//var searchText: String = ""
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchScreen(
     navController: NavHostController,
     category: String? = "",
     viewModel: BookSearchScreenViewModel = viewModel()
 ) {
-    Text(text = "Search Screen")
+    val loading by viewModel.loading.observeAsState(initial = false)
+    val errorMessage by viewModel.message.collectAsState()
+    val bookList by viewModel.books.observeAsState(initial = emptyList())
 
+    // search input state
+    var text by remember { mutableStateOf("") }
+    var searchBarActive by remember { mutableStateOf(false) }
+    val initQuery: Array<String> = arrayOf<String>()
+    var queryItems by remember { mutableStateOf(initQuery) }
+
+    var filterBarActive by remember { mutableStateOf(false)}
+    var filterBarView by remember { mutableStateOf(false)}
+
+    var filter by remember { mutableStateOf(SearchType.None)}
+
+    var onSearchClicked by remember { mutableStateOf(false)}
+
+    val placeHolderText = when(filter) {
+        SearchType.ISBN -> "by ISBN..."
+        SearchType.Title -> "by Title..."
+        SearchType.Author -> "by Author..."
+        else -> "by ISBN..."
+    }
+
+    // Search Functionality
+
+
+    Column() {
+        // Search Bar Display
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceAround,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            SearchBar(
+                query = text,
+                onQueryChange = { text = it; },
+                onSearch = {
+                    onSearchClicked = true
+                    searchBarActive = false
+                    if(queryItems.size == 10) {
+                        queryItems.reverse()
+                        queryItems[9] = text
+                        queryItems.reverse()
+                        // maintain a history of 10 items or less
+                    } else { queryItems += text }
+                    GlobalScope.launch {
+                       when (filter) {
+                           SearchType.ISBN -> viewModel.searchBookByISBN(text)
+                           SearchType.Title -> viewModel.searchBookByTitle(text)
+                           SearchType.Author -> viewModel.searchBookByAuthor(text)
+                           else -> viewModel.searchBookByISBN(text)
+                       }
+                    } },
+                active = searchBarActive,
+                onActiveChange = { searchBarActive = it },
+                leadingIcon = {
+                    Icon(
+                        Icons.Outlined.Search,
+                        tint = MaterialTheme.colorScheme.primary,
+                        contentDescription = "Search Icon"
+                    )
+                },
+                trailingIcon = {
+                    IconButton(onClick = { if (text.isNotEmpty()) text = "" else searchBarActive = false }) {
+                        Icon(
+                            Icons.Outlined.Clear,
+                            tint = MaterialTheme.colorScheme.primary,
+                            contentDescription = "Close Search"
+                        )
+
+                    }
+                },
+                placeholder = { Text("Search $placeHolderText") },
+                modifier = Modifier.semantics { contentDescription = "txtChange search bar" }
+
+            ) {
+                queryItems.forEach {
+                    Row(modifier = Modifier.padding(14.dp).clickable { text = it}.fillMaxWidth()) {
+                        Icon(
+                            imageVector = Icons.Default.History,
+                            contentDescription = "History",
+                            modifier = Modifier.padding(end = 15.dp)
+                        )
+                        Text(text = it)
+                    }
+                }
+            }
+
+        }
+
+        // Search Filter Title Text
+
+        Row(horizontalArrangement = Arrangement.Start,
+            modifier = Modifier
+                .padding(top = 15.dp,
+                bottom = 15.dp,
+                start = 30.dp)){
+            Text("Search Options")
+            Spacer(modifier = Modifier.padding(5.dp))
+            ClickableText(
+                text = AnnotatedString(text = if(filterBarActive) "Show" else "Hide"), onClick = {
+                    filterBarActive = !filterBarActive
+                    filter = SearchType.ISBN},
+                style = TextStyle(color = MaterialTheme.colorScheme.primary,
+                    textDecoration = TextDecoration.Underline  )
+            )
+        }
+
+        // Bar
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            AnimatedVisibility(visible = filterBarView,
+                enter = slideInVertically(
+                    initialOffsetY = { -40 }
+                ) + fadeIn(initialAlpha = 0.3f),
+                exit = slideOutVertically() + fadeOut()) {
+
+
+                val options = arrayOf(
+                    ToggleButtonOption("ISBN", iconRes = null),
+                    ToggleButtonOption("Title", iconRes = null),
+                    ToggleButtonOption("Author", iconRes = null)
+                )
+
+                ToggleButton(
+                    options = options,
+                    type = SelectionType.SINGLE,
+                    modifier = Modifier
+                        .padding(end = 4.dp)
+                        .semantics { contentDescription = "Toggle Button"}
+                ) { selectedOption ->
+                    filter = when (selectedOption[0].text) {
+                        "ISBN" -> SearchType.ISBN
+                        "Title" -> SearchType.Title
+                        "Author" -> SearchType.Author
+                        else -> SearchType.ISBN
+                    }
+                }
+            }
+        }
+
+
+        LaunchedEffect(filterBarActive) {
+            launch {
+                filterBarView = !filterBarView
+            }
+        }
+
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            if (!errorMessage.isNullOrEmpty()) {
+                Text(text = "$errorMessage")
+            }
+            if (loading) {
+                CircularProgressIndicator()
+            }
+        }
+
+        AnimatedVisibility(visible = !loading && onSearchClicked) {
+            DisplaySearchResults(bookList, text, navController = navController, filter = filter)
+
+        }
+    }
 }

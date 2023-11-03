@@ -29,42 +29,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.jrod7938.textchangeapp.navigation
+package com.jrod7938.textchangeapp.screens.saved
 
-/**
- * Enum class to represent the different screens of the app
- *
- * @constructor Creates an enum class to represent the different screens of the app
- */
-enum class AppScreens {
-    SplashScreen,
-    LoginScreen,
-    AccountScreen,
-    HomeScreen,
-    SearchScreen,
-    BookInfoScreen,
-    SellBookScreen,
-    SavedBooksScreen;
-
-    companion object {
-        /**
-         * Get the screen from the route
-         *
-         * @param route route to get the screen from
-         *
-         * @return AppScreens
-         */
-        fun fromRoute(route: String): AppScreens = when (route?.substringBefore("/")) {
-            SplashScreen.name -> SplashScreen
-            LoginScreen.name -> LoginScreen
-            AccountScreen.name -> AccountScreen
-            HomeScreen.name -> HomeScreen
-            SearchScreen.name -> SearchScreen
-            BookInfoScreen.name -> BookInfoScreen
-            SellBookScreen.name -> SellBookScreen
-            SavedBooksScreen.name -> SavedBooksScreen
-            null -> HomeScreen
-            else -> throw IllegalArgumentException("Route $route is not recognized.")
-        }
-    }
+enum class SearchType {
+    None,
+    ISBN,
+    Title,
+    Author
 }

@@ -30,6 +30,6 @@
   -->
 
 <resources>
-    <string name="app_name">TexTchangeApp</string>
+    <string name="app_name">txtChangeApp</string>
     <string name="create_acct">Please enter your first and last name, a valid Hofstra email, and a password with 6 characters.</string>
 </resources>

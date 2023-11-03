@@ -32,45 +32,65 @@
 package com.jrod7938.textchangeapp
 
 import androidx.compose.ui.test.assertHasClickAction
+import androidx.compose.ui.test.assertTextContains
+import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performImeAction
+import androidx.compose.ui.test.performSemanticsAction
+import androidx.compose.ui.test.performTextClearance
+import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.performTextInputSelection
 import androidx.navigation.compose.rememberNavController
-import com.jrod7938.textchangeapp.screens.home.HomeScreen
+import com.jrod7938.textchangeapp.screens.search.SearchScreen
 import org.junit.Rule
 import org.junit.Test
 
-/**
- * This class is used to test the home screen
- *
- * @property rule is used to create a compose rule
- */
-class HomeScreenTest {
-
-    @get:Rule
+class BookSearchScreenTest {
+    @get :Rule
     val rule = createComposeRule()
 
-    /**
-     * This test is to check if the home screen is displayed correctly
-     */
+
+    // Search screen is displayed correctly
+
     @Test
-    fun homeScreenDisplayTest() {
+    fun searchScreenDisplayTest() {
         rule.setContent {
+            // simulate search screen display
             val navController = rememberNavController()
-            HomeScreen(navController = navController)
+            SearchScreen(navController = navController)
         }
 
-        rule.onNodeWithText("Get Started:")
+        rule.onNodeWithContentDescription("txtChange search bar")
             .assertExists()
 
-        rule.onNodeWithText("Find A Book")
+        rule.onNodeWithContentDescription("Toggle Button")
             .assertExists()
-            .assertHasClickAction()
 
-        rule.onNodeWithText("Sell A Book")
+        rule.onNodeWithText("Search Options")
             .assertExists()
-            .assertHasClickAction()
 
-        rule.onNodeWithText("Categories:")
+        rule.onNodeWithText("Hide")
             .assertExists()
+
+    // assert that display search results is invisible initially
+    }
+    // Search Bar performs correct search
+    @Test
+    fun searchBarFunctionTest(){
+        rule.setContent {
+            // simulate search screen display
+            val navController = rememberNavController()
+            SearchScreen(navController = navController)
+        }
+
+        // val searchBar = rule.onNodeWithContentDescription("txtChange search bar")
+
+
+
     }
 }
+
