@@ -145,7 +145,6 @@ fun BookInfoScreen(
                     ) {
                         Text(text = "Send Email")
                     }
-
                     Button(
                         modifier = Modifier
                             .fillMaxWidth()
