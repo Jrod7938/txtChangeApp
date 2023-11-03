@@ -44,9 +44,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.Clear
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.CircularProgressIndicator
@@ -70,6 +72,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewModelScope
@@ -79,8 +82,19 @@ import com.jrod7938.textchangeapp.components.DisplaySearchResults
 import com.jrod7938.textchangeapp.components.SelectionType
 import com.jrod7938.textchangeapp.components.ToggleButton
 import com.jrod7938.textchangeapp.components.ToggleButtonOption
+import com.jrod7938.textchangeapp.navigation.AppScreens
 import kotlinx.coroutines.launch
 
+/**
+ * BookSearchScreen is the screen that allows the user to search for books
+ * by ISBN, Title, Author, or Category.
+ *
+ * @param navController the navigation controller used to navigate between screens
+ * @param category the category to search for books in
+ * @param viewModel the view model used to search for books
+ *
+ * @see BookSearchScreenViewModel
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchScreen(
@@ -291,7 +305,38 @@ fun SearchScreen(
             }
         }
         AnimatedVisibility(visible = !loading) {
-            DisplaySearchResults(bookList, category, navController = navController, filter = filter)
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Row(
+                    modifier = Modifier
+                        .padding(16.dp)
+                        .clickable { navController.navigate(AppScreens.SearchScreen.name) },
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Search,
+                        contentDescription = "Search for a Book",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(30.dp)
+                    )
+                    Spacer(modifier = Modifier.padding(5.dp))
+                    Text(
+                        text = "Search for a Book",
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = MaterialTheme.typography.titleLarge.fontSize
+                    )
+                }
+                DisplaySearchResults(
+                    bookList,
+                    category,
+                    navController = navController,
+                    filter = filter
+                )
+            }
         }
     }
 
