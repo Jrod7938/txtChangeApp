@@ -83,8 +83,11 @@ import com.jrod7938.textchangeapp.components.SelectionType
 import com.jrod7938.textchangeapp.components.ToggleButton
 import com.jrod7938.textchangeapp.components.ToggleButtonOption
 import com.jrod7938.textchangeapp.navigation.AppScreens
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * BookSearchScreen is the screen that allows the user to search for books
@@ -96,7 +99,7 @@ import kotlinx.coroutines.launch
  *
  * @see BookSearchScreenViewModel
  */
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, DelicateCoroutinesApi::class)
 @Composable
 fun SearchScreen(
     navController: NavHostController,
@@ -292,8 +295,9 @@ fun SearchScreen(
         LaunchedEffect(key1 = true) {
             GlobalScope.launch {
                 while (viewModel.user.value == null) {
-                    // sleep until user is loaded
-                    Thread.sleep(1000)
+                    withContext(Dispatchers.IO) {
+                        Thread.sleep(10)
+                    }
                 }
                 viewModel.searchBooksByCategory(category)
             }
