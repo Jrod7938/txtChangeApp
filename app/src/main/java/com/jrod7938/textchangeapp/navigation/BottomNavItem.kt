@@ -35,9 +35,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Sell
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.outlined.Sell
 import androidx.compose.ui.graphics.vector.ImageVector
 
 /**
@@ -65,14 +67,14 @@ data class BottomNavItem(
         )
         val Sell = BottomNavItem(
             title = "Sell",
-            selectedIcon = Icons.Filled.AddCircle,
-            unselectedIcon = Icons.Outlined.Add,
+            selectedIcon = Icons.Filled.Sell,
+            unselectedIcon = Icons.Outlined.Sell,
             route = AppScreens.SellBookScreen.name
         )
         val Search = BottomNavItem(
             title = "Search",
-            selectedIcon = Icons.Filled.Search,
-            unselectedIcon = Icons.Outlined.Search,
+            selectedIcon = Icons.Outlined.Search,
+            unselectedIcon = Icons.Filled.Search,
             route = AppScreens.SearchScreen.name
         )
     }

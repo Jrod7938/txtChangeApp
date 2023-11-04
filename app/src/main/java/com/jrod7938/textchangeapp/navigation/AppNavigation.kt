@@ -33,18 +33,31 @@ package com.jrod7938.textchangeapp.navigation
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.displayCutout
+import androidx.compose.foundation.layout.displayCutoutPadding
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.BottomAppBar
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.jrod7938.textchangeapp.components.BottomNavBar
 import com.jrod7938.textchangeapp.components.BottomNavigationBar
 import com.jrod7938.textchangeapp.components.TxTchangeAppBar
 import com.jrod7938.textchangeapp.screens.account.AccountScreen
@@ -55,6 +68,7 @@ import com.jrod7938.textchangeapp.screens.saved.SavedBooksScreen
 import com.jrod7938.textchangeapp.screens.search.SearchScreen
 import com.jrod7938.textchangeapp.screens.sell.SellBooksScreen
 import com.jrod7938.textchangeapp.screens.splash.SplashScreen
+import javax.crypto.CipherInputStream
 
 /**
  * Navigation for the app
@@ -82,8 +96,9 @@ fun AppNavigation() {
             }
         },
         bottomBar = {
-            if (showAppBars.value) {  // Conditionally display BottomNavigationBar
-                BottomNavigationBar(navController = navController, items = bottomNavItems)
+            if (showAppBars.value) {
+                BottomNavBar(navController = navController, items = bottomNavItems)
+     // Conditionally display BottomNavigationBar
             }
         }
     ) { innerPadding ->
@@ -171,5 +186,4 @@ fun AppNavigation() {
         }
     }
 }
-
 

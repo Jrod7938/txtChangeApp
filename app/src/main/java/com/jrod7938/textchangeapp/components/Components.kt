@@ -42,6 +42,7 @@ import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDp
 import androidx.compose.animation.core.keyframes
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -84,6 +85,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.HorizontalRule
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.MoreHoriz
 import androidx.compose.material.icons.filled.Person
@@ -110,6 +112,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -120,6 +123,7 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
@@ -147,6 +151,11 @@ import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import coil.compose.rememberAsyncImagePainter
+import com.exyte.animatednavbar.AnimatedNavigationBar
+import com.exyte.animatednavbar.animation.balltrajectory.Parabolic
+import com.exyte.animatednavbar.animation.indendshape.Height
+import com.exyte.animatednavbar.animation.indendshape.shapeCornerRadius
+import com.exyte.animatednavbar.utils.noRippleClickable
 import com.google.firebase.auth.FirebaseAuth
 import com.jrod7938.textchangeapp.R
 import com.jrod7938.textchangeapp.model.MBook
@@ -532,47 +541,94 @@ fun PasswordVisibility(passwordVisibility: MutableState<Boolean>) {
  *
  * @see BottomNavItem
  */
+
 @Composable
-fun BottomNavigationBar(
+fun BottomNavBar(
     navController: NavHostController,
     items: List<BottomNavItem>
-) {
-    BottomNavigation(
-        elevation = 10.dp,
-        modifier = Modifier.height(70.dp),
-        backgroundColor = MaterialTheme.colorScheme.background,
-        contentColor = MaterialTheme.colorScheme.onBackground
-    ) {
+){
+    var selectedIndex by remember { mutableIntStateOf(0) }
+
+    AnimatedNavigationBar(
+        modifier = Modifier.height(64.dp),
+        selectedIndex = selectedIndex,
+        ballColor = MaterialTheme.colorScheme.primary,
+        cornerRadius = shapeCornerRadius(cornerRadius = 34.dp),
+        ballAnimation = Parabolic(tween(300)),
+        indentAnimation = Height(tween(300)),
+        barColor = MaterialTheme.colorScheme.primary,
+
+        ) {
+
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentRoute = navBackStackEntry?.destination?.route
+
         items.forEach { item ->
-            BottomNavigationItem(
-                icon = {
-                    Icon(
-                        modifier = Modifier.size(40.dp),
-                        imageVector = if (currentRoute?.contains(item.route) == true) item.selectedIcon else item.unselectedIcon,
-                        contentDescription = null,
-                        tint = if (currentRoute?.contains(item.route) == true) MaterialTheme.colorScheme.primary else Color.DarkGray
-                    )
-                },
-                label = {
-                    Text(
-                        item.title,
-                        color = if (currentRoute == item.route) MaterialTheme.colorScheme.primary else Color.DarkGray
-                    )
-                },
-                selected = currentRoute == item.route,
-                onClick = {
+            if(currentRoute?.contains(item.route) == true) selectedIndex = items.indexOf(item)
+            Box(modifier = Modifier.fillMaxSize()
+                .noRippleClickable {
                     if (currentRoute != item.route) {
+                        selectedIndex = items.indexOf(item)
                         navController.navigate(item.route)
-                    }
-                },
-                selectedContentColor = MaterialTheme.colorScheme.onBackground,
-                unselectedContentColor = Color.DarkGray
-            )
+                        // selectedIndex = item.ordinal
+                    }},
+                contentAlignment = Alignment.Center)  {
+                Icon(
+                    modifier = Modifier.size(30.dp),
+                    imageVector = if (currentRoute?.contains(item.route) == true) item.selectedIcon else item.unselectedIcon,
+                    contentDescription = null,
+                    tint = if (currentRoute?.contains(item.route) == true) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.background
+                )
+            }
         }
+
+
     }
 }
+//@Composable
+//fun BottomNavigationBar(
+//    navController: NavHostController,
+//    items: List<BottomNavItem>
+//) {
+//    BottomNavigation(
+//        elevation = 10.dp,
+//        modifier = Modifier
+//            .height(70.dp)
+//            .clip(RoundedCornerShape(15.dp, 15.dp, 0.dp, 0.dp)),
+//        backgroundColor = MaterialTheme.colorScheme.primary,
+//        contentColor = MaterialTheme.colorScheme.background,
+//    ) {
+//        val navBackStackEntry by navController.currentBackStackEntryAsState()
+//        val currentRoute = navBackStackEntry?.destination?.route
+//
+//        items.forEach { item ->
+//            BottomNavigationItem(
+//                icon = {
+//                    Icon(
+//                        modifier = Modifier
+//                            .size(40.dp)
+//                            .padding(top = 10.dp),
+//                        imageVector = if (currentRoute?.contains(item.route) == true) item.selectedIcon else item.unselectedIcon,
+//                        contentDescription = null,
+//                        tint = if (currentRoute?.contains(item.route) == true) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.background
+//                    )
+//                },
+//                label = {
+//                        Icons.Default.HorizontalRule
+//
+//                },
+//                selected = currentRoute == item.route,
+//                onClick = {
+//                    if (currentRoute != item.route) {
+//                        navController.navigate(item.route)
+//                    }
+//                },
+//                selectedContentColor = MaterialTheme.colorScheme.onBackground,
+//                unselectedContentColor = Color.DarkGray
+//            )
+//        }
+//    }
+//}
 
 /**
  * This composable is the App Bar. It displays an app bar for the user to

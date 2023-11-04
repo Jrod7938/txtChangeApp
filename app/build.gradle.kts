@@ -141,4 +141,8 @@ dependencies {
 
     // Extended Icon Pack
     implementation ("androidx.compose.material:material-icons-extended:1.5.4")
+
+
+    implementation("com.exyte:animated-navigation-bar:1.0.0")
+
 }
