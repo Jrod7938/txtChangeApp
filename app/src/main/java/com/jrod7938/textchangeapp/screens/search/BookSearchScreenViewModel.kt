@@ -34,10 +34,15 @@ package com.jrod7938.textchangeapp.screens.search
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.google.firebase.firestore.FirebaseFirestore
 import com.jrod7938.textchangeapp.model.MBook
+import com.jrod7938.textchangeapp.model.MUser
+import com.jrod7938.textchangeapp.screens.account.AccountScreenViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 /**
  * ViewModel for the book search screen
@@ -49,6 +54,10 @@ import kotlinx.coroutines.flow.StateFlow
  * @property message StateFlow<String?> the message to display
  * @property _books MutableLiveData<List<MBook>> the list of books
  * @property books LiveData<List<MBook>> the list of books
+ * @property _user MutableLiveData<MUser> the user
+ * @property user LiveData<MUser> the user
+ * @property userFetched Boolean if the user has been fetched
+ * @property accountVM AccountScreenViewModel the account viewmodel
  */
 class BookSearchScreenViewModel : ViewModel() {
 
@@ -63,6 +72,31 @@ class BookSearchScreenViewModel : ViewModel() {
     private val _books = MutableLiveData<List<MBook>>()
     val books: LiveData<List<MBook>> = _books
 
+    private val _user = MutableLiveData<MUser>()
+    val user: LiveData<MUser> = _user
+
+    private var userFetched = false
+
+    private val accountVM: AccountScreenViewModel = AccountScreenViewModel()
+
+    init {
+        if (!userFetched) {
+            getUserInfo()
+        }
+    }
+
+    /**
+     * Get the user info
+     */
+    fun getUserInfo() {
+        viewModelScope.launch {
+            _loading.value = true
+            _user.value = accountVM.getUserInfo()
+            userFetched = true
+            _loading.value = false
+        }
+    }
+
     /**
      * Search for a book by title
      *
@@ -71,16 +105,97 @@ class BookSearchScreenViewModel : ViewModel() {
      * @return Unit
      */
     fun searchBookByTitle(title: String) {
-        db.collection("books")
-            .whereEqualTo("title", title)
+        viewModelScope.launch {
+            _loading.postValue(true)
+            db.collection("books")
+                .whereEqualTo("title", title)
+                .get()
+                .addOnSuccessListener { result ->
+                    val bookList = result.map { document ->
+                        MBook.fromDocument(document)
+                    }
+                    _books.value =
+                    bookList.filter { _user.value?.bookListings?.contains(it.bookID) == false }
+                        .sortedBy { it.price }
+                }.addOnFailureListener { exception ->
+                    _message.value = exception.message
+                }.await()
+            _loading.postValue(false)
+        }
+
+    }
+    /**
+     *  Search books by category
+     *
+     *  @param category String the category of the books to search for
+     *
+     *  @return Unit
+     */
+    fun searchBooksByCategory(category: String) {
+        db.collection(category.trim())
             .get()
             .addOnSuccessListener { result ->
                 val bookList = result.map { document ->
                     MBook.fromDocument(document)
                 }
-                _books.value = bookList
+                _books.value =
+                    bookList.filter { _user.value?.bookListings?.contains(it.bookID) == false }
+                        .sortedBy { it.price }
             }.addOnFailureListener { exception ->
                 _message.value = exception.message
             }
+    }
+
+    /**
+     * Search for book by isbn
+     *
+     * @param isbn String of the isbn of book to search for
+     *
+     * @return Unit
+     */
+    fun searchBookByISBN(isbn : String) {
+        viewModelScope.launch{
+            _loading.postValue(true)
+            db.collection("books")
+                .whereEqualTo("isbn", isbn)
+                .get()
+                .addOnSuccessListener { result ->
+                    val bookList = result.map { document ->
+                        MBook.fromDocument(document)
+                    }
+                    _books.value =
+                    bookList.filter { _user.value?.bookListings?.contains(it.bookID) == false }
+                        .sortedBy { it.price }
+                }.addOnFailureListener { exception ->
+                    _message.value = exception.message
+                }.await()
+            _loading.postValue(false)
+        }
+    }
+    /**
+     * Search for book by author
+     *
+     * @param author String of the author of books to search for
+     *
+     * @return Unit
+     */
+    fun searchBookByAuthor(author : String) {
+        viewModelScope.launch{
+            _loading.postValue(true)
+            db.collection("books")
+                .whereEqualTo("author", author)
+                .get()
+                .addOnSuccessListener { result ->
+                    val bookList = result.map { document ->
+                        MBook.fromDocument(document)
+                    }
+                    _books.value =
+                    bookList.filter { _user.value?.bookListings?.contains(it.bookID) == false }
+                        .sortedBy { it.price }
+                }.addOnFailureListener { exception ->
+                    _message.value = exception.message
+                }.await()
+            _loading.postValue(false)
+        }
     }
 }

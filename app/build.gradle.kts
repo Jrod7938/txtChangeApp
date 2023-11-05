@@ -103,6 +103,7 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-test-manifest")
     implementation("androidx.navigation:navigation-compose:2.7.3")
     implementation("androidx.compose.runtime:runtime-livedata")
+    implementation("androidx.compose.material:material")
 
     // Google Fonts
     implementation("androidx.compose.ui:ui-text-google-fonts:1.5.1")
@@ -137,4 +138,7 @@ dependencies {
     // Coroutine Lifecycle Scopes
     implementation ("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.2")
     implementation ("androidx.lifecycle:lifecycle-runtime-ktx:2.6.2")
+
+    // Extended Icon Pack
+    implementation ("androidx.compose.material:material-icons-extended:1.5.4")
 }

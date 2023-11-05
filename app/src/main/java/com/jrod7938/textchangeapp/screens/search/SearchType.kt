@@ -29,12 +29,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.jrod7938.textchangeapp.screens.createAccount
+package com.jrod7938.textchangeapp.screens.search
 
-import androidx.compose.runtime.Composable
-import androidx.navigation.NavController
-
-@Composable
-fun CreateAccountScreen(navController: NavController){
-
+enum class SearchType {
+    None,
+    ISBN,
+    Title,
+    Category,
+    Author
 }

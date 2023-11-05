@@ -31,58 +31,161 @@
 
 package com.jrod7938.textchangeapp.components
 
+import android.annotation.SuppressLint
+import android.widget.Toast
+import androidx.compose.animation.animateColor
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector1D
+import androidx.compose.animation.core.FastOutLinearInEasing
+import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateDp
+import androidx.compose.animation.core.keyframes
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.updateTransition
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.BottomNavigation
+import androidx.compose.material.BottomNavigationItem
+import androidx.compose.material.DropdownMenu
+import androidx.compose.material.DropdownMenuItem
+import androidx.compose.material.Icon
+import androidx.compose.material.IconToggleButton
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.ExitToApp
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.MoreHoriz
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material.icons.outlined.Lock
+import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.currentBackStackEntryAsState
+import coil.compose.rememberAsyncImagePainter
+import com.google.firebase.auth.FirebaseAuth
 import com.jrod7938.textchangeapp.R
+import com.jrod7938.textchangeapp.model.MBook
+import com.jrod7938.textchangeapp.model.MCondition
+import com.jrod7938.textchangeapp.model.MUser
+import com.jrod7938.textchangeapp.navigation.AppScreens
+import com.jrod7938.textchangeapp.navigation.BottomNavItem
+import com.jrod7938.textchangeapp.screens.account.AccountScreenViewModel
+import com.jrod7938.textchangeapp.screens.details.BookInfoScreenViewModel
+import com.jrod7938.textchangeapp.screens.home.HomeScreen
+import com.jrod7938.textchangeapp.screens.search.SearchType
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
+@Composable
+fun NamePlate(
+    size: Dp = 200.dp,
+    overrideTopPadding: Dp = 50.dp,
+    isRegistered: Boolean = true,
+){
+    val getResourceId = if(isRegistered){
+        if(isSystemInDarkTheme()) R.drawable.suppreg_dark else R.drawable.suppreg_light
+    } else if(isSystemInDarkTheme()) R.drawable.supp_unreg_dark else R.drawable.supp_unreg_light
+
+    Surface(
+        modifier = Modifier
+            .width(size)
+            .padding(top = overrideTopPadding)
+    ){
+        Image(
+            modifier = Modifier.size(60.dp),
+            painter = painterResource(id = getResourceId),
+            contentDescription = "Supplementary Name Plate"
+        )
+
+    }
+}
 /**
  * This composable is the App Logo. It displays the app logo as a circle with
  * the text "txt. CHANGE" inside of it.
@@ -91,10 +194,14 @@ import com.jrod7938.textchangeapp.R
  * @param changeSize the size of the "CHANGE" text
  */
 @Composable
-fun AppLogo(txtSize: TextUnit = 42.sp, changeSize: TextUnit = 42.sp, appLogoSize: Dp = 50.dp) {
+fun AppLogo(
+    appLogoSize: Dp = 50.dp,
+    namePlateSize: Dp = 175.dp,
+    namePlateTopPadding: Dp = 0.dp,
+    namePlateRegistered: Boolean = false,
+) {
     Row(
         modifier = Modifier
-            .fillMaxWidth()
             .padding(10.dp),
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
@@ -104,18 +211,9 @@ fun AppLogo(txtSize: TextUnit = 42.sp, changeSize: TextUnit = 42.sp, appLogoSize
             painter = painterResource(id = R.drawable.applogo),
             contentDescription = "App Logo"
         )
-        Text(
-            text = "txt.",
-            color = MaterialTheme.colorScheme.onBackground,
-            fontSize = txtSize,
-            fontWeight = FontWeight.Bold
-        )
-        Text(
-            text = "CHANGE",
-            color = MaterialTheme.colorScheme.onBackground,
-            fontSize = changeSize,
-            fontWeight = FontWeight.SemiBold
-        )
+        NamePlate(size = namePlateSize,
+            overrideTopPadding = namePlateTopPadding,
+            isRegistered = namePlateRegistered )
     }
 }
 
@@ -135,7 +233,7 @@ private fun AppLogoPreview() {
 fun AppSplashScreenLogo(
     size: Dp = 500.dp,
     scale: Animatable<Float, AnimationVector1D>,
-){
+) {
     Surface(
         modifier = Modifier
             .size(size)
@@ -156,7 +254,7 @@ fun AppSplashScreenLogo(
  */
 // @Preview(showBackground = true)
 @Composable
-fun AppSplashScreenLogoPreview(){
+fun AppSplashScreenLogoPreview() {
     AppSplashScreenLogo(scale = remember {
         Animatable(.9f)
     })
@@ -181,7 +279,7 @@ fun EmailInput(
     enabled: Boolean = true,
     imeAction: ImeAction = ImeAction.Next,
     onAction: KeyboardActions = KeyboardActions.Default
-){
+) {
     InputField(
         modifier = modifier,
         valueState = emailState,
@@ -251,35 +349,40 @@ fun InputField(
 fun UserForm(
     loading: Boolean = false,
     isCreateAccount: Boolean = false,
-    onDone: (String, String) -> Unit = { email, pwd -> }
+    onDone: (String, String, String, String) -> Unit = { firstName, lastName, email, pwd -> }
 ) {
     val email = rememberSaveable { mutableStateOf("") }
     val password = rememberSaveable { mutableStateOf("") }
+    val firstName = rememberSaveable { mutableStateOf("") }
+    val lastName = rememberSaveable { mutableStateOf("") }
     val passwordVisibility = rememberSaveable { mutableStateOf(false) }
     val passwordFocusRequest = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
-    val valid = remember(email.value, password.value) {
+    val valid = remember(email.value, password.value, firstName.value, lastName.value) {
         email.value.trim().isNotEmpty()
                 && email.value.contains("@pride.hofstra.edu")
                 && password.value.trim().isNotEmpty()
                 && password.value.length >= 6
     }
 
-    val modifier = Modifier
-        .height(300.dp)
-        .background(color = MaterialTheme.colorScheme.background)
-        .verticalScroll(rememberScrollState())
+    val scrollState = rememberScrollState()
 
     Column(
-        modifier = modifier,
-        verticalArrangement = Arrangement.Center,
+        modifier = Modifier
+            .fillMaxHeight(.6f)
+            .background(color = MaterialTheme.colorScheme.background)
+            .verticalScroll(scrollState),
+        verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         if (isCreateAccount) {
             Text(
                 text = stringResource(id = R.string.create_acct),
-                modifier = Modifier.padding(4.dp)
+                modifier = Modifier.padding(4.dp),
+                textAlign = TextAlign.Center
             )
+            FirstNameInput(firstNameState = firstName)
+            LastNameInput(lastNameState = lastName)
         } else {
             Text(
                 text = "Welcome, please login to continue!",
@@ -299,7 +402,12 @@ fun UserForm(
             passwordVisibility = passwordVisibility,
             onAction = KeyboardActions {
                 if (!valid) return@KeyboardActions
-                onDone(email.value.trim(), password.value.trim())
+                onDone(
+                    firstName.value.trim(),
+                    lastName.value.trim(),
+                    email.value.trim(),
+                    password.value.trim()
+                )
             }
         )
         SubmitButton(
@@ -307,7 +415,12 @@ fun UserForm(
             loading = loading,
             validInputs = valid,
         ) {
-            onDone(email.value.trim(), password.value.trim())
+            onDone(
+                firstName.value.trim(),
+                lastName.value.trim(),
+                email.value.trim(),
+                password.value.trim()
+            )
             keyboardController?.hide()
         }
 
@@ -401,6 +514,1103 @@ fun PasswordInput(
 fun PasswordVisibility(passwordVisibility: MutableState<Boolean>) {
     val visible = passwordVisibility.value
     IconButton(onClick = { passwordVisibility.value = !visible }) {
-        Icons.Default.Close
+        Icon(
+            imageVector = if (visible) Icons.Outlined.Lock else Icons.Default.Lock,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onBackground
+        )
     }
 }
+
+
+/**
+ * This composable is the Bottom Navigation Bar. It displays a bottom
+ * navigation bar for the user to navigate between screens.
+ *
+ * @param navController the navigation controller
+ * @param items the items for the bottom navigation bar
+ *
+ * @see BottomNavItem
+ */
+@Composable
+fun BottomNavigationBar(
+    navController: NavHostController,
+    items: List<BottomNavItem>
+) {
+    BottomNavigation(
+        elevation = 10.dp,
+        modifier = Modifier.height(70.dp),
+        backgroundColor = MaterialTheme.colorScheme.background,
+        contentColor = MaterialTheme.colorScheme.onBackground
+    ) {
+        val navBackStackEntry by navController.currentBackStackEntryAsState()
+        val currentRoute = navBackStackEntry?.destination?.route
+        items.forEach { item ->
+            BottomNavigationItem(
+                icon = {
+                    Icon(
+                        modifier = Modifier.size(40.dp),
+                        imageVector = if (currentRoute?.contains(item.route) == true) item.selectedIcon else item.unselectedIcon,
+                        contentDescription = null,
+                        tint = if (currentRoute?.contains(item.route) == true) MaterialTheme.colorScheme.primary else Color.DarkGray
+                    )
+                },
+                label = {
+                    Text(
+                        item.title,
+                        color = if (currentRoute == item.route) MaterialTheme.colorScheme.primary else Color.DarkGray
+                    )
+                },
+                selected = currentRoute == item.route,
+                onClick = {
+                    if (currentRoute != item.route) {
+                        navController.navigate(item.route)
+                    }
+                },
+                selectedContentColor = MaterialTheme.colorScheme.onBackground,
+                unselectedContentColor = Color.DarkGray
+            )
+        }
+    }
+}
+
+/**
+ * This composable is the App Bar. It displays an app bar for the user to
+ * navigate between account and saved books screen.
+ *
+ * @param navController the navigation controller
+ *
+ * @see AppLogo
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TxTchangeAppBar(navController: NavHostController) {
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+
+    TopAppBar(
+        modifier = Modifier
+            .fillMaxHeight(.1f)
+            .padding(10.dp),
+        title = {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Start
+            ) {
+                AppLogo(appLogoSize = 54.dp,
+                    namePlateTopPadding = 0.dp,
+                    namePlateSize = 120.dp,
+                    namePlateRegistered = false)
+                Spacer(modifier = Modifier.fillMaxWidth(0.4f))
+                Icon(
+                    modifier = Modifier
+                        .size(34.dp)
+                        .clickable { navController.navigate(AppScreens.SavedBooksScreen.name) },
+                    imageVector = if (currentRoute == AppScreens.SavedBooksScreen.name) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
+                    tint = if (currentRoute == AppScreens.SavedBooksScreen.name) MaterialTheme.colorScheme.primary else Color.DarkGray,
+                    contentDescription = "Favorite"
+                )
+                Spacer(modifier = Modifier.fillMaxWidth(0.1f))
+                Icon(
+                    modifier = Modifier
+                        .size(34.dp)
+                        .clickable { navController.navigate(AppScreens.AccountScreen.name) },
+                    imageVector = if (currentRoute == AppScreens.AccountScreen.name) Icons.Filled.Person else Icons.Outlined.Person,
+                    tint = if (currentRoute == AppScreens.AccountScreen.name) MaterialTheme.colorScheme.primary else Color.DarkGray,
+                    contentDescription = "Account"
+                )
+            }
+        }
+    )
+}
+
+
+/**
+ * A card that displays a book category
+ *
+ * @param category the category of the book
+ * @param bookImageUrl the url of the book image
+ * @param navController the nav controller
+ *
+ * @return a card that displays a book category
+ *
+ * @see HomeScreen
+ */
+@Composable
+fun CategoryCard(
+    category: String,
+    bookImageUrl: String,
+    navController: NavHostController
+) {
+    Card(
+        modifier = Modifier
+            .padding(8.dp)
+            .size(200.dp)
+            .clickable(onClick = { navController.navigate("${AppScreens.SearchScreen.name}/$category") }),
+        shape = MaterialTheme.shapes.small,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.background,
+            contentColor = MaterialTheme.colorScheme.onBackground
+        ),
+        border = BorderStroke(2.dp, MaterialTheme.colorScheme.primary),
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Image(
+                modifier = Modifier
+                    .size(120.dp)
+                    .padding(10.dp),
+                painter = rememberAsyncImagePainter(model = bookImageUrl),
+                contentDescription = "$category image"
+            )
+            Text(
+                text = category,
+                style = MaterialTheme.typography.titleSmall.copy(fontSize = 18.sp),
+                textAlign = TextAlign.Center,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
+    }
+}
+
+/**
+ * Displays the categories of books.
+ *
+ * @param bookCategories the categories of books
+ * @param navController the navigation controller
+ *
+ * @see CategoryCard
+ * @see HomeScreen
+ */
+@Composable
+fun DisplayCategories(bookCategories: HashMap<String, MBook>, navController: NavHostController) {
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(2),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        items(bookCategories.entries.toList()) { entry ->
+            val category = entry.key
+            val book = entry.value
+
+            CategoryCard(
+                category = category,
+                bookImageUrl = book.imageURL,
+                navController = navController
+            )
+        }
+    }
+}
+
+/**
+ * This function displays the buttons on the home screen.
+ *
+ * @param navController the navigation controller
+ *
+ * @see HomeScreen
+ */
+@Composable
+fun HomeScreenButtons(navController: NavHostController) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Button(
+            modifier = Modifier
+                .padding(top = 16.dp)
+                .size(width = 200.dp, height = 40.dp),
+            onClick = { navController.navigate(AppScreens.SearchScreen.name) }
+        ) {
+            Text(text = "Find A Book")
+        }
+        Button(
+            modifier = Modifier
+                .padding(16.dp)
+                .size(width = 200.dp, height = 40.dp),
+            onClick = { navController.navigate(AppScreens.SellBookScreen.name) }
+        ) {
+            Text(text = "Sell A Book")
+        }
+    }
+}
+
+/**
+ * This composable is the FirstName Input Field. It displays an input field for the
+ * user to enter their first name.
+ *
+ * @param modifier the modifier for the input field
+ * @param firstNameState the state of the email
+ * @param labelId the label for the input field
+ * @param enabled whether the input field is enabled
+ * @param imeAction the IME action for the input field
+ * @param onAction the keyboard actions for the input field
+ */
+@Composable
+fun FirstNameInput(
+    modifier: Modifier = Modifier,
+    firstNameState: MutableState<String>,
+    labelId: String = "First Name",
+    enabled: Boolean = true,
+    imeAction: ImeAction = ImeAction.Next,
+    onAction: KeyboardActions = KeyboardActions.Default
+) {
+    InputField(
+        modifier = modifier,
+        valueState = firstNameState,
+        labelId = labelId,
+        enabled = enabled,
+        keyboardType = KeyboardType.Text,
+        imeAction = imeAction,
+        onAction = onAction
+    )
+}
+
+/**
+ * This composable is the LastName Input Field. It displays an input field for the
+ * user to enter their last name.
+ *
+ * @param modifier the modifier for the input field
+ * @param lastNameState the state of the email
+ * @param labelId the label for the input field
+ * @param enabled whether the input field is enabled
+ * @param imeAction the IME action for the input field
+ * @param onAction the keyboard actions for the input field
+ */
+@Composable
+fun LastNameInput(
+    modifier: Modifier = Modifier,
+    lastNameState: MutableState<String>,
+    labelId: String = "Last Name",
+    enabled: Boolean = true,
+    imeAction: ImeAction = ImeAction.Next,
+    onAction: KeyboardActions = KeyboardActions.Default
+) {
+    InputField(
+        modifier = modifier,
+        valueState = lastNameState,
+        labelId = labelId,
+        enabled = enabled,
+        keyboardType = KeyboardType.Text,
+        imeAction = imeAction,
+        onAction = onAction
+    )
+}
+
+/**
+ * This composable is the Book Edit Alert. It displays a card for a book in the account screen to edit.
+ *
+ * @param book the book to display
+ * @param onConfirm the function to call when the user confirms the book
+ * @param onDismiss the function to call when the user dismisses the book
+ *
+ * @see MBook
+ */
+@Composable
+fun EditBookDialog(book: MBook, onConfirm: (MBook) -> Unit, onDismiss: () -> Unit) {
+    var editedCondition by remember { mutableStateOf(book.condition) }
+    var editedPrice by remember { mutableStateOf(book.price.toString()) }
+
+    val valid by remember(editedCondition, editedPrice) {
+        mutableStateOf(
+            editedCondition.matches("^[a-zA-Z\\s]+$".toRegex())
+                    && editedPrice.matches("^\\d*\\.?\\d+$".toRegex())
+                    && editedPrice.toDouble() > 0
+        )
+    }
+
+    AlertDialog(
+        onDismissRequest = { onDismiss() },
+        title = { Text("Edit ${book.title}") },
+        text = {
+            Column {
+                BookConditionDropdown(
+                    selectedCondition = editedCondition,
+                    onConditionSelected = { editedCondition = it }
+                )
+                OutlinedTextField(
+                    value = editedPrice,
+                    enabled = true,
+                    onValueChange = {
+                        if (it.matches("^\\d*\\.?\\d*$".toRegex())) {
+                            editedPrice = it
+                        }
+                    },
+                    label = { Text("Book Price") },
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Number,
+                        imeAction = ImeAction.Done
+                    ),
+                    keyboardActions = KeyboardActions.Default
+                )
+            }
+        },
+        confirmButton = {
+            Button(onClick = {
+                if (valid) {
+                    onConfirm(
+                        book.copy(
+                            condition = editedCondition,
+                            price = editedPrice.toDouble()
+                        )
+                    )
+                    onDismiss()
+                }
+            }) {
+                Text("Confirm")
+            }
+        },
+        dismissButton = {
+            Button(onClick = { onDismiss() }) {
+                Text("Cancel")
+            }
+        }
+    )
+}
+
+/**
+ * Account Book Listings
+ *
+ * @param bookListings List<MBook> the list of book listings
+ * @param currentlyEditingBook MutableState<MBook?> the book that is currently being edited
+ * @param viewModel AccountScreenViewModel the viewmodel for the screen
+ *
+ * @see MBook
+ * @see AccountScreenViewModel
+ */
+@Composable
+fun AccountListings(
+    bookListings: List<MBook>,
+    currentlyEditingBook: MutableState<MBook?>,
+    viewModel: AccountScreenViewModel = viewModel(),
+    navController: NavController
+) {
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(2),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        items(bookListings.size) { index ->
+            val book = bookListings[index]
+            Card(
+                modifier = Modifier
+                    .padding(8.dp)
+                    .height(250.dp)
+                    .fillMaxWidth(),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.background,
+                    contentColor = MaterialTheme.colorScheme.onBackground
+                ),
+                border = BorderStroke(2.dp, MaterialTheme.colorScheme.primary),
+                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Image(
+                        painter = rememberAsyncImagePainter(book.imageURL),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(140.dp)
+                            .padding(8.dp)
+                            .clickable {
+                                navController.navigate("${AppScreens.BookInfoScreen.name}/${book.bookID}")
+                            }
+                    )
+                    Text(
+                        modifier = Modifier.height(40.dp),
+                        text = book.title,
+                        style = MaterialTheme.typography.bodyMedium,
+                        textAlign = TextAlign.Center,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Button(
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                            onClick = { currentlyEditingBook.value = book }
+                        ) {
+                            Text(text = "Edit", fontSize = 12.sp)
+                        }
+                        Button(
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                            onClick = { viewModel.deleteBook(book) }
+                        ) {
+                            Text(text = "Delete", fontSize = 12.sp)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Account Info
+ *
+ * @param user MUser the user
+ *
+ * @see MUser
+ */
+@Composable
+fun AccountInfo(user: MUser, navController: NavController) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceEvenly,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            modifier = Modifier.fillMaxWidth(0.7f),
+            text = "Hello, ${user.firstName} ${user.lastName}.",
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+        IconButton(
+            modifier = Modifier.size(30.dp),
+            onClick = {
+                FirebaseAuth.getInstance().signOut()
+                navController.navigate(AppScreens.LoginScreen.name) {
+                    popUpTo(navController.graph.startDestinationRoute!!) { inclusive = true }
+                    launchSingleTop = true
+                }
+            }
+        ) {
+            Icon(
+                imageVector = Icons.Default.ExitToApp,
+                contentDescription = "Logout",
+                tint = MaterialTheme.colorScheme.error
+            )
+        }
+    }
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.background,
+            contentColor = MaterialTheme.colorScheme.onBackground
+        ),
+        border = BorderStroke(2.dp, MaterialTheme.colorScheme.primary),
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.Start,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text(text = "Name: ${user.firstName} ${user?.lastName}")
+            Text(text = "Display Name: ${user.displayName}")
+            Text(text = "Email: ${user.email}")
+        }
+    }
+}
+
+/**
+ * This composable is the Book Condition Dropdown. It displays a dropdown for
+ * the user to select the condition of their book.
+ *
+ * @param selectedCondition the selected condition
+ * @param onConditionSelected the function to call when the condition is selected
+ *
+ */
+@Composable
+fun BookConditionDropdown(
+    selectedCondition: String,
+    onConditionSelected: (String) -> Unit
+) {
+    var isDropdownExpanded by remember { mutableStateOf(false) }
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth(),
+        contentAlignment = Alignment.CenterStart
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Start
+        ) {
+            Text(text = "Condition: ")
+            TextButton(onClick = { isDropdownExpanded = true }
+            ) {
+                Text(selectedCondition)
+                Icon(
+                    imageVector = Icons.Default.ArrowDropDown,
+                    contentDescription = "Drop down arrow"
+                )
+            }
+
+            DropdownMenu(
+                expanded = isDropdownExpanded,
+                onDismissRequest = { isDropdownExpanded = false }
+            ) {
+                MCondition.conditions.forEach { condition ->
+                    DropdownMenuItem(
+                        onClick = {
+                            onConditionSelected(condition.toString())
+                            isDropdownExpanded = false
+                        }
+                    ) {
+                        Text(condition.toString(), color = Color.Black)
+                    }
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Displays the book info
+ *
+ * @param book the book to display
+ * @param user the user that is logged in
+ * @param onContactClicked callback to display the seller's email
+ * @param viewModel BookInfoScreenViewModel the viewmodel for the screen
+ *
+ * @see MBook
+ * @see MUser
+ * @see BookInfoScreenViewModel
+ */
+@Composable
+fun BookInfoView(
+    book: MBook,
+    user: MUser,
+    onContactClicked: () -> Unit,
+    viewModel: BookInfoScreenViewModel = viewModel()
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.background,
+            contentColor = MaterialTheme.colorScheme.onBackground
+        ),
+        border = BorderStroke(2.dp, MaterialTheme.colorScheme.primary),
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Image(
+                painter = rememberAsyncImagePainter(model = book.imageURL),
+                contentDescription = "${book.title} Image",
+                modifier = Modifier
+                    .height(200.dp)
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(12.dp))
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Text(text = book.title, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                if (user.email != book.email) {
+                    Button(
+                        colors = ButtonDefaults
+                            .buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                        onClick = onContactClicked
+                    ) {
+                        Text(text = "Contact Seller", fontSize = 16.sp)
+                    }
+                    Button(onClick = {
+                        if (user.savedBooks.contains(book.bookID)) {
+                            viewModel.unsaveBook(book)
+                            viewModel.fetchBookDetails(book.bookID)
+                            GlobalScope.launch {
+                                withContext(Dispatchers.Main) {
+                                    viewModel.getUser()
+                                }
+                            }
+                        } else {
+                            viewModel.saveBook(book)
+                            viewModel.fetchBookDetails(book.bookID)
+                            GlobalScope.launch {
+                                withContext(Dispatchers.Main) {
+                                    viewModel.getUser()
+                                }
+                            }
+                        }
+                    }) {
+                        Text(
+                            text = if (user.savedBooks.contains(book.bookID)) "Unsave" else "Save",
+                            fontSize = 16.sp
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(text = "Author: ${book.author}", fontSize = 16.sp)
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(text = "ISBN: ${book.isbn}", fontSize = 16.sp)
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(text = "Category: ${book.mCategory}", fontSize = 16.sp)
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(text = "Condition: ${book.condition}", fontSize = 16.sp)
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(text = "Price: $${book.price}", fontSize = 16.sp)
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Column(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(text = "Status:", fontWeight = FontWeight.Bold)
+                Box(modifier = Modifier
+                    .clickable(
+                        enabled = book.email != viewModel.email
+                    ) {
+                        viewModel.buyerVerifiedBook(book)
+                        book.buyerConfirm = true
+                        viewModel.fetchBookDetails(book.bookID)
+                        viewModel.removeBookIfBothPartiesVerified(book)
+                    }
+                ) {
+                    Row {
+                        Text(text = "Buyer Verification: ")
+                        androidx.compose.material3.Icon(
+                            modifier = Modifier.border(
+                                width = 3.dp,
+                                color = MaterialTheme.colorScheme.onBackground
+                            ),
+                            imageVector = if (book.buyerConfirm) Icons.Default.Check else Icons.Default.Clear,
+                            tint = if (book.buyerConfirm) Color.Green else Color.Red,
+                            contentDescription = "Buyer Verification"
+                        )
+                    }
+                }
+
+                Box(modifier = Modifier
+                    .clickable(enabled = book.email == viewModel.email) {
+                        viewModel.sellerVerifiedBook(book)
+                        book.sellerConfirm = true
+                        viewModel.fetchBookDetails(book.bookID)
+                        viewModel.removeBookIfBothPartiesVerified(book)
+                    }
+                ) {
+                    Row {
+                        Text(text = "Seller Verification: ")
+                        androidx.compose.material3.Icon(
+                            modifier = Modifier.border(
+                                width = 3.dp,
+                                color = MaterialTheme.colorScheme.onBackground
+                            ),
+                            imageVector = if (book.sellerConfirm) Icons.Default.Check else Icons.Default.Clear,
+                            tint = if (book.sellerConfirm) Color.Green else Color.Red,
+                            contentDescription = "Buyer Verification"
+                        )
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(text = "Description: ${book.description}", fontSize = 16.sp)
+        }
+    }
+}
+
+@Composable
+fun SelectionPill(
+    option: ToggleButtonOption,
+    selected: Boolean,
+    onClick: (option: ToggleButtonOption) -> Unit = {}
+) {
+
+    Button(
+        onClick = { onClick(option)},
+        colors = ButtonDefaults.buttonColors(
+            containerColor = if(selected) MaterialTheme.colorScheme.primary
+            else MaterialTheme.colorScheme.background,
+        ),
+        shape = MaterialTheme.shapes.extraLarge,
+        elevation  = ButtonDefaults.elevatedButtonElevation(0.dp),
+        contentPadding = ButtonDefaults.ContentPadding,
+        modifier = Modifier.padding(14.dp, 0.dp),
+    ) {
+        Row(
+            modifier = Modifier.padding(0.dp),
+            verticalAlignment = Alignment.Bottom,
+        ) {
+            Text(
+                text = option.text,
+                color = if (selected) MaterialTheme.colorScheme.onPrimary
+                else MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(0.dp),
+                fontWeight = FontWeight.Bold
+            )
+            if (option.iconRes != null) {
+                Icon(
+                    painterResource(id = option.iconRes),
+                    contentDescription = null,
+                    tint = if (selected) MaterialTheme.colorScheme.onPrimary
+                    else MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(4.dp, 2.dp, 2.dp, 2.dp),
+                )
+            }
+        }
+    }
+}
+
+enum class SelectionType {
+    NONE,
+    SINGLE,
+    MULTIPLE,
+}
+
+data class ToggleButtonOption(
+    val text: String,
+    val iconRes: Int?,
+)
+
+@Composable
+fun ToggleButton(
+    options: Array<ToggleButtonOption>,
+    modifier: Modifier = Modifier,
+    type: SelectionType = SelectionType.SINGLE,
+    onClick: (selectedOptions: Array<ToggleButtonOption>) -> Unit = {},
+) {
+    val state = remember  { mutableStateMapOf<String, ToggleButtonOption>() }
+
+    OutlinedButton(
+        onClick = { },
+        border = BorderStroke(3.dp, MaterialTheme.colorScheme.primary),
+        shape = MaterialTheme.shapes.extraLarge,
+        colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.primary),
+        contentPadding = PaddingValues(0.dp, 0.dp),
+        modifier = modifier
+            .padding(0.dp)
+            .height(52.dp),
+    ) {
+        if (options.isEmpty()) {
+            return@OutlinedButton
+        }
+        val onItemClick: (option: ToggleButtonOption) -> Unit = { option ->
+            if (type == SelectionType.SINGLE) {
+                options.forEach {
+                    val key = it.text
+                    if (key == option.text) {
+                        state[key] = option
+                    } else {
+                        state.remove(key)
+                    }
+                }
+            } else {
+                val key = option.text
+                if (!state.contains(key)) {
+                    state[key] = option
+                } else {
+                    state.remove(key)
+                }
+            }
+            onClick(state.values.toTypedArray())
+        }
+        if (options.size == 1) {
+            val option = options.first()
+            SelectionPill(
+                option = option,
+                selected = state.contains(option.text),
+                onClick = onItemClick,
+            )
+            return@OutlinedButton
+        }
+        val first = options.first()
+        val last = options.last()
+        val middle = options.slice(1..options.size - 2)
+        SelectionPill(
+            option = first,
+            selected = state.contains(first.text) || state.isEmpty(),
+            onClick = onItemClick,
+        )
+        // VerticalDivider()
+        middle.map { option ->
+            SelectionPill(
+                option = option,
+                selected = state.contains(option.text),
+                onClick = onItemClick,
+            )
+            // VerticalDivider()
+        }
+        SelectionPill(
+            option = last,
+            selected = state.contains(last.text),
+            onClick = onItemClick,
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun BookThumbnail(
+    book: MBook,
+    viewModel: BookInfoScreenViewModel = viewModel(),
+    navController: NavHostController,
+    ) {
+
+    val user by viewModel.user.observeAsState(initial = null)
+    val isBookSaved = user?.savedBooks?.contains(book.bookID) == true
+    val (isChecked, setChecked) = remember(isBookSaved) { mutableStateOf(isBookSaved) }
+    val (view, setView) = remember { mutableStateOf(false) }
+
+    val context = LocalContext.current
+
+    LaunchedEffect(user) {
+        setChecked(user?.savedBooks?.contains(book.bookID) == true)
+    }
+    LaunchedEffect(true) {
+        viewModel.getUser()
+    }
+
+    Column(
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(30.dp)
+    ) {
+        Image(
+            painter = rememberAsyncImagePainter(model = book.imageURL),
+            contentDescription = "Image of ${book.title}",
+            modifier = Modifier.size(175.dp)
+        )
+
+        Text(
+            text = book.title,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.primary,
+            maxLines = 1,
+            modifier = Modifier.padding(top = 20.dp)
+        )
+
+        Text(text = "by ${book.author}")
+
+
+        Text(
+            text = "Price: $${book.price}",
+            color = MaterialTheme.colorScheme.secondary,
+        )
+        Text(text = "Condition: ${book.condition}")
+        Column() {
+            Row(verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center,
+                modifier = Modifier.fillMaxWidth()) {
+                SavedToFavoritesButton(
+                    isChecked = isChecked,
+                    onClick = {
+                        if(user?.savedBooks?.contains(book.bookID)!!){
+                            viewModel.unsaveBook(book)
+                            viewModel.viewModelScope.launch { viewModel.getUser() }
+                            Toast.makeText(
+                                context,
+                                "Removed from Saved",
+                                Toast.LENGTH_SHORT
+                            ).show()
+
+                        } else {
+                            viewModel.saveBook(book)
+                            viewModel.viewModelScope.launch { viewModel.getUser() }
+                            Toast.makeText(
+                                context,
+                                "Added to Saved",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                            setChecked(!isChecked)
+                    })
+                Button(
+                    onClick = { setView(true) }
+                ) {
+                    Text(text = "Purchase")
+                }
+                Icon(
+                    Icons.Default.MoreHoriz,
+                    tint = MaterialTheme.colorScheme.primary,
+                    contentDescription = "View More",
+                    modifier = Modifier
+                        .clickable { navController.navigate("${AppScreens.BookInfoScreen.name}/${book.bookID}") }
+                        .padding(top = 15.dp, start = 15.dp)
+                )
+            }
+        }
+    }
+    if(view) {
+
+        AlertDialog(
+            shape = MaterialTheme.shapes.medium,
+            onDismissRequest = { setView(false) },
+            dismissButton = {
+                TextButton(onClick = { setView(false) }) {
+                    Text("Cancel", fontWeight = FontWeight.Bold)
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    book.let { book ->
+                        val emailIntent = viewModel.prepareInterestEmailIntent(book)
+                        emailIntent.let {
+                            context.startActivity(emailIntent)
+                        }
+                    }
+                }) { Text("Continue", fontWeight = FontWeight.Bold) }
+
+            },
+            title = {
+                Text("Contact Seller?",
+                    fontSize = 14.sp,
+                    color = MaterialTheme.colorScheme.primary) },
+            text = {
+                Text("Email the seller of this listing to the begin transaction.",
+                fontSize = 15.sp,
+                color = MaterialTheme.colorScheme.primary) }
+        )
+    }
+}
+
+@Composable
+fun DisplaySearchResults(
+    bookList: List<MBook>,
+    text: String,
+    filter: SearchType,
+    navController: NavHostController,
+    viewModel: BookInfoScreenViewModel = viewModel()
+) {
+
+    val (searchText, setSearchText ) = remember { mutableStateOf("")}
+    val (searchType, setSearchType) = remember { mutableStateOf(filter)}
+
+    setSearchType(filter)
+
+    LaunchedEffect(true) { viewModel.getUser() }
+
+    Column() {
+        if(bookList.isEmpty()) {
+            Column(verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Text(text = "Sorry, we couldn't find anything for your query",
+                    modifier = Modifier
+                        .padding(top = 15.dp, start = 30.dp)
+                        .fillMaxWidth(0.70f),
+                    fontSize = 15.sp,
+                    softWrap = true,)
+            }
+        } else  {
+
+            // check if this display needs to be changed
+
+            if(searchText != text && text.isNotEmpty()){
+                if(((searchType == SearchType.ISBN) || (searchType == SearchType.None)) && searchText != bookList[0].isbn){
+                    setSearchType(SearchType.ISBN)
+                    if(searchType == filter && text == bookList[0].isbn) setSearchText(text)
+
+                } else if ((searchType == SearchType.Title) && searchText != bookList[0].title) {
+                    setSearchType(SearchType.Title)
+                    if (searchType == filter && text == bookList[0].title) setSearchText(text)
+
+                } else if ((searchType == SearchType.Author) && searchText != bookList[0].author) {
+                    setSearchType(SearchType.Author)
+                    if (searchType == filter && text == bookList[0].author) setSearchText(text)
+                }
+            } else {
+                setSearchText(text)
+            }
+
+            Column() {
+                val annotatedString = buildAnnotatedString {
+                    append("Here's what we found for: ")
+                    withStyle(
+                        style = SpanStyle(
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.Bold
+                        )
+                    ) {
+                        append("'${if (searchText.isNotEmpty()) searchText else text}'")
+                    }
+                }
+                Text(text = annotatedString,
+                    modifier = Modifier
+                        .padding(start = 20.dp, end = 20.dp, top = 15.dp, bottom = 15.dp)
+                        .fillMaxWidth(),
+                    textAlign = TextAlign.Center,
+                    softWrap = true,)
+
+                LazyColumn {
+
+                    bookList.forEach { book ->
+                        item {
+                            BookThumbnail(book, navController = navController)
+                        }
+                    }
+                    }
+                }
+            }
+        }
+    }
+
+
+@SuppressLint("UnusedTransitionTargetStateParameter")
+@Composable
+fun SavedToFavoritesButton(
+    isChecked: Boolean,
+    onClick: () -> Unit
+) {
+    IconToggleButton(
+        checked = isChecked,
+        onCheckedChange = { onClick() }
+    ) {
+        val transition = updateTransition(isChecked, label = "Checked indicator")
+
+        val tint by transition.animateColor(
+            label = "Tint"
+        ) { isChecked ->
+            if (isChecked) Color.Red else MaterialTheme.colorScheme.primary
+        }
+
+        val size by transition.animateDp(
+            transitionSpec = {
+                if (false isTransitioningTo true) {
+                    keyframes {
+                        durationMillis = 250
+                        30.dp at 0 with LinearOutSlowInEasing // for 0-15 ms
+                        35.dp at 15 with FastOutLinearInEasing // for 15-75 ms
+                        40.dp at 75 // ms
+                        35.dp at 150 // ms
+                    }
+                } else {
+                    spring(stiffness = Spring.StiffnessVeryLow)
+                }
+            },
+            label = "Size"
+        ) { 30.dp }
+
+        Icon(
+            imageVector = if (isChecked) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
+            contentDescription = null,
+            tint = tint,
+            modifier = Modifier.size(size)
+        )
+    }
+}
+

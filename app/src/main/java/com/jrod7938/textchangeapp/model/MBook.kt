@@ -43,6 +43,8 @@ import com.google.firebase.firestore.DocumentSnapshot
  * @property price Double the price of the book
  * @property email String the email of the user who created the book
  * @property condition String the condition of the book
+ * @property category String the category of the book from Google API
+ * @property mCategory MCategory the category of the book from the user
  * @property imageURL String the url of the image of the book
  * @property description String the description of the book
  * @property isbn String the isbn of the book
@@ -58,6 +60,7 @@ data class MBook(
     var email: String = "",
     val condition: String,
     var category: String = "",
+    var mCategory: String = MCategory.Other.toString(),
     var imageURL: String = "",
     var description: String = "",
     val isbn: String,
@@ -74,9 +77,12 @@ data class MBook(
             "email" to this.email,
             "condition" to this.condition,
             "category" to this.category,
+            "mcategory" to this.mCategory,
             "imageURL" to this.imageURL,
             "description" to this.description,
-            "isbn" to this.isbn
+            "isbn" to this.isbn,
+            "seller_confirm" to this.sellerConfirm,
+            "buyer_confirm" to this.buyerConfirm
         )
     }
 
@@ -101,11 +107,12 @@ data class MBook(
                 email = document.getString("email") ?: "",
                 condition = document.getString("condition") ?: "",
                 category = document.getString("category") ?: "",
+                mCategory = document.getString("mcategory") ?: MCategory.Other.toString(),
                 imageURL = document.getString("imageURL") ?: "",
                 description = document.getString("description") ?: "",
                 isbn = document.getString("isbn") ?: "",
-                sellerConfirm = document.getBoolean("sellerConfirm") ?: false,
-                buyerConfirm = document.getBoolean("buyerConfirm") ?: false
+                sellerConfirm = document.getBoolean("seller_confirm") ?: false,
+                buyerConfirm = document.getBoolean("buyer_confirm") ?: false
             )
         }
     }

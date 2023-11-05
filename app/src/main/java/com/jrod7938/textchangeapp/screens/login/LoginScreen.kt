@@ -31,6 +31,7 @@
 
 package com.jrod7938.textchangeapp.screens.login
 
+import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -43,12 +44,14 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
@@ -72,6 +75,15 @@ fun LoginScreen(
 ) {
     val showLoginForm = rememberSaveable { mutableStateOf(true) }
     val errorMessage by viewModel.errorMessage.collectAsState()
+    val accountCreated by viewModel.accountCreatedSignal.collectAsState(initial = false)
+    val context = LocalContext.current
+
+    if (accountCreated) {
+        LaunchedEffect(key1 = true) {
+            Toast.makeText(context, "Account Created Successfully!", Toast.LENGTH_SHORT).show()
+        }
+        viewModel.resetViewModel()
+    }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -81,15 +93,18 @@ fun LoginScreen(
             verticalArrangement = Arrangement.Top
         ) {
             AppLogo()
-            if (showLoginForm.value){
-                UserForm(loading = false, isCreateAccount = false){ email, password ->
-                    viewModel.signInWithEmailAndPassword(email, password){
+            if (showLoginForm.value) {
+                UserForm(loading = false, isCreateAccount = false) { _, _, email, password ->
+                    viewModel.signInWithEmailAndPassword(email, password) {
                         navController.navigate(AppScreens.HomeScreen.name)
                     }
                 }
             } else {
-                UserForm(loading = false, isCreateAccount = true) { email, password ->
-                    viewModel.createUserWithEmailAndPassword(email, password) {
+                UserForm(
+                    loading = false,
+                    isCreateAccount = true
+                ) { firstName, lastName, email, password ->
+                    viewModel.createUserWithEmailAndPassword(firstName, lastName, email, password) {
                         navController.navigate(AppScreens.HomeScreen.name)
                     }
                 }

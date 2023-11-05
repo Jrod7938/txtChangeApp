@@ -29,11 +29,28 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.jrod7938.textchangeapp
+package com.jrod7938.textchangeapp.model
 
-import android.app.Application
-import dagger.hilt.android.HiltAndroidApp
+/**
+ * This class represents the condition of a book.
+ *
+ * @property condition the condition of the book
+ */
+data class MCondition(
+    private val condition: String
+) {
+    companion object {
+        val conditions = listOf(
+            MCondition(condition = "Fine"),
+            MCondition(condition = "Near Fine"),
+            MCondition(condition = "Very Good"),
+            MCondition(condition = "Good"),
+            MCondition(condition = "Fair"),
+            MCondition(condition = "Poor")
+        )
+    }
 
-@HiltAndroidApp
-class BookApplication: Application() {
+    override fun toString(): String {
+        return condition
+    }
 }

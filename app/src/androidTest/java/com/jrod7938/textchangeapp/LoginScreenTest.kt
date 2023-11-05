@@ -100,6 +100,14 @@ class LoginScreenTest {
             .assertExists()
             .performClick()
 
+        rule.onNodeWithText("First Name")
+            .assertExists()
+            .performTextInput("Test")
+
+        rule.onNodeWithText("Last Name")
+            .assertExists()
+            .performTextInput("Tester")
+
         rule.onNodeWithText("Email")
             .assertExists()
             .performTextInput("testemail@pride.hofstra.edu")

@@ -51,6 +51,8 @@ import kotlinx.coroutines.launch
  * @property auth Firebase Authentication instance
  * @property _loading MutableLiveData<Boolean> to indicate if the user is being created
  * @property loading LiveData<Boolean> to observe if the user is being created
+ * @property _accountCreatedSignal MutableStateFlow<Boolean> to indicate if the user is created
+ * @property accountCreatedSignal StateFlow<Boolean> to observe if the user is created
  *
  * @constructor Creates a ViewModel for the LoginScreen
  */
@@ -63,6 +65,9 @@ class LoginScreenViewModel: ViewModel() {
 
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> = _errorMessage
+
+    private val _accountCreatedSignal = MutableStateFlow(false)
+    val accountCreatedSignal: StateFlow<Boolean> = _accountCreatedSignal
 
 
     /**
@@ -97,6 +102,8 @@ class LoginScreenViewModel: ViewModel() {
      * Create a user with email and password within Firebase Authentication and Database
      *
      * @param email email of the user
+     * @param firstName first name of the user
+     * @param lastName last name of the user
      * @param password password of the user
      * @param home function to call when the user is created
      *
@@ -106,6 +113,8 @@ class LoginScreenViewModel: ViewModel() {
      * @see createUser
      */
     fun createUserWithEmailAndPassword(
+        firstName: String,
+        lastName: String,
         email: String,
         password: String,
         home: () -> Unit
@@ -115,11 +124,10 @@ class LoginScreenViewModel: ViewModel() {
             auth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener { task ->
                     if (task.isSuccessful){
-                        // email is displayed as me@pride.hofstra.edu, split this to two strings, select the first
                         val displayName = task.result?.user?.email?.split('@')?.get(0)
-                        createUser(displayName)
-
+                        createUser(displayName, firstName, lastName)
                         Log.d("Firebase", "createUserWithEmailAndPassword: Success ${task.result}")
+                        _accountCreatedSignal.value = true
                         home()
                     } else {
                         _errorMessage.value = "Failed to create user"
@@ -130,20 +138,33 @@ class LoginScreenViewModel: ViewModel() {
     }
 
     /**
+     * Reset the ViewModel
+     *
+     * @return Unit
+     */
+    fun resetViewModel() {
+        _accountCreatedSignal.value = false
+    }
+
+    /**
      * Create a user within the Firebase Database
      *
      * @param displayName display name of the user
+     * @param firstName first name of the user
+     * @param lastName last name of the user
      *
      * @return Unit
      *
      * @see FirebaseFirestore.collection
      */
-    private fun createUser(displayName: String?) {
+    private fun createUser(displayName: String?, firstName: String, lastName: String) {
         val userId = auth.currentUser?.uid
         val user = MUser(
             id = displayName.toString(),
             userId = userId.toString(),
             displayName = displayName.toString(),
+            firstName = firstName,
+            lastName = lastName,
             email = displayName.plus("@pride.hofstra.edu"),
             bookListings = mutableListOf<String>(),
             savedBooks = mutableListOf<String>()
