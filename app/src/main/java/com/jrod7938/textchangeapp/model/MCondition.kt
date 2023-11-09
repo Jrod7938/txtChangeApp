@@ -38,15 +38,28 @@ package com.jrod7938.textchangeapp.model
  */
 data class MCondition(
     private val condition: String,
+    private val description: String,
 ) {
     companion object {
         val conditions = listOf(
-            MCondition(condition = "Fine"),
-            MCondition(condition = "Near Fine"),
-            MCondition(condition = "Very Good"),
-            MCondition(condition = "Good"),
-            MCondition(condition = "Fair"),
-            MCondition(condition = "Poor")
+            MCondition(
+                condition = "Fine",
+                description = "Book looks new and has no defects. May show remainder marks."),
+            MCondition(
+                condition = "Near Fine",
+                description = "Book may show slight wear at edges of book or dust jackets."),
+            MCondition(
+                condition = "Very Good",
+                description = "Book has clear signs of wear. May have minor defects including remainder marks, owner inscription, or clipped/chipped dust jacket."),
+            MCondition(
+                condition = "Good",
+                description = "Book may have a greater degree of defects, including highlighting, library markings, or loose bindings."),
+            MCondition(
+                condition = "Fair",
+                description = "Book may be very worn, soiled, torn, or barely holding together."),
+            MCondition(
+                condition = "Poor",
+                description = "Book may have extensive damage. Parts may be missing.")
         )
     }
 
