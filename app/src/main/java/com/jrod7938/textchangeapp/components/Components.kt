@@ -48,9 +48,13 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.scrollable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -86,6 +90,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.HelpOutline
@@ -102,6 +107,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
@@ -1825,7 +1831,6 @@ fun PostListingMBS(onSheetDismissed: () -> Unit, viewModel: SellScreenViewModel 
 
     DisposableEffect(Unit) {
         onDispose{
-
         }
     }
 
@@ -1871,9 +1876,9 @@ fun PostListingForm(
                     .fillMaxWidth(),
                 maxLines = 1,
             )
-
-            TextField(
+            OutlinedTextField(
                 label = { ISBNTooltip() },
+                enabled = true,
                 value = textStateISBN.value,
                 onValueChange = { input ->
                     textStateISBN.value = input
@@ -1891,26 +1896,66 @@ fun PostListingForm(
                 maxLines = 1,
             )
 
-            TextField(
-                label = { Text("Price") },
-                value = textStatePrice.value,
-                onValueChange = { input ->
-                    textStatePrice.value = input
-                    isValidPrice = input.text.isNotEmpty() && checkPrice(input.text)
-                },
-                modifier = Modifier
-                    .padding(
-                        start = 20.dp,
-                        bottom = 15.dp,
-                        end = 20.dp,
-                        top = 15.dp
-                    )
-                    .fillMaxWidth(),
-                isError = !isValidPrice,
-                maxLines = 1,
-            )
+            // CATEGORY
+            ExposedDropdownMenuBox(
+                expanded = isCategoryExpanded,
+                onExpandedChange = { newValue -> isCategoryExpanded = newValue },
+                modifier = Modifier.padding(
+                    start = 20.dp,
+                    bottom = 15.dp,
+                    end = 20.dp,
+                    top = 15.dp),
+            ) {
+                OutlinedTextField(
+                    modifier = Modifier
+                        .menuAnchor()
+                        .fillMaxWidth(),
+                    readOnly = true,
+                    label = { Text("Category") },
+                    value = selectedCategory,
+                    onValueChange = { input ->
+                        isValidCategory = input.isNotEmpty()
+                    },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isCategoryExpanded) },
+                    isError = !isValidCategory,
+                    maxLines = 1,
+                )
+                ExposedDropdownMenu(
+                    expanded = isCategoryExpanded,
+                    onDismissRequest = { isCategoryExpanded = false }
+                ) {
+                    MCategory.categories.forEach { category ->
+                        DropdownMenuItem(
+                            content = { Text(category.toString(), color = Color.Black) },
+                            onClick = {
+                                selectedCategory = category.toString(); isCategoryExpanded =
+                                false
+                            },
+                            contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
+                        )
+                    }
+                }
+            }
 
-            Row() {
+            Row{
+
+                OutlinedTextField(
+                    label = { Text("Price") },
+                    value = textStatePrice.value,
+                    onValueChange = { input ->
+                        textStatePrice.value = input
+                        isValidPrice = input.text.isNotEmpty() && checkPrice(input.text)
+                    },
+                    modifier = Modifier
+                        .padding(
+                            start = 20.dp,
+                            bottom = 15.dp,
+                            top = 15.dp
+                        )
+                        .fillMaxWidth(0.3f),
+                    isError = !isValidPrice,
+                    maxLines = 1,
+                )
 
                 // TEXTBOOK CONDITION
                 ExposedDropdownMenuBox(
@@ -1919,14 +1964,14 @@ fun PostListingForm(
                     modifier = Modifier.padding(
                         top = 15.dp,
                         bottom = 15.dp,
-                        start = 20.dp,
-                        end = 10.dp
+                        start = 10.dp,
+                        end = 20.dp
                     ),
                 ) {
-                    TextField(
+                    OutlinedTextField(
                         modifier = Modifier
                             .menuAnchor()
-                            .fillMaxWidth(0.5f),
+                            .fillMaxWidth(),
                         readOnly = true,
                         label = { ConditionTooltip() },
                         value = selectedCondition,
@@ -1943,51 +1988,14 @@ fun PostListingForm(
                     ) {
                         MCondition.conditions.forEach { condition ->
                             DropdownMenuItem(
-                                content = { Text(condition.toString(), color = Color.Black) },
+                                content = { Text(condition.returnCondition(), color = MaterialTheme.colorScheme.inverseSurface) },
                                 onClick = {
-                                    selectedCondition = condition.toString(); isConditionExpanded =
+                                    selectedCondition = condition.returnCondition(); isConditionExpanded =
                                     false
                                 },
                                 contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
                             )
 
-                        }
-                    }
-                }
-
-                // CATEGORY
-                ExposedDropdownMenuBox(
-                    expanded = isCategoryExpanded,
-                    onExpandedChange = { newValue -> isCategoryExpanded = newValue },
-                    modifier = Modifier.padding(top = 15.dp, bottom = 15.dp, end = 20.dp),
-                ) {
-                    TextField(
-                        modifier = Modifier
-                            .menuAnchor()
-                            .fillMaxWidth(),
-                        readOnly = true,
-                        label = { Text("Category") },
-                        value = selectedCategory,
-                        onValueChange = { input ->
-                            isValidCategory = input.isNotEmpty()
-                        },
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isCategoryExpanded) },
-                        isError = !isValidCategory,
-                        maxLines = 1,
-                    )
-                    ExposedDropdownMenu(
-                        expanded = isCategoryExpanded,
-                        onDismissRequest = { isCategoryExpanded = false }
-                    ) {
-                        MCategory.categories.forEach { category ->
-                            DropdownMenuItem(
-                                content = { Text(category.toString(), color = Color.Black) },
-                                onClick = {
-                                    selectedCategory = category.toString(); isCategoryExpanded =
-                                    false
-                                },
-                                contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
-                            )
                         }
                     }
                 }
@@ -2133,7 +2141,7 @@ fun ISBNTooltip() {
                 contentDescription = "ISBN Help Icon",
                 tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier
-                    .padding(start = 5.dp)
+                    .padding(start = 5.dp, top = 5.dp)
                     .tooltipAnchor()
                     .size(15.dp)
             )
@@ -2141,28 +2149,27 @@ fun ISBNTooltip() {
     }
 }
 
-// fix functionality
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ConditionTooltip(){
-    var showPopup by remember { mutableStateOf(false)}
     val scope = rememberCoroutineScope()
     val tooltipState by remember {mutableStateOf(RichTooltipState())}
     Row{
         Text("Condition")
         RichTooltipBox(
-            title = { Text("Book Conditions")},
-            text = { Text("View our Guide To Used Books to learn what each textbook condition entails.")},
+            title = { Text("Guide To Used Book Conditions")},
+            text = { ConditionsDescriptions() },
             tooltipState = tooltipState,
+            modifier = Modifier.padding(end = 30.dp),
             action =
             {
                  TextButton(
-                     onClick = { showPopup = true
+                     onClick = {
                          scope.launch {
                              tooltipState.dismiss()
                          }
                      },
-                     content = {Text("Launch", fontWeight = FontWeight.Bold)})
+                     content = {Text("Close", fontWeight = FontWeight.Bold, fontSize = 15.sp)})
             },
             ) {
                 Icon(
@@ -2170,52 +2177,27 @@ fun ConditionTooltip(){
                     contentDescription = "Condition ToolTip Icon",
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier
-                        .padding(start = 5.dp)
+                        .padding(start = 5.dp, top = 5.dp)
                         .tooltipAnchor()
                         .size(15.dp)
                 )
         }
     }
 
-    if(showPopup) GuideToUsedBookConditions(isVisible = true)
 }
-
-@Composable
-fun GuideToUsedBookConditions(isVisible: Boolean){
-    val (view, setView) = remember { mutableStateOf(isVisible)}
-    if(view) {
-        AlertDialog(
-            onDismissRequest = {setView(false)},
-            confirmButton = {
-                TextButton(onClick = { setView(false)}){
-                    Text("Close", fontWeight = FontWeight.Bold)
-                }
-            },
-            title = {
-                Text(
-                    text = "Guide To Used Book Conditions",
-                    fontSize = 15.sp,
-                    color = MaterialTheme.colorScheme.primary
-                )
-            },
-            text = { ConditionsDescriptions() },
-            shape = MaterialTheme.shapes.medium
-            )
-        Text("Guide to Used Textbook Conditions")
-        Text("For buyers, and sellers")
-    }
-}
-
 @Composable
 fun ConditionsDescriptions(){
     LazyColumn {
-        MCondition.conditions.forEach { condition ->
+        MCondition.conditions.forEach { item ->
             item {
                 Column {
-                    Text(condition.toString(), fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                    Text(item.returnCondition(), fontWeight = FontWeight.Bold)
+                    Text(item.returnDescription())
+                    Spacer(Modifier.height(10.dp))
                 }
             }
         }
     }
+
 }
 

@@ -35,6 +35,7 @@ package com.jrod7938.textchangeapp.model
  * This class represents the condition of a book.
  *
  * @property condition the condition of the book
+ * @property description the description of the book condition
  */
 data class MCondition(
     private val condition: String,
@@ -43,10 +44,10 @@ data class MCondition(
     companion object {
         val conditions = listOf(
             MCondition(
-                condition = "Fine",
+                condition = "As New",
                 description = "Book looks new and has no defects. May show remainder marks."),
             MCondition(
-                condition = "Near Fine",
+                condition = "Fine",
                 description = "Book may show slight wear at edges of book or dust jackets."),
             MCondition(
                 condition = "Very Good",
@@ -63,7 +64,16 @@ data class MCondition(
         )
     }
 
-    override fun toString(): String {
+//    override fun toString(): String {
+//        return condition
+//
+//    }
+
+    fun returnCondition(): String {
         return condition
+    }
+
+    fun returnDescription(): String {
+        return description
     }
 }
