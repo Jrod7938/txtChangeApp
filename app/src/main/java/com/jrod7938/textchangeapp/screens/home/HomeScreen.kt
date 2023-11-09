@@ -31,12 +31,14 @@
 
 package com.jrod7938.textchangeapp.screens.home
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -50,6 +52,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.jrod7938.textchangeapp.components.DisplayCategories
 import com.jrod7938.textchangeapp.components.HomeScreenButtons
+import com.jrod7938.textchangeapp.components.PostListingMBS
+import com.jrod7938.textchangeapp.components.SellFAB
 
 /**
  * Home screen of the app.
@@ -61,6 +65,7 @@ import com.jrod7938.textchangeapp.components.HomeScreenButtons
  * @see HomeScreenButtons
  * @see DisplayCategories
  */
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun HomeScreen(
     navController: NavHostController,
@@ -69,6 +74,7 @@ fun HomeScreen(
     val bookCategories by viewModel.bookCategories.observeAsState(initial = HashMap())
     val errorMessage by viewModel.message.collectAsState(initial = "")
     val loading by viewModel.loading.observeAsState(initial = false)
+    
 
     Column(
         modifier = Modifier
@@ -101,4 +107,5 @@ fun HomeScreen(
         }
         DisplayCategories(bookCategories, navController)
     }
+
 }

@@ -80,6 +80,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.jrod7938.textchangeapp.components.DisplaySearchResults
 import com.jrod7938.textchangeapp.components.SelectionType
+import com.jrod7938.textchangeapp.components.SellFAB
 import com.jrod7938.textchangeapp.components.ToggleButton
 import com.jrod7938.textchangeapp.components.ToggleButtonOption
 import com.jrod7938.textchangeapp.navigation.AppScreens

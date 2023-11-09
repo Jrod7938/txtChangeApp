@@ -59,6 +59,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
+import com.jrod7938.textchangeapp.components.SellFAB
 import com.jrod7938.textchangeapp.navigation.AppScreens
 
 @Composable

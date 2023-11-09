@@ -32,6 +32,7 @@
 package com.jrod7938.textchangeapp.navigation
 
 import android.annotation.SuppressLint
+import android.widget.Toast
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.displayCutout
@@ -42,23 +43,36 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Icon
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.LargeFloatingActionButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.currentComposer
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import coil.request.Disposable
 import com.jrod7938.textchangeapp.components.BottomNavBar
-import com.jrod7938.textchangeapp.components.BottomNavigationBar
+import com.jrod7938.textchangeapp.components.PostListingMBS
+import com.jrod7938.textchangeapp.components.SellFAB
+import com.jrod7938.textchangeapp.components.TopNavigationBar
 import com.jrod7938.textchangeapp.components.TxTchangeAppBar
 import com.jrod7938.textchangeapp.screens.account.AccountScreen
 import com.jrod7938.textchangeapp.screens.details.BookInfoScreen
@@ -68,6 +82,7 @@ import com.jrod7938.textchangeapp.screens.saved.SavedBooksScreen
 import com.jrod7938.textchangeapp.screens.search.SearchScreen
 import com.jrod7938.textchangeapp.screens.sell.SellBooksScreen
 import com.jrod7938.textchangeapp.screens.splash.SplashScreen
+import okhttp3.internal.wait
 import javax.crypto.CipherInputStream
 
 /**
@@ -83,16 +98,20 @@ fun AppNavigation() {
     val navController = rememberNavController()
     val bottomNavItems = listOf(
         BottomNavItem.Home,
-        BottomNavItem.Sell,
-        BottomNavItem.Search
+        //BottomNavItem.Sell,
+        BottomNavItem.Account,
+        BottomNavItem.Search,
+        BottomNavItem.Saved,
     )
 
     val showAppBars = remember { mutableStateOf(true) }
+    var sheetState by remember { mutableStateOf(false)}
+    var active by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
             if (showAppBars.value) {
-                TxTchangeAppBar(navController = navController)
+                TopNavigationBar(navController = navController, items = bottomNavItems)
             }
         },
         bottomBar = {
@@ -100,7 +119,13 @@ fun AppNavigation() {
                 BottomNavBar(navController = navController, items = bottomNavItems)
      // Conditionally display BottomNavigationBar
             }
-        }
+        },
+        floatingActionButton = {
+            if(showAppBars.value) {
+                SellFAB()
+            }
+        },
+
     ) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)) {
             NavHost(
@@ -174,6 +199,7 @@ fun AppNavigation() {
                         onDispose { }
                     }
                     SellBooksScreen(navController = navController)
+
                 }
                 composable(route = AppScreens.AccountScreen.name) {
                     DisposableEffect(Unit) {
@@ -182,8 +208,16 @@ fun AppNavigation() {
                     }
                     AccountScreen(navController = navController)
                 }
+
+//            if(showAppBars.value) {
+//                DisposableEffect(Unit) {
+//                    onDispose { }
+//                }
+//
+//                if(!sheetState) PostListingMBS(true)
+//                if(active) sheetState = false
+//            }
             }
         }
     }
 }
-

@@ -34,6 +34,7 @@ package com.jrod7938.textchangeapp.screens.sell
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FieldValue
@@ -98,6 +99,7 @@ class SellScreenViewModel : ViewModel() {
         if (userId == null) {
             _message.value = "Error: User not logged in"
             _loading.value = false
+
             return
         }
 
@@ -144,6 +146,10 @@ class SellScreenViewModel : ViewModel() {
         }
     }
 
+    fun reset() {
+        _loading.value = false
+        _message.value = null
+    }
     /**
      * Makes a request to Google Books API to get the image url and description of a book
      *
