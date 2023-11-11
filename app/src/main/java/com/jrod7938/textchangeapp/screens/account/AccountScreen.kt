@@ -57,7 +57,6 @@ import com.jrod7938.textchangeapp.components.AccountListings
 import com.jrod7938.textchangeapp.components.EditBookDialog
 import com.jrod7938.textchangeapp.components.PostListingMBS
 import com.jrod7938.textchangeapp.model.MBook
-import com.jrod7938.textchangeapp.navigation.AppScreens
 
 /**
  * Account Screen

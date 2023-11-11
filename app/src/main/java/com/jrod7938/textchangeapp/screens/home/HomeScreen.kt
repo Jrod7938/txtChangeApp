@@ -38,7 +38,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -52,8 +51,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.jrod7938.textchangeapp.components.DisplayCategories
 import com.jrod7938.textchangeapp.components.HomeScreenButtons
-import com.jrod7938.textchangeapp.components.PostListingMBS
-import com.jrod7938.textchangeapp.components.SellFAB
 
 /**
  * Home screen of the app.
