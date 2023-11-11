@@ -213,13 +213,7 @@ fun NamePlate(
 
     }
 }
-/**
- * This composable is the App Logo. It displays the app logo as a circle with
- * the text "txt. CHANGE" inside of it.
- *
- * @param txtSize the size of the "txt." text
- * @param changeSize the size of the "CHANGE" text
- */
+
 @Composable
 fun AppLogo(
     appLogoSize: Dp = 50.dp,
@@ -632,7 +626,7 @@ fun TopNavigationBar(navController: NavHostController, items: List<BottomNavItem
     val sendFeedback = sendFeedback()
 
 
-        items.forEach{item ->
+    items.forEach{item ->
         if(currentRoute == item.route) setTitle(item.title)
     }
         TopAppBar(
