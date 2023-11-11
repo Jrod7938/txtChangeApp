@@ -33,7 +33,6 @@ package com.jrod7938.textchangeapp.components
 
 import android.annotation.SuppressLint
 import android.content.Intent
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.animation.animateColor
 import androidx.compose.animation.core.Animatable
@@ -48,13 +47,9 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.scrollable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -84,13 +79,13 @@ import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.Icon
 import androidx.compose.material.IconToggleButton
-import androidx.compose.material.TextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.HelpOutline
@@ -107,7 +102,6 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
@@ -117,14 +111,12 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.PlainTooltipBox
-import androidx.compose.material3.PlainTooltipState
 import androidx.compose.material3.RichTooltipBox
 import androidx.compose.material3.RichTooltipState
 import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TooltipDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -193,11 +185,8 @@ import com.jrod7938.textchangeapp.screens.home.HomeScreen
 import com.jrod7938.textchangeapp.screens.search.SearchType
 import com.jrod7938.textchangeapp.screens.sell.ListingSubmissionData
 import com.jrod7938.textchangeapp.screens.sell.SellScreenViewModel
-import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -1800,11 +1789,11 @@ fun SellFAB(){
 
     var show by remember {mutableStateOf(false)}
     SmallFloatingActionButton(
-        content = { Icon(Icons.Filled.Add, contentDescription = "", modifier = Modifier.size(35.dp), tint = MaterialTheme.colorScheme.background) },
+        content = { Icon(Icons.Filled.Add, contentDescription = "", modifier = Modifier.size(30.dp), tint = MaterialTheme.colorScheme.background) },
         shape = CircleShape,
         contentColor = MaterialTheme.colorScheme.background,
         containerColor = MaterialTheme.colorScheme.primary,
-        modifier = Modifier.size(70.dp),
+        modifier = Modifier.size(65.dp),
         onClick = { show = true }
     )
 
@@ -1817,7 +1806,7 @@ fun SellFAB(){
 @SuppressLint("CoroutineCreationDuringComposition")
 @Composable
 fun PostListingMBS(onSheetDismissed: () -> Unit, viewModel: SellScreenViewModel = viewModel() ){
-    val errorMessage by viewModel.message.collectAsState()
+    val message by viewModel.message.collectAsState()
     val loading by viewModel.loading.observeAsState(initial = false)
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
@@ -1826,7 +1815,7 @@ fun PostListingMBS(onSheetDismissed: () -> Unit, viewModel: SellScreenViewModel 
         sheetState = sheetState,
         ) {
 
-        PostListingForm(viewModel, loading, errorMessage )
+        PostListingForm(viewModel, loading, message )
     }
 
     DisposableEffect(Unit) {
@@ -1841,7 +1830,7 @@ fun PostListingMBS(onSheetDismissed: () -> Unit, viewModel: SellScreenViewModel 
 fun PostListingForm(
     viewModel: SellScreenViewModel,
     loading: Boolean,
-    errorMessage: String?
+    message: String?
 ) {
 
     val textStateISBN = remember { mutableStateOf(TextFieldValue()) } // ISBN Text-field value
@@ -1864,6 +1853,8 @@ fun PostListingForm(
     var selectedCategory by remember { mutableStateOf("")} // selection
     var isValidCategory by remember { mutableStateOf(true)}
 
+    var onFormConfirm by remember { mutableStateOf(false)}
+
     Column {
 
             Text(
@@ -1879,7 +1870,10 @@ fun PostListingForm(
             OutlinedTextField(
                 label = { ISBNTooltip() },
                 enabled = true,
-                value = textStateISBN.value,
+                value = when(onFormConfirm) {
+                    true -> TextFieldValue("") // empty field on submit
+                    else -> textStateISBN.value
+                },
                 onValueChange = { input ->
                     textStateISBN.value = input
                     isValidISBN = input.text.isNotEmpty() && checkISBN(input.text)
@@ -1887,13 +1881,31 @@ fun PostListingForm(
                 modifier = Modifier
                     .padding(
                         start = 20.dp,
-                        bottom = 15.dp,
                         end = 20.dp,
                         top = 15.dp
                     )
                     .fillMaxWidth(),
                 isError = !isValidISBN,
                 maxLines = 1,
+                trailingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = "Close ISBN",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier
+                            .clickable { textStateISBN.value = TextFieldValue("") }
+                            .size(20.dp)
+                    )
+                },
+
+                supportingText = {
+                    if(!isValidISBN){
+                        ErrToolTip(
+                            message = "ISBN must not be empty and must only contain numbers",
+                            contentDescription = "ISBN Error Tooltip")
+                    }
+                },
+                
             )
 
             // CATEGORY
@@ -1911,8 +1923,11 @@ fun PostListingForm(
                         .menuAnchor()
                         .fillMaxWidth(),
                     readOnly = true,
-                    label = { Text("Category") },
-                    value = selectedCategory,
+                    label = { Text("Category", fontSize = 15.sp) },
+                    value = when(onFormConfirm) {
+                        true -> "" // empty field on submit
+                        else -> selectedCategory
+                    },
                     onValueChange = { input ->
                         isValidCategory = input.isNotEmpty()
                     },
@@ -1926,7 +1941,7 @@ fun PostListingForm(
                 ) {
                     MCategory.categories.forEach { category ->
                         DropdownMenuItem(
-                            content = { Text(category.toString(), color = Color.Black) },
+                            content = { Text(category.toString(), color = MaterialTheme.colorScheme.inverseSurface ) },
                             onClick = {
                                 selectedCategory = category.toString(); isCategoryExpanded =
                                 false
@@ -1936,12 +1951,13 @@ fun PostListingForm(
                     }
                 }
             }
-
             Row{
-
                 OutlinedTextField(
-                    label = { Text("Price") },
-                    value = textStatePrice.value,
+                    label = { Text("Price", fontSize = 15.sp) },
+                    value = when(onFormConfirm) {
+                        true -> TextFieldValue("") // empty field on submit
+                        else -> textStatePrice.value
+                    },
                     onValueChange = { input ->
                         textStatePrice.value = input
                         isValidPrice = input.text.isNotEmpty() && checkPrice(input.text)
@@ -1952,9 +1968,27 @@ fun PostListingForm(
                             bottom = 15.dp,
                             top = 15.dp
                         )
-                        .fillMaxWidth(0.3f),
+                        .fillMaxWidth(0.4f),
                     isError = !isValidPrice,
                     maxLines = 1,
+                    trailingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Clear Price",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier
+                                .clickable { textStatePrice.value = TextFieldValue("") }
+                                .size(20.dp)
+                        )
+
+                    },
+                    supportingText = {
+                        if(!isValidPrice){
+                            ErrToolTip(
+                                message = "Price must not be empty and only contain whole numbers or decimals",
+                                contentDescription = "Price Error ToolTip" )
+                        }
+                    }
                 )
 
                 // TEXTBOOK CONDITION
@@ -1964,7 +1998,7 @@ fun PostListingForm(
                     modifier = Modifier.padding(
                         top = 15.dp,
                         bottom = 15.dp,
-                        start = 10.dp,
+                        start = 20.dp,
                         end = 20.dp
                     ),
                 ) {
@@ -1974,7 +2008,10 @@ fun PostListingForm(
                             .fillMaxWidth(),
                         readOnly = true,
                         label = { ConditionTooltip() },
-                        value = selectedCondition,
+                        value = when(onFormConfirm) {
+                                    true -> ""
+                                    else -> selectedCondition
+                                },
                         onValueChange = { input ->
                             isValidCondition = input.isNotEmpty()
                         },
@@ -1988,9 +2025,15 @@ fun PostListingForm(
                     ) {
                         MCondition.conditions.forEach { condition ->
                             DropdownMenuItem(
-                                content = { Text(condition.returnCondition(), color = MaterialTheme.colorScheme.inverseSurface) },
+                                content = {
+                                    Text(
+                                        condition.returnCondition(),
+                                        color = MaterialTheme.colorScheme.inverseSurface
+                                    )
+                                },
                                 onClick = {
-                                    selectedCondition = condition.returnCondition(); isConditionExpanded =
+                                    selectedCondition =
+                                        condition.returnCondition(); isConditionExpanded =
                                     false
                                 },
                                 contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
@@ -2018,23 +2061,23 @@ fun PostListingForm(
 
     }
 
-    if(!errorMessage.isNullOrEmpty()){
-        if(errorMessage.contains("Error")) {
+    if(!message.isNullOrEmpty()){
+        if(message.contains("Error") || message.contains("No results")) {
             ConfirmDialog(
                 title = "Oops..",
-                content = errorMessage,
+                content = message,
                 isVisible = true,
                 confirmButtonText = "Okay",
-                viewModel = viewModel
+                onClick = { viewModel.reset() }
             )
         }
         else {
             ConfirmDialog(
                 title = "Congratulations!",
-                content = errorMessage,
+                content = "$message\nYou may exit the form now.",
                 isVisible = true,
                 confirmButtonText = "Okay",
-                viewModel = viewModel
+                onClick = { viewModel.reset() ; onFormConfirm = true }
             )
         }
     }
@@ -2059,7 +2102,7 @@ fun SellSubmitButton(
                 Text(
                     text = "Create",
                     color = MaterialTheme.colorScheme.background,
-                    fontSize = 15.sp
+                    fontSize = 16.sp
                 )
             }
         },
@@ -2094,16 +2137,16 @@ fun ConfirmDialog(
     content: String,
     isVisible: Boolean,
     confirmButtonText: String,
-    viewModel: SellScreenViewModel,
+    onClick: () -> Unit,
 ){
 
     val (view, setView) = remember { mutableStateOf(isVisible)}
 
     if(view){
         AlertDialog(
-            onDismissRequest = { setView(false); viewModel.reset() },
+            onDismissRequest = { setView(false) },
             confirmButton = {
-                TextButton(onClick = { viewModel.reset() },
+                TextButton(onClick = onClick ,
                     content = {Text(confirmButtonText, fontWeight = FontWeight.Bold)
                     }
                 )
@@ -2131,7 +2174,7 @@ fun ConfirmDialog(
 @Composable
 fun ISBNTooltip() {
     Row{
-        Text("ISBN")
+        Text("ISBN", fontSize = 15.sp)
         PlainTooltipBox(
             tooltip = {Text("The rest of the book information will be populated using the ISBN.") },
             modifier = Modifier.padding(start = 20.dp)
@@ -2155,7 +2198,7 @@ fun ConditionTooltip(){
     val scope = rememberCoroutineScope()
     val tooltipState by remember {mutableStateOf(RichTooltipState())}
     Row{
-        Text("Condition")
+        Text("Condition", fontSize = 15.sp)
         RichTooltipBox(
             title = { Text("Guide To Used Book Conditions")},
             text = { ConditionsDescriptions() },
@@ -2184,6 +2227,28 @@ fun ConditionTooltip(){
         }
     }
 
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ErrToolTip( message: String, contentDescription: String){
+    Row {
+        PlainTooltipBox(
+            tooltip = { Text(message) },
+            modifier = Modifier.padding(start = 20.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.ErrorOutline,
+                contentDescription = contentDescription,
+                tint = MaterialTheme.colorScheme.error,
+                modifier = Modifier
+                    .padding(end = 5.dp, top = 2.dp)
+                    .tooltipAnchor()
+                    .size(15.dp)
+            )
+        }
+        Text("View Errors")
+    }
 }
 @Composable
 fun ConditionsDescriptions(){
