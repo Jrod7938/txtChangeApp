@@ -1812,6 +1812,14 @@ fun PostListingForm(
 
     var onFormConfirm by remember { mutableStateOf(false)}
 
+    if(onFormConfirm){ // when form is submitted and confirm, reset values
+        textStateISBN.value = TextFieldValue("")
+        textStatePrice.value = TextFieldValue("")
+        selectedCategory = ""
+        selectedCondition = ""
+
+    }
+
     Column {
 
             Text(
@@ -1827,11 +1835,9 @@ fun PostListingForm(
             OutlinedTextField(
                 label = { ISBNTooltip() },
                 enabled = true,
-                value = when(onFormConfirm) {
-                    true -> TextFieldValue("") // empty field on submit
-                    else -> textStateISBN.value
-                },
+                value =  textStateISBN.value,
                 onValueChange = { input ->
+                    onFormConfirm = false
                     textStateISBN.value = input
                     isValidISBN = input.text.isNotEmpty() && checkISBN(input.text)
                 },
@@ -1881,11 +1887,9 @@ fun PostListingForm(
                         .fillMaxWidth(),
                     readOnly = true,
                     label = { Text("Category", fontSize = 15.sp) },
-                    value = when(onFormConfirm) {
-                        true -> "" // empty field on submit
-                        else -> selectedCategory
-                    },
+                    value = selectedCategory,
                     onValueChange = { input ->
+                        onFormConfirm = false
                         isValidCategory = input.isNotEmpty()
                     },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isCategoryExpanded) },
@@ -1911,11 +1915,9 @@ fun PostListingForm(
             Row{
                 OutlinedTextField(
                     label = { Text("Price", fontSize = 15.sp) },
-                    value = when(onFormConfirm) {
-                        true -> TextFieldValue("") // empty field on submit
-                        else -> textStatePrice.value
-                    },
+                    value = textStatePrice.value,
                     onValueChange = { input ->
+                        onFormConfirm = false
                         textStatePrice.value = input
                         isValidPrice = input.text.isNotEmpty() && checkPrice(input.text)
                     },
@@ -1965,11 +1967,9 @@ fun PostListingForm(
                             .fillMaxWidth(),
                         readOnly = true,
                         label = { ConditionTooltip() },
-                        value = when(onFormConfirm) {
-                                    true -> ""
-                                    else -> selectedCondition
-                                },
+                        value = selectedCondition,
                         onValueChange = { input ->
+                            onFormConfirm = false
                             isValidCondition = input.isNotEmpty()
                         },
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isConditionExpanded) },
@@ -2022,7 +2022,7 @@ fun PostListingForm(
         if(message.contains("Error") || message.contains("No results")) {
             ConfirmDialog(
                 title = "Oops..",
-                content = message,
+                content = "$message\nPlease try again.",
                 isVisible = true,
                 confirmButtonText = "Okay",
                 onClick = { viewModel.reset() }
@@ -2031,7 +2031,7 @@ fun PostListingForm(
         else {
             ConfirmDialog(
                 title = "Congratulations!",
-                content = "$message\nYou may exit the form now.",
+                content = "$message\nClick anywhere outside the form to exit the editor.",
                 isVisible = true,
                 confirmButtonText = "Okay",
                 onClick = { viewModel.reset() ; onFormConfirm = true }
