@@ -132,15 +132,15 @@ class SellScreenViewModel : ViewModel() {
                         .addOnSuccessListener {
                             // update the book category collection
                             db.collection(book.mCategory).document(bookId).set(book.toMap())
-                            _message.value = "Book added successfully"
+                            _message.value = "Your book: '${book.title}' was added successfully!"
                             _loading.value = false
                         }
                         .addOnFailureListener { e ->
-                            _message.value = "Error updating user's book listings: ${e.message}"
+                            _message.value = "Error updating user's book listings: ${e.message}."
                             _loading.value = false
                         }
                 }.addOnFailureListener { e ->
-                    _message.value = "Error adding book: ${e.message}"
+                    _message.value = "Error adding your book: ${e.message}."
                     _loading.value = false
                 }
         }
@@ -189,13 +189,13 @@ class SellScreenViewModel : ViewModel() {
                         if (imageUrl != null && description != null) {
                             callback(imageUrl, description, mainCategory, title, author)
                         } else {
-                            _message.value = "Error fetching book details from Google Books API"
+                            _message.value = "Error fetching book details from Google Books API."
                         }
                     } else {
-                        _message.value = "No results found on Google Books API for the given ISBN"
+                        _message.value = "No results found on Google Books API for the given ISBN."
                     }
                 } else {
-                    _message.value = "Error fetching book details from Google Books API"
+                    _message.value = "Error fetching book details from Google Books API."
                 }
             }
         }

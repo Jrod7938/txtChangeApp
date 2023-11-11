@@ -2022,7 +2022,7 @@ fun PostListingForm(
         if(message.contains("Error") || message.contains("No results")) {
             ConfirmDialog(
                 title = "Oops..",
-                content = "$message\nPlease try again.",
+                content = "$message\n\nPlease try again.",
                 isVisible = true,
                 confirmButtonText = "Okay",
                 onClick = { viewModel.reset() }
@@ -2031,7 +2031,7 @@ fun PostListingForm(
         else {
             ConfirmDialog(
                 title = "Congratulations!",
-                content = "$message\nClick anywhere outside the form to exit the editor.",
+                content = "$message\n\nClick anywhere outside the form to exit the editor or keep working.",
                 isVisible = true,
                 confirmButtonText = "Okay",
                 onClick = { viewModel.reset() ; onFormConfirm = true }
