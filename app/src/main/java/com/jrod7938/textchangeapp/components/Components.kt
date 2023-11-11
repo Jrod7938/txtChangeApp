@@ -567,16 +567,14 @@ fun BottomNavBar(
 ){
     var selectedIndex by remember { mutableIntStateOf(0) }
 
-
     AnimatedNavigationBar(
-        modifier = Modifier.height(64.dp),
+        modifier = Modifier.height(70.dp),
         selectedIndex = selectedIndex,
         ballColor = MaterialTheme.colorScheme.primary,
-        cornerRadius = shapeCornerRadius(cornerRadius = 34.dp),
+        cornerRadius = shapeCornerRadius(cornerRadius = 0.dp),
         ballAnimation = Parabolic(tween(300)),
         indentAnimation = Height(tween(300)),
-        barColor = MaterialTheme.colorScheme.primary,
-
+        barColor = MaterialTheme.colorScheme.primary
         ) {
 
         val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -608,50 +606,6 @@ fun BottomNavBar(
     }
 
 }
-//@Composable
-//fun BottomNavigationBar(
-//    navController: NavHostController,
-//    items: List<BottomNavItem>
-//) {
-//    BottomNavigation(
-//        elevation = 10.dp,
-//        modifier = Modifier
-//            .height(70.dp)
-//            .clip(RoundedCornerShape(15.dp, 15.dp, 0.dp, 0.dp)),
-//        backgroundColor = MaterialTheme.colorScheme.primary,
-//        contentColor = MaterialTheme.colorScheme.background,
-//    ) {
-//        val navBackStackEntry by navController.currentBackStackEntryAsState()
-//        val currentRoute = navBackStackEntry?.destination?.route
-//
-//        items.forEach { item ->
-//            BottomNavigationItem(
-//                icon = {
-//                    Icon(
-//                        modifier = Modifier
-//                            .size(40.dp)
-//                            .padding(top = 10.dp),
-//                        imageVector = if (currentRoute?.contains(item.route) == true) item.selectedIcon else item.unselectedIcon,
-//                        contentDescription = null,
-//                        tint = if (currentRoute?.contains(item.route) == true) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.background
-//                    )
-//                },
-//                label = {
-//                        Icons.Default.HorizontalRule
-//
-//                },
-//                selected = currentRoute == item.route,
-//                onClick = {
-//                    if (currentRoute != item.route) {
-//                        navController.navigate(item.route)
-//                    }
-//                },
-//                selectedContentColor = MaterialTheme.colorScheme.onBackground,
-//                unselectedContentColor = Color.DarkGray
-//            )
-//        }
-//    }
-//}
 
 /**
  * This composable is the App Bar. It displays an app bar for the user to
@@ -890,6 +844,7 @@ fun DisplayCategories(bookCategories: HashMap<String, MBook>, navController: Nav
  */
 @Composable
 fun HomeScreenButtons(navController: NavHostController) {
+    var show by remember { mutableStateOf(false) }
     Column(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -899,7 +854,7 @@ fun HomeScreenButtons(navController: NavHostController) {
             modifier = Modifier
                 .padding(top = 16.dp)
                 .size(width = 200.dp, height = 40.dp),
-            onClick = { navController.navigate(AppScreens.SearchScreen.name) }
+            onClick = { navController.navigate(AppScreens.SearchScreen.name)}
         ) {
             Text(text = "Find A Book")
         }
@@ -907,10 +862,12 @@ fun HomeScreenButtons(navController: NavHostController) {
             modifier = Modifier
                 .padding(16.dp)
                 .size(width = 200.dp, height = 40.dp),
-            onClick = { navController.navigate(AppScreens.SellBookScreen.name) }
+            onClick = { show = true }
         ) {
             Text(text = "Sell A Book")
         }
+
+        if(show) PostListingMBS(onSheetDismissed = { show = false })
     }
 }
 

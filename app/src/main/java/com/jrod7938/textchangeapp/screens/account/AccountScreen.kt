@@ -45,6 +45,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -54,6 +55,7 @@ import androidx.navigation.NavController
 import com.jrod7938.textchangeapp.components.AccountInfo
 import com.jrod7938.textchangeapp.components.AccountListings
 import com.jrod7938.textchangeapp.components.EditBookDialog
+import com.jrod7938.textchangeapp.components.PostListingMBS
 import com.jrod7938.textchangeapp.model.MBook
 import com.jrod7938.textchangeapp.navigation.AppScreens
 
@@ -83,6 +85,8 @@ fun AccountScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
     ) {
+
+        var show by remember { mutableStateOf(false) }
         if (loading) {
             CircularProgressIndicator()
         }
@@ -107,7 +111,7 @@ fun AccountScreen(
                 fontWeight = FontWeight.Bold,
             )
             Button(
-                onClick = { navController.navigate(AppScreens.SellBookScreen.name) }
+                onClick = { show = true }
             ) {
                 Text(
                     text = "Create a New Listing",
@@ -129,5 +133,7 @@ fun AccountScreen(
                 navController = navController
             )
         }
+
+        if(show) PostListingMBS(onSheetDismissed = { show = false } )
     }
 }

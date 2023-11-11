@@ -105,8 +105,6 @@ fun AppNavigation() {
     )
 
     val showAppBars = remember { mutableStateOf(true) }
-    var sheetState by remember { mutableStateOf(false)}
-    var active by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
