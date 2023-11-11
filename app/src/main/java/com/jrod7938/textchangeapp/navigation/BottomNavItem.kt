@@ -69,12 +69,6 @@ data class BottomNavItem(
             unselectedIcon = Icons.Outlined.Home,
             route = AppScreens.HomeScreen.name
         )
-//        val Sell = BottomNavItem(
-//            title = "Sell",
-//            selectedIcon = Icons.Filled.Sell,
-//            unselectedIcon = Icons.Outlined.Sell,
-//            route = AppScreens.SellBookScreen.name
-//        )
         val Search = BottomNavItem(
             title = "Search",
             selectedIcon = Icons.Filled.Search,
