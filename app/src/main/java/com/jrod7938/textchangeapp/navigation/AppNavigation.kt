@@ -69,9 +69,9 @@ fun AppNavigation() {
     val navController = rememberNavController()
     val bottomNavItems = listOf(
         BottomNavItem.Home,
-        BottomNavItem.Account,
         BottomNavItem.Search,
         BottomNavItem.Saved,
+        BottomNavItem.Account,
     )
 
     val showAppBars = remember { mutableStateOf(true) }
