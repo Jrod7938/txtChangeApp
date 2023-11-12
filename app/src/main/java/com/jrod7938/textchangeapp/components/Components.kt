@@ -33,6 +33,7 @@ package com.jrod7938.textchangeapp.components
 
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.text.Layout
 import android.widget.Toast
 import androidx.compose.animation.animateColor
 import androidx.compose.animation.core.Animatable
@@ -85,11 +86,13 @@ import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.HelpOutline
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.ModeEditOutline
 import androidx.compose.material.icons.filled.MoreHoriz
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Person
@@ -1061,20 +1064,29 @@ fun AccountListings(
                     )
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
+                        horizontalArrangement = Arrangement.Center
                     ) {
-                        Button(
-                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-                            onClick = { currentlyEditingBook.value = book }
-                        ) {
-                            Text(text = "Edit", fontSize = 12.sp)
-                        }
-                        Button(
-                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-                            onClick = { viewModel.deleteBook(book) }
-                        ) {
-                            Text(text = "Delete", fontSize = 12.sp)
-                        }
+                        IconButton(
+                            onClick = { currentlyEditingBook.value = book },
+                            content = {
+                                Icon(
+                                    imageVector = Icons.Default.ModeEditOutline,
+                                    contentDescription = "Edit Book",
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                        )
+                        IconButton(
+                            onClick = { viewModel.deleteBook(book) },
+                            content = {
+                                Icon(
+                                    imageVector = Icons.Default.DeleteOutline,
+                                    contentDescription = "Delete Book",
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                        )
+//
                     }
                 }
             }
