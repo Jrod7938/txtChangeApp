@@ -34,6 +34,7 @@ package com.jrod7938.textchangeapp.components
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.text.Layout
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.animation.animateColor
 import androidx.compose.animation.core.Animatable
@@ -96,6 +97,7 @@ import androidx.compose.material.icons.filled.ModeEditOutline
 import androidx.compose.material.icons.filled.MoreHoriz
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.WarningAmber
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.Person
@@ -1018,12 +1020,14 @@ fun AccountListings(
     viewModel: AccountScreenViewModel = viewModel(),
     navController: NavController
 ) {
+
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier = Modifier.fillMaxWidth()
     ) {
         items(bookListings.size) { index ->
             val book = bookListings[index]
+            var show by remember { mutableStateOf(false) }
             Card(
                 modifier = Modifier
                     .padding(8.dp)
@@ -1076,8 +1080,9 @@ fun AccountListings(
                                 )
                             }
                         )
+
                         IconButton(
-                            onClick = { viewModel.deleteBook(book) },
+                            onClick = {show = true},
                             content = {
                                 Icon(
                                     imageVector = Icons.Default.DeleteOutline,
@@ -1086,11 +1091,63 @@ fun AccountListings(
                                 )
                             }
                         )
-//
+                    }
+                    if(show){
+                        ConfirmDeleteDialog(
+                            isVisible = true,
+                            onConfirmAction = { viewModel.deleteBook(book)},
+                            onDismissAction = { show = false}
+                        )
                     }
                 }
             }
         }
+    }
+}
+
+@Composable
+fun ConfirmDeleteDialog(isVisible: Boolean, onConfirmAction: () -> Unit, onDismissAction: () -> Unit){
+    val (view, setView) = remember { mutableStateOf(isVisible) }
+    if(view){
+        AlertDialog(
+            onDismissRequest = onDismissAction.also{ setView(false) },
+            confirmButton = {
+                TextButton(
+                    onClick = onConfirmAction,
+                    content = {
+                        Text("Continue",
+                            color = MaterialTheme.colorScheme.error,
+                            fontWeight = FontWeight.ExtraBold
+                        )
+                    }
+                )
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = onDismissAction.also{ setView(false)},
+                    content = { Text("Cancel")}
+                )
+            },
+            title = {
+                Text(
+                    text = "Are You Sure?",
+                    fontSize = 14.sp,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            },
+            text = {
+                Text(
+                    "You are about to delete this book. Would you like to proceed?"
+                )
+            },
+            icon = {
+                Icon(
+                    imageVector = Icons.Default.WarningAmber,
+                    contentDescription = "Delete Warning",
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
+        )
     }
 }
 
