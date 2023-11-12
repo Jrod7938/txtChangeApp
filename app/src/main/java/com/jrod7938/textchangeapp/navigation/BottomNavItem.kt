@@ -33,11 +33,17 @@ package com.jrod7938.textchangeapp.navigation
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Sell
 import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.outlined.Sell
 import androidx.compose.ui.graphics.vector.ImageVector
 
 /**
@@ -63,17 +69,25 @@ data class BottomNavItem(
             unselectedIcon = Icons.Outlined.Home,
             route = AppScreens.HomeScreen.name
         )
-        val Sell = BottomNavItem(
-            title = "Sell",
-            selectedIcon = Icons.Filled.AddCircle,
-            unselectedIcon = Icons.Outlined.Add,
-            route = AppScreens.SellBookScreen.name
-        )
         val Search = BottomNavItem(
             title = "Search",
             selectedIcon = Icons.Filled.Search,
             unselectedIcon = Icons.Outlined.Search,
             route = AppScreens.SearchScreen.name
+        )
+
+        val Saved = BottomNavItem(
+            title = "Saved",
+            selectedIcon = Icons.Filled.Favorite,
+            unselectedIcon = Icons.Outlined.FavoriteBorder,
+            route = AppScreens.SavedBooksScreen.name
+        )
+
+        val Account = BottomNavItem(
+            title = "Account",
+            selectedIcon = Icons.Filled.Person,
+            unselectedIcon = Icons.Outlined.Person,
+            route = AppScreens.AccountScreen.name
         )
     }
 }

@@ -45,15 +45,15 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.jrod7938.textchangeapp.components.BottomNavigationBar
-import com.jrod7938.textchangeapp.components.TxTchangeAppBar
+import com.jrod7938.textchangeapp.components.BottomNavBar
+import com.jrod7938.textchangeapp.components.SellFAB
+import com.jrod7938.textchangeapp.components.TopNavigationBar
 import com.jrod7938.textchangeapp.screens.account.AccountScreen
 import com.jrod7938.textchangeapp.screens.details.BookInfoScreen
 import com.jrod7938.textchangeapp.screens.home.HomeScreen
 import com.jrod7938.textchangeapp.screens.login.LoginScreen
 import com.jrod7938.textchangeapp.screens.saved.SavedBooksScreen
 import com.jrod7938.textchangeapp.screens.search.SearchScreen
-import com.jrod7938.textchangeapp.screens.sell.SellBooksScreen
 import com.jrod7938.textchangeapp.screens.splash.SplashScreen
 
 /**
@@ -69,8 +69,9 @@ fun AppNavigation() {
     val navController = rememberNavController()
     val bottomNavItems = listOf(
         BottomNavItem.Home,
-        BottomNavItem.Sell,
-        BottomNavItem.Search
+        BottomNavItem.Search,
+        BottomNavItem.Saved,
+        BottomNavItem.Account,
     )
 
     val showAppBars = remember { mutableStateOf(true) }
@@ -78,14 +79,21 @@ fun AppNavigation() {
     Scaffold(
         topBar = {
             if (showAppBars.value) {
-                TxTchangeAppBar(navController = navController)
+                TopNavigationBar(navController = navController, items = bottomNavItems)
             }
         },
         bottomBar = {
-            if (showAppBars.value) {  // Conditionally display BottomNavigationBar
-                BottomNavigationBar(navController = navController, items = bottomNavItems)
+            if (showAppBars.value) {
+                BottomNavBar(navController = navController, items = bottomNavItems)
+     // Conditionally display BottomNavigationBar
             }
-        }
+        },
+        floatingActionButton = {
+            if(showAppBars.value) {
+                SellFAB()
+            }
+        },
+
     ) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)) {
             NavHost(
@@ -153,13 +161,6 @@ fun AppNavigation() {
                     val bookId = it.arguments?.getString("bookId")
                     BookInfoScreen(navController = navController, bookId = bookId)
                 }
-                composable(route = AppScreens.SellBookScreen.name) {
-                    DisposableEffect(Unit) {
-                        showAppBars.value = true
-                        onDispose { }
-                    }
-                    SellBooksScreen(navController = navController)
-                }
                 composable(route = AppScreens.AccountScreen.name) {
                     DisposableEffect(Unit) {
                         showAppBars.value = true
@@ -167,9 +168,16 @@ fun AppNavigation() {
                     }
                     AccountScreen(navController = navController)
                 }
+
+//            if(showAppBars.value) {
+//                DisposableEffect(Unit) {
+//                    onDispose { }
+//                }
+//
+//                if(!sheetState) PostListingMBS(true)
+//                if(active) sheetState = false
+//            }
             }
         }
     }
 }
-
-
