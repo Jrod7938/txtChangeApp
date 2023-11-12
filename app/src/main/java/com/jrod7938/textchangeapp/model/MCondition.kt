@@ -35,22 +35,45 @@ package com.jrod7938.textchangeapp.model
  * This class represents the condition of a book.
  *
  * @property condition the condition of the book
+ * @property description the description of the book condition
  */
 data class MCondition(
-    private val condition: String
+    private val condition: String,
+    private val description: String,
 ) {
     companion object {
         val conditions = listOf(
-            MCondition(condition = "Fine"),
-            MCondition(condition = "Near Fine"),
-            MCondition(condition = "Very Good"),
-            MCondition(condition = "Good"),
-            MCondition(condition = "Fair"),
-            MCondition(condition = "Poor")
+            MCondition(
+                condition = "As New",
+                description = "Book looks new and has no defects. May show remainder marks."),
+            MCondition(
+                condition = "Fine",
+                description = "Book may show slight wear at edges of book or dust jackets."),
+            MCondition(
+                condition = "Very Good",
+                description = "Book has clear signs of wear. May have minor defects including remainder marks, owner inscription, or clipped/chipped dust jacket."),
+            MCondition(
+                condition = "Good",
+                description = "Book may have a greater degree of defects, including highlighting, library markings, or loose bindings."),
+            MCondition(
+                condition = "Fair",
+                description = "Book may be very worn, soiled, torn, or barely holding together."),
+            MCondition(
+                condition = "Poor",
+                description = "Book may have extensive damage. Parts may be missing.")
         )
     }
 
-    override fun toString(): String {
+//    override fun toString(): String {
+//        return condition
+//
+//    }
+
+    fun returnCondition(): String {
         return condition
+    }
+
+    fun returnDescription(): String {
+        return description
     }
 }

@@ -31,12 +31,14 @@
 
 package com.jrod7938.textchangeapp.screens.sell
 
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.navigation.NavHostController
+data class ListingSubmissionData (
+    val isbn: String,
+    val price: String,
+    val category: String,
+    val condition: String,
 
-@Composable
-fun SellBooksScreen(navController: NavHostController) {
-    Text(text = "Sell Screen")
-
-}
+    val isbnValid: Boolean,
+    val priceValid: Boolean,
+    val categoryValid: Boolean,
+    val conditionValid: Boolean,
+)
