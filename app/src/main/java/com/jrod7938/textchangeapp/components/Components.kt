@@ -2005,7 +2005,7 @@ fun PostListingForm(
                 isbnValid = isValidISBN,
                 priceValid = isValidPrice,
                 conditionValid = isValidCondition,
-                categoryValid = isValidCondition
+                categoryValid = isValidCategory
             )
         )
 
