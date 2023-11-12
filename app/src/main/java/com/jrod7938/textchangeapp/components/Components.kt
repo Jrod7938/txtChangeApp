@@ -1811,7 +1811,6 @@ fun PostListingForm(
         textStatePrice.value = TextFieldValue("")
         selectedCategory = ""
         selectedCondition = ""
-
     }
 
     Column {
@@ -1898,8 +1897,8 @@ fun PostListingForm(
                         DropdownMenuItem(
                             content = { Text(category.toString(), color = MaterialTheme.colorScheme.inverseSurface ) },
                             onClick = {
-                                selectedCategory = category.toString(); isCategoryExpanded =
-                                false
+                                selectedCategory = category.toString()
+                                isCategoryExpanded = false
                             },
                             contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
                         )
@@ -2064,7 +2063,7 @@ fun SellSubmitButton(
                         isbn = submissionData.isbn,
                         condition = submissionData.condition,
                         price = submissionData.price.toDouble(),
-                        category = submissionData.category,
+                        mCategory = submissionData.category,
                     )
                 )
             }
