@@ -31,12 +31,28 @@
 
 package com.jrod7938.textchangeapp.screens.account
 
+import android.inputmethodservice.Keyboard
+import android.util.Log
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.Icon
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.AddCircle
+import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -48,8 +64,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.jrod7938.textchangeapp.components.AccountInfo
@@ -67,6 +86,7 @@ import com.jrod7938.textchangeapp.model.MBook
  * @see NavController
  * @see AccountScreenViewModel
  */
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun AccountScreen(
     navController: NavController,
@@ -78,61 +98,77 @@ fun AccountScreen(
     val loading by viewModel.loading.observeAsState(initial = false)
 
     val currentlyEditingBook = remember { mutableStateOf<MBook?>(null) }
+    var showBottomSheet by remember {mutableStateOf(false)}
+    var showLogoutDialog by remember { mutableStateOf(false)}
 
-    Column(
+    LazyColumn (
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
     ) {
-
-        var show by remember { mutableStateOf(false) }
-        if (loading) {
-            CircularProgressIndicator()
-        }
-        if (message?.isNotEmpty() == true) {
-            Text(text = message!!, color = MaterialTheme.colorScheme.onPrimaryContainer)
-        }
-        if (!loading && user != null && bookListings != null) {
-            if (currentlyEditingBook.value != null) {
-                EditBookDialog(
-                    book = currentlyEditingBook.value!!,
-                    onConfirm = { book ->
-                        viewModel.updateBook(book)
-                        currentlyEditingBook.value = null
-                    },
-                    onDismiss = { currentlyEditingBook.value = null }
-                )
+        item {
+            if (loading) CircularProgressIndicator()
+            if (message?.isNotEmpty() == true) {
+                Text(text = message!!, color = MaterialTheme.colorScheme.onPrimaryContainer)
             }
-            AccountInfo(user!!, navController = navController)
-            Text(
-                text = "Selling",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-            )
-            Button(
-                onClick = { show = true }
+        }
+        item {
+            user?.let { AccountInfo(it, navController = navController) }
+        }
+        stickyHeader {
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 15.dp)
+                    .background(color = MaterialTheme.colorScheme.primary)
             ) {
                 Text(
-                    text = "Create a New Listing",
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.SemiBold,
+                    text = "My Listings:",
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier
+                    .padding(14.dp),
+                    textAlign = TextAlign.Start,
+                    color = MaterialTheme.colorScheme.background,
+                )
+                IconButton(onClick = { showBottomSheet = true }){
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "New Listing",
+                        tint = MaterialTheme.colorScheme.background,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(top = 15.dp, end = 15.dp)
+                    )
+                }
+            }
+        }
+        item {
+            if(!loading && user!= null && bookListings != null) {
+                AccountListings(
+                    bookListings = bookListings!!,
+                    currentlyEditingBook = currentlyEditingBook,
+                    navController = navController,
                 )
             }
-            Text(
-                modifier = Modifier
-                    .padding(16.dp)
-                    .align(Alignment.Start),
-                text = "My Listings:",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-            )
-            AccountListings(
-                bookListings = bookListings!!,
-                currentlyEditingBook = currentlyEditingBook,
-                navController = navController
+            else {
+                Text("Whoops..Looks like you've reached the end.", color =  MaterialTheme.colorScheme.onPrimaryContainer)
+            }
+        }
+    }
+
+    if(showBottomSheet) PostListingMBS(onSheetDismissed = { showBottomSheet = false } )
+    if (!loading && user != null && bookListings != null) {
+        if (currentlyEditingBook.value != null) {
+            EditBookDialog(
+                book = currentlyEditingBook.value!!,
+                onConfirm = { book ->
+                    viewModel.updateBook(book)
+                    currentlyEditingBook.value = null
+                },
+                onDismiss = { currentlyEditingBook.value = null }
             )
         }
-
-        if(show) PostListingMBS(onSheetDismissed = { show = false } )
     }
+
 }

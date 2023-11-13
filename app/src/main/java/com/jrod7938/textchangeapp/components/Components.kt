@@ -35,6 +35,7 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.text.Layout
 import android.util.Log
+import android.widget.GridLayout
 import android.widget.Toast
 import androidx.compose.animation.animateColor
 import androidx.compose.animation.core.Animatable
@@ -87,20 +88,19 @@ import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.DeleteForever
 import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.ErrorOutline
-import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.HelpOutline
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.ModeEditOutline
 import androidx.compose.material.icons.filled.MoreHoriz
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.WarningAmber
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Lock
-import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -111,6 +111,8 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonColors
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
@@ -143,9 +145,12 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
@@ -153,6 +158,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -168,6 +174,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import androidx.navigation.NavHost
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import coil.compose.rememberAsyncImagePainter
@@ -177,6 +184,7 @@ import com.exyte.animatednavbar.animation.indendshape.Height
 import com.exyte.animatednavbar.animation.indendshape.shapeCornerRadius
 import com.exyte.animatednavbar.utils.noRippleClickable
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.ktx.firestoreSettings
 import com.jrod7938.textchangeapp.R
 import com.jrod7938.textchangeapp.model.MBook
 import com.jrod7938.textchangeapp.model.MCategory
@@ -708,48 +716,6 @@ fun sendFeedback() : Intent {
 
     return feedback
 }
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun TxTchangeAppBar(navController: NavHostController) {
-    val navBackStackEntry by navController.currentBackStackEntryAsState()
-    val currentRoute = navBackStackEntry?.destination?.route
-
-    TopAppBar(
-        modifier = Modifier
-            .fillMaxHeight(.1f)
-            .padding(10.dp),
-        title = {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Start
-            ) {
-                AppLogo(appLogoSize = 54.dp,
-                    namePlateTopPadding = 0.dp,
-                    namePlateSize = 120.dp,
-                    namePlateRegistered = false)
-                Spacer(modifier = Modifier.fillMaxWidth(0.4f))
-                Icon(
-                    modifier = Modifier
-                        .size(34.dp)
-                        .clickable { navController.navigate(AppScreens.SavedBooksScreen.name) },
-                    imageVector = if (currentRoute == AppScreens.SavedBooksScreen.name) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
-                    tint = if (currentRoute == AppScreens.SavedBooksScreen.name) MaterialTheme.colorScheme.primary else Color.DarkGray,
-                    contentDescription = "Favorite"
-                )
-                Spacer(modifier = Modifier.fillMaxWidth(0.1f))
-                Icon(
-                    modifier = Modifier
-                        .size(34.dp)
-                        .clickable { navController.navigate(AppScreens.AccountScreen.name) },
-                    imageVector = if (currentRoute == AppScreens.AccountScreen.name) Icons.Filled.Person else Icons.Outlined.Person,
-                    tint = if (currentRoute == AppScreens.AccountScreen.name) MaterialTheme.colorScheme.primary else Color.DarkGray,
-                    contentDescription = "Account"
-                )
-            }
-        }
-    )
-}
-
 
 /**
  * A card that displays a book category
@@ -1021,92 +987,152 @@ fun AccountListings(
     navController: NavController
 ) {
 
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(2),
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        items(bookListings.size) { index ->
-            val book = bookListings[index]
-            var show by remember { mutableStateOf(false) }
-            Card(
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ){
+        bookListings.chunked(2).forEach{ row ->
+            Row(
                 modifier = Modifier
-                    .padding(8.dp)
-                    .height(250.dp)
-                    .fillMaxWidth(),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.background,
-                    contentColor = MaterialTheme.colorScheme.onBackground
-                ),
-                border = BorderStroke(2.dp, MaterialTheme.colorScheme.primary),
-                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    Image(
-                        painter = rememberAsyncImagePainter(book.imageURL),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(140.dp)
-                            .padding(8.dp)
-                            .clickable {
-                                navController.navigate("${AppScreens.BookInfoScreen.name}/${book.bookID}")
-                            }
-                    )
-                    Text(
-                        modifier = Modifier.height(40.dp),
-                        text = book.title,
-                        style = MaterialTheme.typography.bodyMedium,
-                        textAlign = TextAlign.Center,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        IconButton(
-                            onClick = { currentlyEditingBook.value = book },
-                            content = {
-                                Icon(
-                                    imageVector = Icons.Default.ModeEditOutline,
-                                    contentDescription = "Edit Book",
-                                    tint = MaterialTheme.colorScheme.primary
-                                )
-                            }
-                        )
-
-                        IconButton(
-                            onClick = {show = true},
-                            content = {
-                                Icon(
-                                    imageVector = Icons.Default.DeleteOutline,
-                                    contentDescription = "Delete Book",
-                                    tint = MaterialTheme.colorScheme.primary
-                                )
-                            }
-                        )
-                    }
-                    if(show){
-                        ConfirmDeleteDialog(
-                            isVisible = true,
-                            onConfirmAction = { viewModel.deleteBook(book)},
-                            onDismissAction = { show = false}
-                        )
-                    }
-                }
-            }
+                BookListingRows(
+                rowItems = row,
+                viewModel = viewModel,
+                currentlyEditingBook = currentlyEditingBook,
+                navController = navController,
+            )}
         }
     }
 }
 
 @Composable
-fun ConfirmDeleteDialog(isVisible: Boolean, onConfirmAction: () -> Unit, onDismissAction: () -> Unit){
+fun BookListingRows(
+    rowItems: List<MBook>,
+    viewModel: AccountScreenViewModel,
+    currentlyEditingBook: MutableState<MBook?>,
+    navController: NavController
+){
+    for(item in rowItems){
+        BookListingItem(
+            book = item,
+            viewModel = viewModel,
+            currentlyEditingBook = currentlyEditingBook,
+            navController = navController
+        )
+    }
+}
+
+@Composable
+fun BookListingItem(
+    book: MBook,
+    viewModel: AccountScreenViewModel,
+    currentlyEditingBook: MutableState<MBook?>,
+    navController: NavController
+){
+
+    val configuration = LocalConfiguration.current
+    val screenWidth = configuration.screenWidthDp.dp
+
+    var show by remember { mutableStateOf(false) }
+        Card(
+            modifier = Modifier
+                .height(230.dp)
+                .width((screenWidth / 2) - 8.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.background,
+                contentColor = MaterialTheme.colorScheme.onBackground
+            ),
+            shape = MaterialTheme.shapes.extraSmall,
+            elevation = CardDefaults.cardElevation(3.dp)
+        ){
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(15.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ){
+                Row {
+                    Image(
+                        painter = rememberAsyncImagePainter(book.imageURL),
+                        contentDescription = "Book Image",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(150.dp)
+                            .padding(8.dp)
+                            .clickable {
+                                navController.navigate("${AppScreens.BookInfoScreen.name}/${book.bookID}")
+                            }
+                    )
+                }
+
+                Text(
+                    text = book.title,
+                    style = MaterialTheme.typography.bodyMedium,
+                    textAlign = TextAlign.Center,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 5.dp),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    IconButton(
+                        onClick = { currentlyEditingBook.value = book },
+                        content = {
+                            Icon(
+                                imageVector = Icons.Default.ModeEditOutline,
+                                contentDescription = "Edit Book",
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    )
+
+                    IconButton(
+                        onClick = { show = true },
+                        content = {
+                            Icon(
+                                imageVector = Icons.Default.DeleteOutline,
+                                contentDescription = "Delete Book",
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    )
+                }
+                if(show){
+                    DestructiveActionDialog(
+                        isVisible = true,
+                        onConfirmAction = { viewModel.deleteBook(book)},
+                        onDismissAction = { show = false },
+                        title = "Are You Sure?",
+                        text = "You are about to delete '${book.title}'. This action cannot be undone. Do you still want to proceed?",
+                        confirmButtonText = "Continue",
+                        dismissButtonText = "Cancel",
+                        imageVector = Icons.Default.DeleteForever
+                    )
+                }
+            }
+        }
+}
+
+
+@Composable
+fun DestructiveActionDialog(
+    isVisible: Boolean,
+    onConfirmAction: () -> Unit,
+    onDismissAction: () -> Unit,
+    title: String,
+    text: String,
+    confirmButtonText: String,
+    dismissButtonText: String,
+    imageVector: ImageVector,
+    ){
     val (view, setView) = remember { mutableStateOf(isVisible) }
     if(view){
         AlertDialog(
@@ -1115,7 +1141,7 @@ fun ConfirmDeleteDialog(isVisible: Boolean, onConfirmAction: () -> Unit, onDismi
                 TextButton(
                     onClick = onConfirmAction,
                     content = {
-                        Text("Continue",
+                        Text(confirmButtonText,
                             color = MaterialTheme.colorScheme.error,
                             fontWeight = FontWeight.ExtraBold
                         )
@@ -1125,24 +1151,22 @@ fun ConfirmDeleteDialog(isVisible: Boolean, onConfirmAction: () -> Unit, onDismi
             dismissButton = {
                 TextButton(
                     onClick = onDismissAction.also{ setView(false)},
-                    content = { Text("Cancel")}
+                    content = { Text(dismissButtonText)}
                 )
             },
             title = {
                 Text(
-                    text = "Are You Sure?",
+                    text = title,
                     fontSize = 14.sp,
                     color = MaterialTheme.colorScheme.primary
                 )
             },
             text = {
-                Text(
-                    "You are about to delete this book. Would you like to proceed?"
-                )
+                Text(text)
             },
             icon = {
                 Icon(
-                    imageVector = Icons.Default.WarningAmber,
+                    imageVector = imageVector,
                     contentDescription = "Delete Warning",
                     tint = MaterialTheme.colorScheme.primary
                 )
@@ -1160,59 +1184,96 @@ fun ConfirmDeleteDialog(isVisible: Boolean, onConfirmAction: () -> Unit, onDismi
  */
 @Composable
 fun AccountInfo(user: MUser, navController: NavController) {
-    Row(
+    var show by remember { mutableStateOf(false) }
+    Column(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceEvenly,
-        verticalAlignment = Alignment.CenterVertically
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
+        Image(
+            painter = painterResource(R.drawable.txtchangeprofile2),
+            contentDescription = "Account Profile Image",
+            modifier = Modifier
+                .size(150.dp)
+                .clip(CircleShape)
+        )
         Text(
-            modifier = Modifier.fillMaxWidth(0.7f),
-            text = "Hello, ${user.firstName} ${user.lastName}.",
+            modifier = Modifier.fillMaxWidth().padding(top = 15.dp),
+            text = "${user.firstName} ${user.lastName}",
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold,
             maxLines = 1,
-            overflow = TextOverflow.Ellipsis
+            overflow = TextOverflow.Ellipsis,
+            textAlign = TextAlign.Center,
         )
-        IconButton(
-            modifier = Modifier.size(30.dp),
-            onClick = {
-                FirebaseAuth.getInstance().signOut()
-                navController.navigate(AppScreens.LoginScreen.name) {
-                    popUpTo(navController.graph.startDestinationRoute!!) { inclusive = true }
-                    launchSingleTop = true
-                }
+        Text(
+            modifier = Modifier.fillMaxWidth(),
+            text = "@${user.displayName}",
+            color = MaterialTheme.colorScheme.primary,
+            fontSize = 16.sp,
+            textAlign = TextAlign.Center,
+            fontStyle = FontStyle.Italic
+        )
+        Text(
+            modifier = Modifier.fillMaxWidth(),
+            text = "${user.bookListings.size} Listings | ${user.savedBooks.size} Saved",
+            fontSize = 16.sp,
+            textAlign = TextAlign.Center,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.primary,
+        )
+        Row(
+            verticalAlignment = Alignment.Bottom,
+            modifier = Modifier.padding(bottom = 15.dp)
+        ) {
+            Button(onClick = { /*TODO*/ }) {
+                Text("Edit Profile")
             }
-        ) {
-            Icon(
-                imageVector = Icons.Default.ExitToApp,
-                contentDescription = "Logout",
-                tint = MaterialTheme.colorScheme.error
-            )
+            IconButton(onClick = { show = true },
+                modifier = Modifier
+                    .size(40.dp)
+                    .padding(start = 5.dp, bottom = 5.dp),
+                colors = IconButtonDefaults.iconButtonColors(
+                    contentColor = MaterialTheme.colorScheme.onError,
+                    containerColor = MaterialTheme.colorScheme.error
+                )
+            ){
+                Icon(
+                    imageVector = Icons.Default.Logout,
+                    contentDescription = "Logout",
+                    tint = MaterialTheme.colorScheme.onError,
+                    modifier = Modifier
+                        .padding(start = 5.dp)
+                        .size(20.dp)
+                )
+            }
         }
     }
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.background,
-            contentColor = MaterialTheme.colorScheme.onBackground
-        ),
-        border = BorderStroke(2.dp, MaterialTheme.colorScheme.primary),
-        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalAlignment = Alignment.Start,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Text(text = "Name: ${user.firstName} ${user?.lastName}")
-            Text(text = "Display Name: ${user.displayName}")
-            Text(text = "Email: ${user.email}")
-        }
-    }
+    if(show) DestructiveActionDialog(
+        isVisible = true,
+        onConfirmAction = {
+            FirebaseAuth.getInstance().signOut()
+            navController.navigate(AppScreens.LoginScreen.name) {
+                popUpTo(navController.graph.startDestinationRoute!!) { inclusive = true }
+                launchSingleTop = true
+            }
+        },
+        onDismissAction = { show = false },
+        title = "Log out",
+        text = "Are you sure you want to log out?" ,
+        confirmButtonText = "Logout",
+        dismissButtonText = "Cancel",
+        imageVector = Icons.Default.Logout
+    )
+}
+
+@Composable
+fun EditProfileDialog(user: MUser){
+    var (view, setView) = remember { mutableStateOf(false) }
+    var email by remember { mutableStateOf ("")}
+    var firstName by remember { mutableStateOf ("")}
+    var lastName by remember { mutableStateOf("")}
+
 }
 
 /**
