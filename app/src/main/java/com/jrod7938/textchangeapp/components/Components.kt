@@ -95,7 +95,9 @@ import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.ModeEditOutline
 import androidx.compose.material.icons.filled.MoreHoriz
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -914,7 +916,7 @@ fun EditBookDialog(book: MBook, onConfirm: (MBook) -> Unit, onDismiss: () -> Uni
 
     AlertDialog(
         onDismissRequest = { onDismiss() },
-        title = { Text("Edit ${book.title}") },
+        title = { Text("Edit ${book.title}", fontSize = 14.sp) },
         text = {
             Column {
                 BookConditionDropdown(
@@ -939,7 +941,7 @@ fun EditBookDialog(book: MBook, onConfirm: (MBook) -> Unit, onDismiss: () -> Uni
             }
         },
         confirmButton = {
-            Button(onClick = {
+            TextButton(onClick = {
                 if (valid) {
                     onConfirm(
                         book.copy(
@@ -950,12 +952,12 @@ fun EditBookDialog(book: MBook, onConfirm: (MBook) -> Unit, onDismiss: () -> Uni
                     onDismiss()
                 }
             }) {
-                Text("Confirm")
+                Text("Confirm", fontWeight = FontWeight.Bold )
             }
         },
         dismissButton = {
-            Button(onClick = { onDismiss() }) {
-                Text("Cancel")
+            TextButton(onClick = { onDismiss() }) {
+                Text("Cancel", fontWeight = FontWeight.Bold)
             }
         }
     )
@@ -1065,7 +1067,7 @@ fun BookListingItem(
                     text = book.title,
                     style = MaterialTheme.typography.bodyMedium,
                     textAlign = TextAlign.Center,
-                    maxLines = 2,
+                    maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
 
@@ -1175,8 +1177,10 @@ fun DestructiveActionDialog(
  * @see MUser
  */
 @Composable
-fun AccountInfo(user: MUser, navController: NavController) {
-    var show by remember { mutableStateOf(false) }
+fun AccountInfo(user: MUser, navController: NavController, viewModel: AccountScreenViewModel) {
+    var showLogout by remember { mutableStateOf(false) }
+    var showUpdate by remember { mutableStateOf(false) }
+
     Column(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -1190,7 +1194,9 @@ fun AccountInfo(user: MUser, navController: NavController) {
                 .clip(CircleShape)
         )
         Text(
-            modifier = Modifier.fillMaxWidth().padding(top = 15.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 15.dp),
             text = "${user.firstName} ${user.lastName}",
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold,
@@ -1218,10 +1224,10 @@ fun AccountInfo(user: MUser, navController: NavController) {
             verticalAlignment = Alignment.Bottom,
             modifier = Modifier.padding(bottom = 15.dp)
         ) {
-            Button(onClick = { /*TODO*/ }) {
+            Button(onClick = { showUpdate = true }) {
                 Text("Edit Profile")
             }
-            IconButton(onClick = { show = true },
+            IconButton(onClick = { showLogout = true },
                 modifier = Modifier
                     .size(40.dp)
                     .padding(start = 5.dp, bottom = 5.dp),
@@ -1241,7 +1247,9 @@ fun AccountInfo(user: MUser, navController: NavController) {
             }
         }
     }
-    if(show) DestructiveActionDialog(
+    if(showUpdate) EditProfileDialog(viewModel = viewModel, onDismissAction = { showUpdate = false}, isVisible = true)
+
+    if(showLogout) DestructiveActionDialog(
         isVisible = true,
         onConfirmAction = {
             FirebaseAuth.getInstance().signOut()
@@ -1250,7 +1258,7 @@ fun AccountInfo(user: MUser, navController: NavController) {
                 launchSingleTop = true
             }
         },
-        onDismissAction = { show = false },
+        onDismissAction = { showLogout = false },
         title = "Log out",
         text = "Are you sure you want to log out?" ,
         confirmButtonText = "Logout",
@@ -1260,13 +1268,116 @@ fun AccountInfo(user: MUser, navController: NavController) {
 }
 
 @Composable
-fun EditProfileDialog(user: MUser){
-    var (view, setView) = remember { mutableStateOf(false) }
-    var email by remember { mutableStateOf ("")}
-    var firstName by remember { mutableStateOf ("")}
-    var lastName by remember { mutableStateOf("")}
+fun EditProfileDialog(viewModel: AccountScreenViewModel, onDismissAction: () -> Unit, isVisible : Boolean){
+    val (view, setView) = remember { mutableStateOf(isVisible) }
+    val firstName = remember { mutableStateOf(TextFieldValue(""))}
+    var isValidFirstName by remember { mutableStateOf(false)}
 
+    val lastName = remember { mutableStateOf(TextFieldValue(""))}
+    var isValidLastName by remember { mutableStateOf(false)}
+
+    if(view) {
+        AlertDialog(
+            onDismissRequest = onDismissAction.also { setView(false) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        onDismissAction.also {
+                            viewModel.editUserProfile(
+                                firstName.value.text,
+                                lastName.value.text
+                            )
+                            setView(false)
+                        }
+                    },
+                    content = {
+                        Text(
+                            "Update",
+                            fontWeight = FontWeight.ExtraBold
+                        )
+                    },
+                    enabled = isValidFirstName && isValidLastName
+                )
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = onDismissAction.also { setView(false) },
+                    content = { Text("Cancel") }
+                )
+            },
+            title = {
+                Text(
+                    text = "Edit User Profile",
+                    fontSize = 14.sp,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            },
+            text = {
+                Column(horizontalAlignment = Alignment.Start) {
+                    OutlinedTextField(
+                        label = { Text("First Name") },
+                        value = firstName.value,
+                        onValueChange = { input ->
+                            firstName.value = input
+                            isValidFirstName = input.text.isNotEmpty()
+                        },
+                        isError = !isValidFirstName,
+                        supportingText = {
+                            if (!isValidFirstName) {
+                                Text("First name field must not be empty")
+                            }
+                        },
+                        trailingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Close,
+                                contentDescription = "Empty FirstName",
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier
+                                    .clickable { firstName.value = TextFieldValue("") }
+                                    .size(20.dp)
+                            )
+                        }
+                    )
+
+                    OutlinedTextField(
+                        label = { Text("Last Name") },
+                        value = lastName.value,
+                        onValueChange = { input ->
+                            lastName.value = input
+                            isValidLastName = input.text.isNotEmpty()
+                        },
+                        isError = !isValidLastName,
+                        supportingText = {
+                            if (!isValidLastName) {
+                                Text("Last name field must not be empty")
+                            }
+                        },
+                        trailingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Close,
+                                contentDescription = "Empty LastName",
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier
+                                    .clickable { lastName.value = TextFieldValue("") }
+                                    .size(20.dp)
+                            )
+                        }
+                    )
+
+                }
+
+            },
+            icon = {
+                Icon(
+                    imageVector = Icons.Default.Person,
+                    contentDescription = "Person Icon",
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
+        )
+    }
 }
+
 
 /**
  * This composable is the Book Condition Dropdown. It displays a dropdown for
@@ -1292,7 +1403,7 @@ fun BookConditionDropdown(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Start
         ) {
-            Text(text = "Condition: ")
+            ConditionTooltip()
             TextButton(onClick = { isDropdownExpanded = true }
             ) {
                 Text(selectedCondition)
@@ -1309,11 +1420,11 @@ fun BookConditionDropdown(
                 MCondition.conditions.forEach { condition ->
                     DropdownMenuItem(
                         onClick = {
-                            onConditionSelected(condition.toString())
+                            onConditionSelected(condition.returnCondition())
                             isDropdownExpanded = false
                         }
                     ) {
-                        Text(condition.toString(), color = Color.Black)
+                        Text(condition.returnCondition(), color = MaterialTheme.colorScheme.inverseSurface)
                     }
                 }
             }
@@ -1691,7 +1802,7 @@ fun BookThumbnail(
                     Text(text = "Purchase")
                 }
                 Icon(
-                    Icons.Default.MoreHoriz,
+                    Icons.Outlined.Info,
                     tint = MaterialTheme.colorScheme.primary,
                     contentDescription = "View More",
                     modifier = Modifier

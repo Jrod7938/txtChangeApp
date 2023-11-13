@@ -100,7 +100,6 @@ fun AccountScreen(
 
     val currentlyEditingBook = remember { mutableStateOf<MBook?>(null) }
     var showBottomSheet by remember {mutableStateOf(false)}
-    var showLogoutDialog by remember { mutableStateOf(false)}
 
     LazyColumn (
         modifier = Modifier.fillMaxSize(),
@@ -109,12 +108,12 @@ fun AccountScreen(
     ) {
         item {
             if (loading) CircularProgressIndicator()
-            if (message?.isNotEmpty() == true) {
+            else if (message?.isNotEmpty() == true) {
                 Text(text = message!!, color = MaterialTheme.colorScheme.onPrimaryContainer)
             }
         }
         item {
-            user?.let { AccountInfo(it, navController = navController) }
+            user?.let { AccountInfo(it, navController = navController, viewModel = viewModel) }
         }
         stickyHeader {
             Row(
