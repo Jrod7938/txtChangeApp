@@ -33,9 +33,6 @@ package com.jrod7938.textchangeapp.components
 
 import android.annotation.SuppressLint
 import android.content.Intent
-import android.text.Layout
-import android.util.Log
-import android.widget.GridLayout
 import android.widget.Toast
 import androidx.compose.animation.animateColor
 import androidx.compose.animation.core.Animatable
@@ -98,7 +95,6 @@ import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.ModeEditOutline
 import androidx.compose.material.icons.filled.MoreHoriz
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material3.AlertDialog
@@ -111,7 +107,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconButtonColors
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -145,7 +140,6 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
@@ -174,7 +168,6 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import androidx.navigation.NavHost
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import coil.compose.rememberAsyncImagePainter
@@ -184,7 +177,6 @@ import com.exyte.animatednavbar.animation.indendshape.Height
 import com.exyte.animatednavbar.animation.indendshape.shapeCornerRadius
 import com.exyte.animatednavbar.utils.noRippleClickable
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.ktx.firestoreSettings
 import com.jrod7938.textchangeapp.R
 import com.jrod7938.textchangeapp.model.MBook
 import com.jrod7938.textchangeapp.model.MCategory
@@ -1191,7 +1183,7 @@ fun AccountInfo(user: MUser, navController: NavController) {
         verticalArrangement = Arrangement.Center
     ) {
         Image(
-            painter = painterResource(R.drawable.txtchangeprofile2),
+            painter = painterResource(R.drawable.txtchange_profile),
             contentDescription = "Account Profile Image",
             modifier = Modifier
                 .size(150.dp)
