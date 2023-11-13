@@ -52,6 +52,7 @@ import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Divider
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -120,8 +121,7 @@ fun AccountScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 15.dp)
-                    .background(color = MaterialTheme.colorScheme.primary)
+                    .background(color = MaterialTheme.colorScheme.background)
             ) {
                 Text(
                     text = "My Listings:",
@@ -129,19 +129,20 @@ fun AccountScreen(
                     modifier = Modifier
                     .padding(14.dp),
                     textAlign = TextAlign.Start,
-                    color = MaterialTheme.colorScheme.background,
+                    color = MaterialTheme.colorScheme.inverseSurface,
                 )
                 IconButton(onClick = { showBottomSheet = true }){
                     Icon(
                         imageVector = Icons.Default.Add,
                         contentDescription = "New Listing",
-                        tint = MaterialTheme.colorScheme.background,
+                        tint = MaterialTheme.colorScheme.inverseSurface,
                         modifier = Modifier
                             .fillMaxSize()
                             .padding(top = 15.dp, end = 15.dp)
                     )
                 }
             }
+            Divider(modifier = Modifier.fillMaxWidth().padding(bottom = 15.dp))
         }
         item {
             if(!loading && user!= null && bookListings != null) {
@@ -151,7 +152,7 @@ fun AccountScreen(
                     navController = navController,
                 )
             }
-            else {
+            if(!loading && user != null && bookListings?.isEmpty() == true) {
                 Text("Whoops..Looks like you've reached the end.", color =  MaterialTheme.colorScheme.onPrimaryContainer)
             }
         }
