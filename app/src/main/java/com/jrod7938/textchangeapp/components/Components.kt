@@ -1762,20 +1762,22 @@ fun BookThumbnail(
 
         Text(
             text = book.title,
-            fontWeight = FontWeight.Bold,
+            fontWeight = FontWeight.ExtraBold,
             color = MaterialTheme.colorScheme.primary,
             maxLines = 1,
-            modifier = Modifier.padding(top = 20.dp)
+            modifier = Modifier.padding(top = 20.dp).fillMaxWidth(0.7f),
+            overflow = TextOverflow.Ellipsis,
+            textAlign = TextAlign.Center
         )
 
-        Text(text = "by ${book.author}")
+        Text(text = "by ${book.author}", fontSize = 14.sp, textAlign = TextAlign.Center)
 
 
         Text(
             text = "Price: $${book.price}",
             color = MaterialTheme.colorScheme.secondary,
         )
-        Text(text = "Condition: ${book.condition}")
+        Text(text = "Condition: ${book.condition}", fontWeight = FontWeight.Bold, fontSize = 14.sp, textAlign = TextAlign.Center)
         Column() {
             Row(verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center,
@@ -1809,12 +1811,13 @@ fun BookThumbnail(
                     Text(text = "Purchase")
                 }
                 Icon(
-                    Icons.Default.Info,
+                    Icons.Outlined.Info,
                     tint = MaterialTheme.colorScheme.primary,
                     contentDescription = "View More",
                     modifier = Modifier
                         .clickable { navController.navigate("${AppScreens.BookInfoScreen.name}/${book.bookID}") }
-                        .padding(start = 15.dp)
+                        .padding(start = 10.dp)
+                        .size(30.dp)
                 )
             }
         }
