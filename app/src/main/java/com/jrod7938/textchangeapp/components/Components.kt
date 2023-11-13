@@ -1186,12 +1186,17 @@ fun AccountInfo(user: MUser, navController: NavController, viewModel: AccountScr
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Image(
-            painter = painterResource(R.drawable.txtchange_profile),
-            contentDescription = "Account Profile Image",
-            modifier = Modifier
-                .size(150.dp)
-                .clip(CircleShape)
+        Button(
+            enabled = false,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.inverseSurface,
+                contentColor = MaterialTheme.colorScheme.background,
+                disabledContainerColor = MaterialTheme.colorScheme.inverseSurface,
+                disabledContentColor = MaterialTheme.colorScheme.background
+            ),
+            onClick = {},
+            content = {  Text("${user.firstName[0]}", fontSize = 40.sp) },
+            modifier = Modifier.size(100.dp)
         )
         Text(
             modifier = Modifier
