@@ -192,6 +192,14 @@ class AccountScreenViewModel : ViewModel() {
             _loading.value = false
         }
     }
+
+    /**
+     * Resets the View Model
+     */
+    fun reset() {
+        _loading.value = false
+        _message.value = null
+    }
     /**
      * Deletes the book from the mCategory, books, and users collection
      * Also deletes the book from the saved_books array of all users that have saved the book

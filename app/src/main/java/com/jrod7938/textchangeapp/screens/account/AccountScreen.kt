@@ -33,6 +33,7 @@ package com.jrod7938.textchangeapp.screens.account
 
 import android.inputmethodservice.Keyboard
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -66,6 +67,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -101,6 +103,13 @@ fun AccountScreen(
     val currentlyEditingBook = remember { mutableStateOf<MBook?>(null) }
     var showBottomSheet by remember {mutableStateOf(false)}
 
+    val context = LocalContext.current
+
+    if (message?.isNotEmpty() == true) {
+        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+        viewModel.reset()
+    }
+
     LazyColumn (
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -108,40 +117,40 @@ fun AccountScreen(
     ) {
         item {
             if (loading) CircularProgressIndicator()
-            else if (message?.isNotEmpty() == true) {
-                Text(text = message!!, color = MaterialTheme.colorScheme.onPrimaryContainer)
+
+            user?.let {
+                AccountInfo(it, navController = navController, viewModel = viewModel)
             }
-        }
-        item {
-            user?.let { AccountInfo(it, navController = navController, viewModel = viewModel) }
+
         }
         stickyHeader {
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(color = MaterialTheme.colorScheme.background)
+                    .background(color = MaterialTheme.colorScheme.primary)
             ) {
                 Text(
                     text = "My Listings:",
                     style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
                     modifier = Modifier
-                    .padding(14.dp),
+                    .padding(15.dp),
                     textAlign = TextAlign.Start,
-                    color = MaterialTheme.colorScheme.inverseSurface,
+                    color = MaterialTheme.colorScheme.background,
+                    fontSize = 15.sp,
                 )
                 IconButton(onClick = { showBottomSheet = true }){
                     Icon(
                         imageVector = Icons.Default.Add,
                         contentDescription = "New Listing",
-                        tint = MaterialTheme.colorScheme.inverseSurface,
+                        tint = MaterialTheme.colorScheme.background,
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(top = 15.dp, end = 15.dp)
+                            .padding(top = 10.dp, end = 15.dp)
                     )
                 }
             }
-            Divider(modifier = Modifier.fillMaxWidth().padding(bottom = 15.dp))
         }
         item {
             if(!loading && user!= null && bookListings != null) {

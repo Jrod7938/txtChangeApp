@@ -90,6 +90,7 @@ import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.HelpOutline
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.ModeEditOutline
@@ -105,6 +106,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
@@ -982,7 +984,7 @@ fun AccountListings(
 ) {
 
     Column(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize().padding(bottom = 8.dp, top = 15.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ){
         bookListings.chunked(2).forEach{ row ->
@@ -1034,13 +1036,13 @@ fun BookListingItem(
         Card(
             modifier = Modifier
                 .height(230.dp)
-                .width((screenWidth / 2) - 8.dp),
+                .width((screenWidth / 2) - 8.dp)
+                .border(BorderStroke(1.dp, MaterialTheme.colorScheme.primary), shape = MaterialTheme.shapes.extraSmall),
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.background,
                 contentColor = MaterialTheme.colorScheme.onBackground
             ),
             shape = MaterialTheme.shapes.extraSmall,
-            elevation = CardDefaults.cardElevation(3.dp)
         ){
             Column(
                 modifier = Modifier
@@ -1807,12 +1809,12 @@ fun BookThumbnail(
                     Text(text = "Purchase")
                 }
                 Icon(
-                    Icons.Outlined.Info,
+                    Icons.Default.Info,
                     tint = MaterialTheme.colorScheme.primary,
                     contentDescription = "View More",
                     modifier = Modifier
                         .clickable { navController.navigate("${AppScreens.BookInfoScreen.name}/${book.bookID}") }
-                        .padding(top = 15.dp, start = 15.dp)
+                        .padding(start = 15.dp)
                 )
             }
         }
