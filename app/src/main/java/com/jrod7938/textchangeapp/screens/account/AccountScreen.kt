@@ -129,7 +129,7 @@ fun AccountScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.secondaryContainer)
+                    .background(MaterialTheme.colorScheme.background)
             ) {
                 Text(
                     text = "My Listings:",
@@ -148,12 +148,10 @@ fun AccountScreen(
                         imageVector = Icons.Default.Add,
                         contentDescription = "New Listing",
                         tint = MaterialTheme.colorScheme.background,
-//                        modifier = Modifier
-//                            .fillMaxSize()
-                            // .padding(top = 10.dp, end = 15.dp)
                     )
                 }
             }
+            Divider(modifier = Modifier.fillMaxWidth())
         }
         item {
             if(!loading && user!= null && bookListings != null) {

@@ -1040,16 +1040,11 @@ fun BookListingItem(
             modifier = Modifier
                 .height(250.dp)
                 .width((screenWidth / 2) - 8.dp),
-//                .border(
-//                    BorderStroke(1.dp, MaterialTheme.colorScheme.primary),
-//                    shape = MaterialTheme.shapes.extraSmall
-//                ),
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.background,
                 contentColor = MaterialTheme.colorScheme.onBackground
             ),
             shape = MaterialTheme.shapes.extraSmall,
-            // elevation = CardDefaults.cardElevation(2.dp)
         ){
             Column(
                 modifier = Modifier
@@ -1203,7 +1198,7 @@ fun AccountInfo(user: MUser, navController: NavController, viewModel: AccountScr
     var showUpdate by remember { mutableStateOf(false) }
 
     Column(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.secondaryContainer).padding(top = 30.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
