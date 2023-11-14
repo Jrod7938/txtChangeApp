@@ -125,29 +125,32 @@ fun AccountScreen(
         }
         stickyHeader {
             Row(
+                verticalAlignment = Alignment.Bottom,
                 horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(color = MaterialTheme.colorScheme.primary)
+                    .background(MaterialTheme.colorScheme.secondaryContainer)
             ) {
                 Text(
                     text = "My Listings:",
-                    style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier
-                    .padding(15.dp),
+                    .padding(start = 15.dp, bottom = 10.dp),
                     textAlign = TextAlign.Start,
-                    color = MaterialTheme.colorScheme.background,
-                    fontSize = 15.sp,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontSize = 20.sp,
                 )
-                IconButton(onClick = { showBottomSheet = true }){
+                Button(
+                    onClick = { showBottomSheet = true },
+                    modifier = Modifier.padding(10.dp)
+                ){
                     Icon(
                         imageVector = Icons.Default.Add,
                         contentDescription = "New Listing",
                         tint = MaterialTheme.colorScheme.background,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(top = 10.dp, end = 15.dp)
+//                        modifier = Modifier
+//                            .fillMaxSize()
+                            // .padding(top = 10.dp, end = 15.dp)
                     )
                 }
             }

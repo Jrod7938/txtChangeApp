@@ -105,6 +105,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CardElevation
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -984,7 +985,9 @@ fun AccountListings(
 ) {
 
     Column(
-        modifier = Modifier.fillMaxSize().padding(bottom = 8.dp, top = 15.dp),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(bottom = 8.dp, top = 15.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ){
         bookListings.chunked(2).forEach{ row ->
@@ -1035,14 +1038,18 @@ fun BookListingItem(
     var show by remember { mutableStateOf(false) }
         Card(
             modifier = Modifier
-                .height(230.dp)
-                .width((screenWidth / 2) - 8.dp)
-                .border(BorderStroke(1.dp, MaterialTheme.colorScheme.primary), shape = MaterialTheme.shapes.extraSmall),
+                .height(250.dp)
+                .width((screenWidth / 2) - 8.dp),
+//                .border(
+//                    BorderStroke(1.dp, MaterialTheme.colorScheme.primary),
+//                    shape = MaterialTheme.shapes.extraSmall
+//                ),
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.background,
                 contentColor = MaterialTheme.colorScheme.onBackground
             ),
             shape = MaterialTheme.shapes.extraSmall,
+            // elevation = CardDefaults.cardElevation(2.dp)
         ){
             Column(
                 modifier = Modifier
@@ -1068,6 +1075,8 @@ fun BookListingItem(
                 Text(
                     text = book.title,
                     style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary,
                     textAlign = TextAlign.Center,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
@@ -1081,22 +1090,32 @@ fun BookListingItem(
                 ) {
                     IconButton(
                         onClick = { currentlyEditingBook.value = book },
+                        colors = IconButtonDefaults.iconButtonColors(
+                            contentColor = MaterialTheme.colorScheme.secondaryContainer,
+                            containerColor = MaterialTheme.colorScheme.primary,
+                        ),
                         content = {
                             Icon(
                                 imageVector = Icons.Default.ModeEditOutline,
                                 contentDescription = "Edit Book",
-                                tint = MaterialTheme.colorScheme.primary
+                                tint = MaterialTheme.colorScheme.secondaryContainer,
+                                modifier = Modifier.size(16.dp)
                             )
                         }
                     )
 
                     IconButton(
                         onClick = { show = true },
+                        colors = IconButtonDefaults.iconButtonColors(
+                            contentColor = MaterialTheme.colorScheme.primary,
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                        ),
                         content = {
                             Icon(
                                 imageVector = Icons.Default.DeleteOutline,
                                 contentDescription = "Delete Book",
-                                tint = MaterialTheme.colorScheme.primary
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(16.dp)
                             )
                         }
                     )
@@ -1765,7 +1784,9 @@ fun BookThumbnail(
             fontWeight = FontWeight.ExtraBold,
             color = MaterialTheme.colorScheme.primary,
             maxLines = 1,
-            modifier = Modifier.padding(top = 20.dp).fillMaxWidth(0.7f),
+            modifier = Modifier
+                .padding(top = 20.dp)
+                .fillMaxWidth(0.7f),
             overflow = TextOverflow.Ellipsis,
             textAlign = TextAlign.Center
         )
