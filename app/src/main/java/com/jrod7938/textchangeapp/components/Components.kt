@@ -93,6 +93,8 @@ import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.MoreHoriz
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.Person
@@ -216,16 +218,16 @@ fun NamePlate(
 
 @Composable
 fun AppLogo(
-    appLogoSize: Dp = 50.dp,
-    namePlateSize: Dp = 175.dp,
+    appLogoSize: Dp = 60.dp,
+    namePlateSize: Dp = 200.dp,
     namePlateTopPadding: Dp = 0.dp,
-    namePlateRegistered: Boolean = false,
+    namePlateRegistered: Boolean = true,
 ) {
     Row(
         modifier = Modifier
             .padding(10.dp),
-        horizontalArrangement = Arrangement.Center,
-        verticalAlignment = Alignment.CenterVertically
+        horizontalArrangement = Arrangement.Start,
+        verticalAlignment = Alignment.Bottom
     ) {
         Image(
             modifier = Modifier.size(appLogoSize),
@@ -390,33 +392,54 @@ fun UserForm(
 
     Column(
         modifier = Modifier
-            .fillMaxHeight(.6f)
+            .fillMaxHeight()
             .background(color = MaterialTheme.colorScheme.background)
-            .verticalScroll(scrollState),
+            .verticalScroll(scrollState)
+            .padding(start = 10.dp, top = 10.dp),
         verticalArrangement = Arrangement.Top,
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.Start
     ) {
         if (isCreateAccount) {
             Text(
-                text = stringResource(id = R.string.create_acct),
-                modifier = Modifier.padding(4.dp),
-                textAlign = TextAlign.Center
+                text = "Hello!",
+                modifier = Modifier.padding(start = 10.dp),
+                fontSize = 20.sp,
+                fontWeight = FontWeight.ExtraBold,
+                color = MaterialTheme.colorScheme.primary
             )
-            FirstNameInput(firstNameState = firstName)
-            LastNameInput(lastNameState = lastName)
+            Text(
+                text = stringResource(id = R.string.create_acct),
+                modifier = Modifier.padding(start = 10.dp, end = 10.dp),
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.inverseSurface
+            )
+            FirstNameInput(firstNameState = firstName, modifier = Modifier.fillMaxWidth(0.9f))
+            LastNameInput(lastNameState = lastName, modifier = Modifier.fillMaxWidth(0.9f))
         } else {
             Text(
-                text = "Welcome, please login to continue!",
-                modifier = Modifier.padding(4.dp)
+                text = "Welcome back!",
+                modifier = Modifier.padding(start = 10.dp),
+                fontSize = 20.sp,
+                fontWeight = FontWeight.ExtraBold,
+                color = MaterialTheme.colorScheme.primary
+            )
+            Text(
+                text = "Please sign in with your email and password to continue.",
+                modifier = Modifier.padding(start = 10.dp, end = 10.dp),
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.inverseSurface
             )
         }
         EmailInput(
             emailState = email,
             enabled = !loading,
-            onAction = KeyboardActions { passwordFocusRequest.requestFocus() }
+            onAction = KeyboardActions { passwordFocusRequest.requestFocus()},
+            modifier = Modifier.fillMaxWidth(0.9f)
         )
         PasswordInput(
-            modifier = Modifier.focusRequester(passwordFocusRequest),
+            modifier = Modifier.focusRequester(passwordFocusRequest).fillMaxWidth(0.9f),
             passwordState = password,
             labelId = "Password",
             enabled = !loading,
@@ -466,14 +489,14 @@ fun SubmitButton(
 ) {
     Button(
         modifier = Modifier
-            .padding(10.dp)
-            .fillMaxWidth(),
+            .padding(start = 10.dp, top = 15.dp)
+            .fillMaxWidth(0.5f),
         enabled = !loading && validInputs,
-        shape = CircleShape,
+        shape = MaterialTheme.shapes.small,
         onClick = onClick
     ) {
         if (loading) CircularProgressIndicator(modifier = Modifier.size(25.dp))
-        else Text(text = textId, modifier = Modifier.padding(5.dp))
+        else Text(text = textId, fontSize = 14.sp, modifier = Modifier.padding(5.dp))
     }
 }
 
@@ -536,9 +559,10 @@ fun PasswordVisibility(passwordVisibility: MutableState<Boolean>) {
     val visible = passwordVisibility.value
     IconButton(onClick = { passwordVisibility.value = !visible }) {
         Icon(
-            imageVector = if (visible) Icons.Outlined.Lock else Icons.Default.Lock,
+            imageVector = if (visible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
             contentDescription = null,
-            tint = MaterialTheme.colorScheme.onBackground
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(20.dp)
         )
     }
 }

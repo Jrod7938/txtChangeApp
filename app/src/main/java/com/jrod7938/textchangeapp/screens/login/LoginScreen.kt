@@ -32,12 +32,15 @@
 package com.jrod7938.textchangeapp.screens.login
 
 import android.widget.Toast
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
@@ -53,6 +56,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.jrod7938.textchangeapp.components.AppLogo
@@ -85,12 +89,13 @@ fun LoginScreen(
         viewModel.resetViewModel()
     }
 
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-    ) {
+    Column {
+
+
         Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Top
+            horizontalAlignment = Alignment.Start,
+            verticalArrangement = Arrangement.Center,
+            modifier = Modifier.fillMaxWidth().fillMaxHeight(0.92f).padding(top = 100.dp)
         ) {
             AppLogo()
             if (showLoginForm.value) {
@@ -114,15 +119,20 @@ fun LoginScreen(
             }
 
         }
-        Spacer(modifier = Modifier.height(15.dp))
         Row(
-            modifier = Modifier.padding(15.dp),
+            modifier = Modifier
+                .fillMaxWidth().fillMaxHeight()
+                .background(MaterialTheme.colorScheme.primary),
             horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.Bottom
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            val textValue = if(showLoginForm.value) "Don't have an account?" else "Have an Account?"
-            val text = if(showLoginForm.value) "Sign Up" else "Login"
-            Text(text = textValue)
+            val textValue =
+                if (showLoginForm.value) "Don't have an account?" else "Have an Account?"
+            val text = if (showLoginForm.value) "Sign Up" else "Login"
+            Text(
+                text = textValue,
+                color = MaterialTheme.colorScheme.background
+            )
             Text(
                 text = text,
                 modifier = Modifier
@@ -130,9 +140,15 @@ fun LoginScreen(
                     .clickable {
                         showLoginForm.value = !showLoginForm.value
                     },
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.secondary
+                fontWeight = FontWeight.ExtraBold,
+                textDecoration = TextDecoration.Underline,
+                color = MaterialTheme.colorScheme.background
             )
         }
+
     }
+
+
+        // Spacer(modifier = Modifier.height(300.dp))
+
 }
