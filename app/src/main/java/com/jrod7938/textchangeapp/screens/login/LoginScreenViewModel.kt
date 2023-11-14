@@ -41,9 +41,13 @@ import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.ktx.Firebase
 import com.jrod7938.textchangeapp.model.MUser
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 /**
  * ViewModel for the LoginScreen
@@ -68,6 +72,9 @@ class LoginScreenViewModel: ViewModel() {
 
     private val _accountCreatedSignal = MutableStateFlow(false)
     val accountCreatedSignal: StateFlow<Boolean> = _accountCreatedSignal
+
+    private val _isVerificationSent = MutableStateFlow(false)
+    val isVerificationSent: StateFlow<Boolean> = _isVerificationSent
 
 
     /**
@@ -112,28 +119,95 @@ class LoginScreenViewModel: ViewModel() {
      * @see FirebaseAuth.createUserWithEmailAndPassword
      * @see createUser
      */
+
     fun createUserWithEmailAndPassword(
         firstName: String,
         lastName: String,
         email: String,
         password: String,
-        home: () -> Unit
+        home: () -> Unit,
+        login: () -> Unit
     ){
+
         if(_loading.value == false){
             _loading.value = true
             auth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener { task ->
                     if (task.isSuccessful){
-                        val displayName = task.result?.user?.email?.split('@')?.get(0)
-                        createUser(displayName, firstName, lastName)
-                        Log.d("Firebase", "createUserWithEmailAndPassword: Success ${task.result}")
-                        _accountCreatedSignal.value = true
-                        home()
+                        sendEmailVerification(
+                            onVerificationComplete = {
+                                val displayName = task.result?.user?.email?.split('@')?.get(0)
+                                createUser(displayName, firstName, lastName)
+                                Log.d(
+                                    "Firebase",
+                                    "createUserWithEmailAndPassword: Success ${task.result}"
+                                )
+                                _accountCreatedSignal.value = true
+                                home()
+                            },
+                            onVerificationFailed = {
+                                _errorMessage.value = "Could not verify user email."
+                                _loading.value = false
+                                login()
+                            }
+                        )
                     } else {
                         _errorMessage.value = "Failed to create user"
                     }
                     _loading.value = false
                 }
+        }
+    }
+
+    private fun sendEmailVerification(
+        onVerificationComplete: () -> Unit,
+        onVerificationFailed: () -> Unit
+    ){
+        val auth = FirebaseAuth.getInstance()
+        val user = auth.currentUser
+
+        user?.sendEmailVerification()
+            ?.addOnCompleteListener { task ->
+                if(task.isSuccessful){
+                    _isVerificationSent.value = true
+                    CoroutineScope(Dispatchers.Main).launch {
+                        waitForEmailVerification(
+                            onVerificationComplete = onVerificationComplete,
+                            onVerificationFailed = onVerificationFailed
+                        )
+                    }
+                }
+                else {
+                    _errorMessage.value = "We encountered an error trying to validate your email."
+                    _isVerificationSent.value = false
+                }
+            }
+    }
+
+    private suspend fun waitForEmailVerification(
+        onVerificationComplete: () -> Unit,
+        onVerificationFailed: () -> Unit
+    ){
+        val user = FirebaseAuth.getInstance().currentUser
+
+        var retries = 0
+        val maxRetries = 300 // execute loop to wait for user verification times before sending error
+
+        while(user != null && !user.isEmailVerified && retries < maxRetries){
+            delay(1000)
+            retries++
+            try {
+                user.reload().await()
+            } catch (e: Exception){
+                _errorMessage.value = "Error occured while trying to validate user email."
+            }
+        }
+
+        if(user != null && user.isEmailVerified) {
+            onVerificationComplete.invoke()
+        }
+        else {
+            onVerificationFailed.invoke()
         }
     }
 

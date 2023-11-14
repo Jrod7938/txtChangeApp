@@ -75,8 +75,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.DismissValue
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.IconToggleButton
 import androidx.compose.material.icons.Icons
@@ -98,6 +100,7 @@ import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.rememberDismissState
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -150,6 +153,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -184,6 +188,7 @@ import com.jrod7938.textchangeapp.navigation.BottomNavItem
 import com.jrod7938.textchangeapp.screens.account.AccountScreenViewModel
 import com.jrod7938.textchangeapp.screens.details.BookInfoScreenViewModel
 import com.jrod7938.textchangeapp.screens.home.HomeScreen
+import com.jrod7938.textchangeapp.screens.login.LoginScreenViewModel
 import com.jrod7938.textchangeapp.screens.search.SearchType
 import com.jrod7938.textchangeapp.screens.sell.ListingSubmissionData
 import com.jrod7938.textchangeapp.screens.sell.SellScreenViewModel
@@ -372,6 +377,7 @@ fun InputField(
 fun UserForm(
     loading: Boolean = false,
     isCreateAccount: Boolean = false,
+    errorMessage: String?,
     onDone: (String, String, String, String) -> Unit = { firstName, lastName, email, pwd -> }
 ) {
     val email = rememberSaveable { mutableStateOf("") }
@@ -411,7 +417,6 @@ fun UserForm(
                 text = stringResource(id = R.string.create_acct),
                 modifier = Modifier.padding(start = 10.dp, end = 10.dp),
                 fontSize = 14.sp,
-                fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.inverseSurface
             )
             FirstNameInput(firstNameState = firstName, modifier = Modifier.fillMaxWidth(0.9f))
@@ -428,7 +433,6 @@ fun UserForm(
                 text = "Please sign in with your email and password to continue.",
                 modifier = Modifier.padding(start = 10.dp, end = 10.dp),
                 fontSize = 14.sp,
-                fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.inverseSurface
             )
         }
@@ -439,7 +443,9 @@ fun UserForm(
             modifier = Modifier.fillMaxWidth(0.9f)
         )
         PasswordInput(
-            modifier = Modifier.focusRequester(passwordFocusRequest).fillMaxWidth(0.9f),
+            modifier = Modifier
+                .focusRequester(passwordFocusRequest)
+                .fillMaxWidth(0.9f),
             passwordState = password,
             labelId = "Password",
             enabled = !loading,
@@ -466,6 +472,15 @@ fun UserForm(
                 password.value.trim()
             )
             keyboardController?.hide()
+        }
+        if (errorMessage != null) {
+            Text(
+                text = errorMessage,
+                color = MaterialTheme.colorScheme.error,
+                fontStyle = FontStyle.Italic,
+                fontSize = 14.sp,
+                modifier = Modifier.padding(start = 10.dp, top = 15.dp),
+            )
         }
 
     }
@@ -2240,3 +2255,28 @@ fun ConditionsDescriptions(){
 
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun VerificationDialog(isVisible: Boolean) {
+    val (view, setView) = remember { mutableStateOf(isVisible) }
+    if(view) {
+        AlertDialog(
+            shape = MaterialTheme.shapes.medium,
+            onDismissRequest = { setView(false) },
+            confirmButton = {
+                TextButton(onClick = { setView(false) })
+                { Text("Continue", fontWeight = FontWeight.Bold) }
+            },
+            title = {
+                Text("Check your email",
+                    fontSize = 16.sp,
+                    color = MaterialTheme.colorScheme.primary) },
+            text = {
+                Text("We sent a verification link with instructions to your email. " +
+                        "Please follow the instructions to complete your registration",
+                    fontSize = 14.sp,
+                    color = MaterialTheme.colorScheme.primary) }
+        )
+    }
+
+}

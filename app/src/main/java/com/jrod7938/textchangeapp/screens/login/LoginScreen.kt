@@ -61,6 +61,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.jrod7938.textchangeapp.components.AppLogo
 import com.jrod7938.textchangeapp.components.UserForm
+import com.jrod7938.textchangeapp.components.VerificationDialog
 import com.jrod7938.textchangeapp.navigation.AppScreens
 
 
@@ -80,6 +81,7 @@ fun LoginScreen(
     val showLoginForm = rememberSaveable { mutableStateOf(true) }
     val errorMessage by viewModel.errorMessage.collectAsState()
     val accountCreated by viewModel.accountCreatedSignal.collectAsState(initial = false)
+    val isVerificationSent by viewModel.isVerificationSent.collectAsState(initial = false)
     val context = LocalContext.current
 
     if (accountCreated) {
@@ -89,17 +91,23 @@ fun LoginScreen(
         viewModel.resetViewModel()
     }
 
+    if(isVerificationSent){
+        VerificationDialog(isVisible = true)
+    }
     Column {
 
 
         Column(
             horizontalAlignment = Alignment.Start,
             verticalArrangement = Arrangement.Center,
-            modifier = Modifier.fillMaxWidth().fillMaxHeight(0.92f).padding(top = 100.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight(0.92f)
+                .padding(top = 100.dp)
         ) {
             AppLogo()
             if (showLoginForm.value) {
-                UserForm(loading = false, isCreateAccount = false) { _, _, email, password ->
+                UserForm(loading = false, isCreateAccount = false, errorMessage = errorMessage) { _, _, email, password ->
                     viewModel.signInWithEmailAndPassword(email, password) {
                         navController.navigate(AppScreens.HomeScreen.name)
                     }
@@ -107,21 +115,28 @@ fun LoginScreen(
             } else {
                 UserForm(
                     loading = false,
-                    isCreateAccount = true
+                    isCreateAccount = true,
+                    errorMessage = errorMessage
                 ) { firstName, lastName, email, password ->
-                    viewModel.createUserWithEmailAndPassword(firstName, lastName, email, password) {
-                        navController.navigate(AppScreens.HomeScreen.name)
-                    }
+                    viewModel.createUserWithEmailAndPassword(
+                        firstName,
+                        lastName,
+                        email,
+                        password,
+                        home = { navController.navigate(AppScreens.HomeScreen.name) },
+                        login = { navController.navigate(AppScreens.LoginScreen.name) },
+                    )
                 }
             }
-            if (errorMessage != null) {
-                Text(text = errorMessage!!, color = MaterialTheme.colorScheme.error)
-            }
+            // if (!errorMessage.isNullOrEmpty()) {
+
+            //}
 
         }
         Row(
             modifier = Modifier
-                .fillMaxWidth().fillMaxHeight()
+                .fillMaxWidth()
+                .fillMaxHeight()
                 .background(MaterialTheme.colorScheme.primary),
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
