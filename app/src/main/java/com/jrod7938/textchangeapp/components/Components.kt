@@ -390,10 +390,14 @@ fun UserForm(
     val passwordVisibility = rememberSaveable { mutableStateOf(false) }
     val passwordFocusRequest = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
+    fun isPasswordValid(password : String) : Boolean {
+        return if(isCreateAccount) password.matches(Regex("((?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[\\W]).{6,64})"))
+        else password.length in 6..64
+    }
     val valid = remember(email.value, password.value, firstName.value, lastName.value) {
         email.value.trim().isNotEmpty()
                 && password.value.trim().isNotEmpty()
-                && password.value.matches(Regex("((?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[\\W]).{6,64})"))
+                && (isPasswordValid(password.value))
                 && email.value.endsWith("@pride.hofstra.edu")
     }
 

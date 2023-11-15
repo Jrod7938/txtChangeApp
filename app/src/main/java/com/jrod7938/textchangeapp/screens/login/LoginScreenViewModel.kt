@@ -96,7 +96,8 @@ class LoginScreenViewModel: ViewModel() {
                 .addOnCompleteListener{ task ->
                     if (task.isSuccessful){
                         Log.d("Firebase", "signInWithEmailAndPassword: ${task.result}")
-                        home()
+                        if(auth.currentUser?.displayName.isNullOrEmpty()) home()
+                        else _errorMessage.value = "There seems be an error logging you in"
                     } else {
                         _errorMessage.value = "Incorrect email or password"
                     }
