@@ -408,7 +408,7 @@ fun UserForm(
             .fillMaxHeight()
             .background(color = MaterialTheme.colorScheme.background)
             .verticalScroll(scrollState)
-            .padding(start = 10.dp, top = 10.dp)
+            .padding(start = 10.dp, top = 10.dp, bottom = 15.dp)
             .onFocusChanged { viewModel.resetErrorMessage(it) },
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.Start
@@ -536,6 +536,7 @@ fun SubmitButton(
  * @param passwordVisibility whether the password is visible
  * @param imeAction the IME action for the input field
  * @param onAction the keyboard actions for the input field
+ * @param isCreateAccount is the form the registration or log in
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -549,13 +550,14 @@ fun PasswordInput(
     onAction: KeyboardActions = KeyboardActions.Default,
     isCreateAccount: Boolean,
 ) {
-
+    var isFocused by remember { mutableStateOf(false)}
     val visualTransformation =
         if (passwordVisibility.value) VisualTransformation.None else PasswordVisualTransformation()
     OutlinedTextField(
         modifier = modifier
             .padding(10.dp)
-            .fillMaxWidth(),
+            .fillMaxWidth()
+            .onFocusEvent { isFocused = it.isFocused },
         value = passwordState.value,
         label = { Text(text = labelId) },
         singleLine = true,
@@ -574,7 +576,7 @@ fun PasswordInput(
         keyboardActions = onAction,
         supportingText = {
             Column {
-                if(isCreateAccount) {
+                if(isCreateAccount && isFocused ) {
                     if (!passwordState.value.contains(Regex("(?=.*\\d)"))) {
                         Text("Password must contain at least one digit")
                     }

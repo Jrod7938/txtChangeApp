@@ -96,7 +96,8 @@ class LoginScreenViewModel: ViewModel() {
                 .addOnCompleteListener{ task ->
                     if (task.isSuccessful){
                         Log.d("Firebase", "signInWithEmailAndPassword: ${task.result}")
-                        if(auth.currentUser?.displayName.isNullOrEmpty()) home()
+                        Log.d("Firebase", "${auth.currentUser?.displayName}")
+                        if(!auth.currentUser?.displayName.isNullOrEmpty()) home()
                         else _errorMessage.value = "There seems be an error logging you in"
                     } else {
                         _errorMessage.value = "Incorrect email or password"
@@ -144,7 +145,6 @@ class LoginScreenViewModel: ViewModel() {
                                     "Firebase",
                                     "createUserWithEmailAndPassword: Success ${task.result}"
                                 )
-
                                 _accountCreatedSignal.value = true
                                 home()
                             },
@@ -290,6 +290,7 @@ class LoginScreenViewModel: ViewModel() {
             savedBooks = mutableListOf<String>()
         ).toMap()
 
+        Log.d("Firebase", "$user")
 
         FirebaseFirestore.getInstance().collection("users")
             .document(displayName.toString())
