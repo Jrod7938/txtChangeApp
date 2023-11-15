@@ -68,6 +68,7 @@ import com.jrod7938.textchangeapp.screens.splash.SplashScreen
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
+
     val bottomNavItems = listOf(
         BottomNavItem.Home,
         BottomNavItem.Search,
@@ -86,7 +87,6 @@ fun AppNavigation() {
         bottomBar = {
             if (showAppBars.value) {
                 BottomNavBar(navController = navController, items = bottomNavItems)
-     // Conditionally display BottomNavigationBar
             }
         },
         floatingActionButton = {
@@ -94,7 +94,6 @@ fun AppNavigation() {
                 SellFAB()
             }
         },
-
     ) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)) {
             NavHost(
@@ -171,15 +170,6 @@ fun AppNavigation() {
                     }
                     AccountScreen(navController = navController)
                 }
-
-//            if(showAppBars.value) {
-//                DisposableEffect(Unit) {
-//                    onDispose { }
-//                }
-//
-//                if(!sheetState) PostListingMBS(true)
-//                if(active) sheetState = false
-//            }
             }
         }
     }

@@ -29,28 +29,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.jrod7938.textchangeapp.screens.sell
+package com.jrod7938.textchangeapp.model
 
-/**
- * Data class that captures user information for listing submission
- *
- * @property isbn
- * @property price
- * @property category
- * @property condition
- * @property isbnValid
- * @property priceValid
- * @property categoryValid
- * @property conditionValid
- */
-data class ListingSubmissionData (
-    val isbn: String,
-    val price: String,
-    val category: String,
-    val condition: String,
-
-    val isbnValid: Boolean,
-    val priceValid: Boolean,
-    val categoryValid: Boolean,
-    val conditionValid: Boolean,
-)
+enum class SearchType {
+    None,
+    ISBN,
+    Title,
+    Category,
+    Author
+}

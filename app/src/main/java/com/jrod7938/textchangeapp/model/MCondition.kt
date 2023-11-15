@@ -54,25 +54,33 @@ data class MCondition(
                 description = "Book has clear signs of wear. May have minor defects including remainder marks, owner inscription, or clipped/chipped dust jacket."),
             MCondition(
                 condition = "Good",
-                description = "Book may have a greater degree of defects, including highlighting, library markings, or loose bindings."),
+                description = "Book may have a greater degree of defects, including highlighting, library markings, or loose bindings."
+            ),
             MCondition(
                 condition = "Fair",
-                description = "Book may be very worn, soiled, torn, or barely holding together."),
+                description = "Book may be very worn, soiled, torn, or barely holding together."
+            ),
             MCondition(
                 condition = "Poor",
-                description = "Book may have extensive damage. Parts may be missing.")
+                description = "Book may have extensive damage. Parts may be missing."
+            )
         )
     }
 
-//    override fun toString(): String {
-//        return condition
-//
-//    }
-
+    /**
+     * Returns the condition of the book.
+     *
+     * @return the condition of the book
+     */
     fun returnCondition(): String {
         return condition
     }
 
+    /**
+     * Returns the description of the book condition.
+     *
+     * @return the description of the book condition
+     */
     fun returnDescription(): String {
         return description
     }

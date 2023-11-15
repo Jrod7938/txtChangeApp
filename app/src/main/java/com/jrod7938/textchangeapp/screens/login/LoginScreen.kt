@@ -65,7 +65,6 @@ import com.jrod7938.textchangeapp.components.UserForm
 import com.jrod7938.textchangeapp.components.VerificationDialog
 import com.jrod7938.textchangeapp.navigation.AppScreens
 
-
 /**
  * LoginScreen composable
  *
