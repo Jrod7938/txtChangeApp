@@ -222,7 +222,7 @@ class LoginScreenViewModel: ViewModel() {
         val user = auth.currentUser
 
         var retries = 0
-        val maxRetries = 5 // 5 minutes
+        val maxRetries = 300 // 5 minutes
 
         while(user != null && !user.isEmailVerified && retries < maxRetries){
             delay(1000)
