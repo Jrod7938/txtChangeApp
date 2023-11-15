@@ -31,12 +31,30 @@
 
 package com.jrod7938.textchangeapp.screens.account
 
+import android.inputmethodservice.Keyboard
+import android.util.Log
+import android.widget.Toast
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.Icon
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.AddCircle
+import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Divider
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -48,8 +66,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.jrod7938.textchangeapp.components.AccountInfo
@@ -67,6 +89,7 @@ import com.jrod7938.textchangeapp.model.MBook
  * @see NavController
  * @see AccountScreenViewModel
  */
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun AccountScreen(
     navController: NavController,
@@ -78,61 +101,84 @@ fun AccountScreen(
     val loading by viewModel.loading.observeAsState(initial = false)
 
     val currentlyEditingBook = remember { mutableStateOf<MBook?>(null) }
+    var showBottomSheet by remember {mutableStateOf(false)}
 
-    Column(
+    val context = LocalContext.current
+
+    if (message?.isNotEmpty() == true) {
+        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+        viewModel.reset()
+    }
+
+    LazyColumn (
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
     ) {
+        item {
+            if (loading) CircularProgressIndicator()
 
-        var show by remember { mutableStateOf(false) }
-        if (loading) {
-            CircularProgressIndicator()
-        }
-        if (message?.isNotEmpty() == true) {
-            Text(text = message!!, color = MaterialTheme.colorScheme.onPrimaryContainer)
-        }
-        if (!loading && user != null && bookListings != null) {
-            if (currentlyEditingBook.value != null) {
-                EditBookDialog(
-                    book = currentlyEditingBook.value!!,
-                    onConfirm = { book ->
-                        viewModel.updateBook(book)
-                        currentlyEditingBook.value = null
-                    },
-                    onDismiss = { currentlyEditingBook.value = null }
-                )
+            user?.let {
+                AccountInfo(it, navController = navController, viewModel = viewModel)
             }
-            AccountInfo(user!!, navController = navController)
-            Text(
-                text = "Selling",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-            )
-            Button(
-                onClick = { show = true }
+
+        }
+        stickyHeader {
+            Row(
+                verticalAlignment = Alignment.Bottom,
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.background)
             ) {
                 Text(
-                    text = "Create a New Listing",
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.SemiBold,
+                    text = "My Listings:",
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier
+                    .padding(start = 15.dp, bottom = 10.dp),
+                    textAlign = TextAlign.Start,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontSize = 20.sp,
+                )
+                Button(
+                    onClick = { showBottomSheet = true },
+                    modifier = Modifier.padding(10.dp)
+                ){
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "New Listing",
+                        tint = MaterialTheme.colorScheme.background,
+                    )
+                }
+            }
+            Divider(modifier = Modifier.fillMaxWidth())
+        }
+        item {
+            if(!loading && user!= null && bookListings != null) {
+                AccountListings(
+                    bookListings = bookListings!!,
+                    currentlyEditingBook = currentlyEditingBook,
+                    navController = navController,
                 )
             }
-            Text(
-                modifier = Modifier
-                    .padding(16.dp)
-                    .align(Alignment.Start),
-                text = "My Listings:",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-            )
-            AccountListings(
-                bookListings = bookListings!!,
-                currentlyEditingBook = currentlyEditingBook,
-                navController = navController
+            if(!loading && user != null && bookListings?.isEmpty() == true) {
+                Text("Whoops..Looks like you've reached the end.", color =  MaterialTheme.colorScheme.onPrimaryContainer)
+            }
+        }
+    }
+
+    if(showBottomSheet) PostListingMBS(onSheetDismissed = { showBottomSheet = false } )
+    if (!loading && user != null && bookListings != null) {
+        if (currentlyEditingBook.value != null) {
+            EditBookDialog(
+                book = currentlyEditingBook.value!!,
+                onConfirm = { book ->
+                    viewModel.updateBook(book)
+                    currentlyEditingBook.value = null
+                },
+                onDismiss = { currentlyEditingBook.value = null }
             )
         }
-
-        if(show) PostListingMBS(onSheetDismissed = { show = false } )
     }
+
 }

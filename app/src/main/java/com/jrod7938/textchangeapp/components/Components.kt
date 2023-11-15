@@ -75,10 +75,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.DismissValue
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.IconToggleButton
 import androidx.compose.material.icons.Icons
@@ -87,20 +85,19 @@ import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.DeleteForever
+import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.ErrorOutline
-import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.HelpOutline
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.MoreHoriz
+import androidx.compose.material.icons.filled.Logout
+import androidx.compose.material.icons.filled.ModeEditOutline
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material.icons.outlined.FavoriteBorder
-import androidx.compose.material.icons.outlined.Lock
-import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material.rememberDismissState
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -111,6 +108,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
@@ -146,6 +144,8 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
@@ -188,7 +188,6 @@ import com.jrod7938.textchangeapp.navigation.BottomNavItem
 import com.jrod7938.textchangeapp.screens.account.AccountScreenViewModel
 import com.jrod7938.textchangeapp.screens.details.BookInfoScreenViewModel
 import com.jrod7938.textchangeapp.screens.home.HomeScreen
-import com.jrod7938.textchangeapp.screens.login.LoginScreenViewModel
 import com.jrod7938.textchangeapp.screens.search.SearchType
 import com.jrod7938.textchangeapp.screens.sell.ListingSubmissionData
 import com.jrod7938.textchangeapp.screens.sell.SellScreenViewModel
@@ -666,7 +665,7 @@ fun TopNavigationBar(navController: NavHostController, items: List<BottomNavItem
 
 
     items.forEach{item ->
-        if(currentRoute == item.route) setTitle(item.title)
+        if (currentRoute?.contains(item.route) == true) setTitle(item.title)
     }
         TopAppBar(
             modifier = Modifier
@@ -742,48 +741,6 @@ fun sendFeedback() : Intent {
 
     return feedback
 }
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun TxTchangeAppBar(navController: NavHostController) {
-    val navBackStackEntry by navController.currentBackStackEntryAsState()
-    val currentRoute = navBackStackEntry?.destination?.route
-
-    TopAppBar(
-        modifier = Modifier
-            .fillMaxHeight(.1f)
-            .padding(10.dp),
-        title = {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Start
-            ) {
-                AppLogo(appLogoSize = 54.dp,
-                    namePlateTopPadding = 0.dp,
-                    namePlateSize = 120.dp,
-                    namePlateRegistered = false)
-                Spacer(modifier = Modifier.fillMaxWidth(0.4f))
-                Icon(
-                    modifier = Modifier
-                        .size(34.dp)
-                        .clickable { navController.navigate(AppScreens.SavedBooksScreen.name) },
-                    imageVector = if (currentRoute == AppScreens.SavedBooksScreen.name) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
-                    tint = if (currentRoute == AppScreens.SavedBooksScreen.name) MaterialTheme.colorScheme.primary else Color.DarkGray,
-                    contentDescription = "Favorite"
-                )
-                Spacer(modifier = Modifier.fillMaxWidth(0.1f))
-                Icon(
-                    modifier = Modifier
-                        .size(34.dp)
-                        .clickable { navController.navigate(AppScreens.AccountScreen.name) },
-                    imageVector = if (currentRoute == AppScreens.AccountScreen.name) Icons.Filled.Person else Icons.Outlined.Person,
-                    tint = if (currentRoute == AppScreens.AccountScreen.name) MaterialTheme.colorScheme.primary else Color.DarkGray,
-                    contentDescription = "Account"
-                )
-            }
-        }
-    )
-}
-
 
 /**
  * A card that displays a book category
@@ -990,7 +947,7 @@ fun EditBookDialog(book: MBook, onConfirm: (MBook) -> Unit, onDismiss: () -> Uni
 
     AlertDialog(
         onDismissRequest = { onDismiss() },
-        title = { Text("Edit ${book.title}") },
+        title = { Text("Edit ${book.title}", fontSize = 14.sp) },
         text = {
             Column {
                 BookConditionDropdown(
@@ -1015,7 +972,7 @@ fun EditBookDialog(book: MBook, onConfirm: (MBook) -> Unit, onDismiss: () -> Uni
             }
         },
         confirmButton = {
-            Button(onClick = {
+            TextButton(onClick = {
                 if (valid) {
                     onConfirm(
                         book.copy(
@@ -1026,12 +983,12 @@ fun EditBookDialog(book: MBook, onConfirm: (MBook) -> Unit, onDismiss: () -> Uni
                     onDismiss()
                 }
             }) {
-                Text("Confirm")
+                Text("Confirm", fontWeight = FontWeight.Bold )
             }
         },
         dismissButton = {
-            Button(onClick = { onDismiss() }) {
-                Text("Cancel")
+            TextButton(onClick = { onDismiss() }) {
+                Text("Cancel", fontWeight = FontWeight.Bold)
             }
         }
     )
@@ -1054,70 +1011,205 @@ fun AccountListings(
     viewModel: AccountScreenViewModel = viewModel(),
     navController: NavController
 ) {
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(2),
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        items(bookListings.size) { index ->
-            val book = bookListings[index]
-            Card(
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(bottom = 8.dp, top = 15.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ){
+        bookListings.chunked(2).forEach{ row ->
+            Row(
                 modifier = Modifier
-                    .padding(8.dp)
-                    .height(250.dp)
-                    .fillMaxWidth(),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.background,
-                    contentColor = MaterialTheme.colorScheme.onBackground
-                ),
-                border = BorderStroke(2.dp, MaterialTheme.colorScheme.primary),
-                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
+                BookListingRows(
+                rowItems = row,
+                viewModel = viewModel,
+                currentlyEditingBook = currentlyEditingBook,
+                navController = navController,
+            )}
+        }
+    }
+}
+
+@Composable
+fun BookListingRows(
+    rowItems: List<MBook>,
+    viewModel: AccountScreenViewModel,
+    currentlyEditingBook: MutableState<MBook?>,
+    navController: NavController
+){
+    for(item in rowItems){
+        BookListingItem(
+            book = item,
+            viewModel = viewModel,
+            currentlyEditingBook = currentlyEditingBook,
+            navController = navController
+        )
+    }
+}
+
+@Composable
+fun BookListingItem(
+    book: MBook,
+    viewModel: AccountScreenViewModel,
+    currentlyEditingBook: MutableState<MBook?>,
+    navController: NavController
+){
+
+    val configuration = LocalConfiguration.current
+    val screenWidth = configuration.screenWidthDp.dp
+
+    var show by remember { mutableStateOf(false) }
+        Card(
+            modifier = Modifier
+                .height(250.dp)
+                .width((screenWidth / 2) - 8.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.background,
+                contentColor = MaterialTheme.colorScheme.onBackground
+            ),
+            shape = MaterialTheme.shapes.extraSmall,
+        ){
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(15.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ){
+                Row {
                     Image(
                         painter = rememberAsyncImagePainter(book.imageURL),
-                        contentDescription = null,
+                        contentDescription = "Book Image",
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(140.dp)
+                            .height(150.dp)
                             .padding(8.dp)
                             .clickable {
                                 navController.navigate("${AppScreens.BookInfoScreen.name}/${book.bookID}")
                             }
                     )
-                    Text(
-                        modifier = Modifier.height(40.dp),
-                        text = book.title,
-                        style = MaterialTheme.typography.bodyMedium,
-                        textAlign = TextAlign.Center,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis
+                }
+
+                Text(
+                    text = book.title,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary,
+                    textAlign = TextAlign.Center,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 5.dp),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    IconButton(
+                        onClick = { currentlyEditingBook.value = book },
+                        colors = IconButtonDefaults.iconButtonColors(
+                            contentColor = MaterialTheme.colorScheme.secondaryContainer,
+                            containerColor = MaterialTheme.colorScheme.primary,
+                        ),
+                        content = {
+                            Icon(
+                                imageVector = Icons.Default.ModeEditOutline,
+                                contentDescription = "Edit Book",
+                                tint = MaterialTheme.colorScheme.secondaryContainer,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
                     )
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Button(
-                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-                            onClick = { currentlyEditingBook.value = book }
-                        ) {
-                            Text(text = "Edit", fontSize = 12.sp)
+
+                    IconButton(
+                        onClick = { show = true },
+                        colors = IconButtonDefaults.iconButtonColors(
+                            contentColor = MaterialTheme.colorScheme.primary,
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                        ),
+                        content = {
+                            Icon(
+                                imageVector = Icons.Default.DeleteOutline,
+                                contentDescription = "Delete Book",
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(16.dp)
+                            )
                         }
-                        Button(
-                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-                            onClick = { viewModel.deleteBook(book) }
-                        ) {
-                            Text(text = "Delete", fontSize = 12.sp)
-                        }
-                    }
+                    )
+                }
+                if(show){
+                    DestructiveActionDialog(
+                        isVisible = true,
+                        onConfirmAction = { viewModel.deleteBook(book)},
+                        onDismissAction = { show = false },
+                        title = "Are You Sure?",
+                        text = "You are about to delete '${book.title}'. This action cannot be undone. Do you still want to proceed?",
+                        confirmButtonText = "Continue",
+                        dismissButtonText = "Cancel",
+                        imageVector = Icons.Default.DeleteForever
+                    )
                 }
             }
         }
+}
+
+
+@Composable
+fun DestructiveActionDialog(
+    isVisible: Boolean,
+    onConfirmAction: () -> Unit,
+    onDismissAction: () -> Unit,
+    title: String,
+    text: String,
+    confirmButtonText: String,
+    dismissButtonText: String,
+    imageVector: ImageVector,
+    ){
+    val (view, setView) = remember { mutableStateOf(isVisible) }
+    if(view){
+        AlertDialog(
+            onDismissRequest = onDismissAction.also{ setView(false) },
+            confirmButton = {
+                TextButton(
+                    onClick = onConfirmAction,
+                    content = {
+                        Text(confirmButtonText,
+                            color = MaterialTheme.colorScheme.error,
+                            fontWeight = FontWeight.ExtraBold
+                        )
+                    }
+                )
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = onDismissAction.also{ setView(false)},
+                    content = { Text(dismissButtonText)}
+                )
+            },
+            title = {
+                Text(
+                    text = title,
+                    fontSize = 14.sp,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            },
+            text = {
+                Text(text)
+            },
+            icon = {
+                Icon(
+                    imageVector = imageVector,
+                    contentDescription = "Delete Warning",
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
+        )
     }
 }
 
@@ -1129,61 +1221,215 @@ fun AccountListings(
  * @see MUser
  */
 @Composable
-fun AccountInfo(user: MUser, navController: NavController) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceEvenly,
-        verticalAlignment = Alignment.CenterVertically
+fun AccountInfo(user: MUser, navController: NavController, viewModel: AccountScreenViewModel) {
+    var showLogout by remember { mutableStateOf(false) }
+    var showUpdate by remember { mutableStateOf(false) }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.secondaryContainer)
+            .padding(top = 30.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
+        Button(
+            enabled = false,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.inverseSurface,
+                contentColor = MaterialTheme.colorScheme.background,
+                disabledContainerColor = MaterialTheme.colorScheme.inverseSurface,
+                disabledContentColor = MaterialTheme.colorScheme.background
+            ),
+            onClick = {},
+            content = {  Text("${user.firstName[0]}", fontSize = 40.sp) },
+            modifier = Modifier.size(100.dp)
+        )
         Text(
-            modifier = Modifier.fillMaxWidth(0.7f),
-            text = "Hello, ${user.firstName} ${user.lastName}.",
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 15.dp),
+            text = "${user.firstName} ${user.lastName}",
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold,
             maxLines = 1,
-            overflow = TextOverflow.Ellipsis
+            overflow = TextOverflow.Ellipsis,
+            textAlign = TextAlign.Center,
         )
-        IconButton(
-            modifier = Modifier.size(30.dp),
-            onClick = {
-                FirebaseAuth.getInstance().signOut()
-                navController.navigate(AppScreens.LoginScreen.name) {
-                    popUpTo(navController.graph.startDestinationRoute!!) { inclusive = true }
-                    launchSingleTop = true
-                }
-            }
+        Text(
+            modifier = Modifier.fillMaxWidth(),
+            text = "@${user.displayName}",
+            color = MaterialTheme.colorScheme.primary,
+            fontSize = 16.sp,
+            textAlign = TextAlign.Center,
+            fontStyle = FontStyle.Italic
+        )
+        Text(
+            modifier = Modifier.fillMaxWidth(),
+            text = "${user.bookListings.size} Listings | ${user.savedBooks.size} Saved",
+            fontSize = 16.sp,
+            textAlign = TextAlign.Center,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.primary,
+        )
+        Row(
+            verticalAlignment = Alignment.Bottom,
+            modifier = Modifier.padding(bottom = 15.dp)
         ) {
-            Icon(
-                imageVector = Icons.Default.ExitToApp,
-                contentDescription = "Logout",
-                tint = MaterialTheme.colorScheme.error
-            )
+            Button(onClick = { showUpdate = true }) {
+                Text("Edit Profile")
+            }
+            IconButton(onClick = { showLogout = true },
+                modifier = Modifier
+                    .size(40.dp)
+                    .padding(start = 5.dp, bottom = 5.dp),
+                colors = IconButtonDefaults.iconButtonColors(
+                    contentColor = MaterialTheme.colorScheme.onError,
+                    containerColor = MaterialTheme.colorScheme.error
+                )
+            ){
+                Icon(
+                    imageVector = Icons.Default.Logout,
+                    contentDescription = "Logout",
+                    tint = MaterialTheme.colorScheme.onError,
+                    modifier = Modifier
+                        .padding(start = 5.dp)
+                        .size(20.dp)
+                )
+            }
         }
     }
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.background,
-            contentColor = MaterialTheme.colorScheme.onBackground
-        ),
-        border = BorderStroke(2.dp, MaterialTheme.colorScheme.primary),
-        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalAlignment = Alignment.Start,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Text(text = "Name: ${user.firstName} ${user?.lastName}")
-            Text(text = "Display Name: ${user.displayName}")
-            Text(text = "Email: ${user.email}")
-        }
+    if(showUpdate) EditProfileDialog(viewModel = viewModel, onDismissAction = { showUpdate = false}, isVisible = true)
+
+    if(showLogout) DestructiveActionDialog(
+        isVisible = true,
+        onConfirmAction = {
+            FirebaseAuth.getInstance().signOut()
+            navController.navigate(AppScreens.LoginScreen.name) {
+                popUpTo(navController.graph.startDestinationRoute!!) { inclusive = true }
+                launchSingleTop = true
+            }
+        },
+        onDismissAction = { showLogout = false },
+        title = "Log out",
+        text = "Are you sure you want to log out?" ,
+        confirmButtonText = "Logout",
+        dismissButtonText = "Cancel",
+        imageVector = Icons.Default.Logout
+    )
+}
+
+@Composable
+fun EditProfileDialog(viewModel: AccountScreenViewModel, onDismissAction: () -> Unit, isVisible : Boolean){
+    val (view, setView) = remember { mutableStateOf(isVisible) }
+    val firstName = remember { mutableStateOf(TextFieldValue(""))}
+    var isValidFirstName by remember { mutableStateOf(false)}
+
+    val lastName = remember { mutableStateOf(TextFieldValue(""))}
+    var isValidLastName by remember { mutableStateOf(false)}
+
+    if(view) {
+        AlertDialog(
+            onDismissRequest = onDismissAction.also { setView(false) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        onDismissAction.also {
+                            viewModel.editUserProfile(
+                                firstName.value.text,
+                                lastName.value.text
+                            )
+                            setView(false)
+                        }
+                    },
+                    content = {
+                        Text(
+                            "Update",
+                            fontWeight = FontWeight.ExtraBold
+                        )
+                    },
+                    enabled = isValidFirstName && isValidLastName
+                )
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = onDismissAction.also { setView(false) },
+                    content = { Text("Cancel") }
+                )
+            },
+            title = {
+                Text(
+                    text = "Edit User Profile",
+                    fontSize = 14.sp,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            },
+            text = {
+                Column(horizontalAlignment = Alignment.Start) {
+                    OutlinedTextField(
+                        label = { Text("First Name") },
+                        value = firstName.value,
+                        onValueChange = { input ->
+                            firstName.value = input
+                            isValidFirstName = input.text.isNotEmpty()
+                        },
+                        isError = !isValidFirstName,
+                        supportingText = {
+                            if (!isValidFirstName) {
+                                Text("First name field must not be empty")
+                            }
+                        },
+                        trailingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Close,
+                                contentDescription = "Empty FirstName",
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier
+                                    .clickable { firstName.value = TextFieldValue("") }
+                                    .size(20.dp)
+                            )
+                        }
+                    )
+
+                    OutlinedTextField(
+                        label = { Text("Last Name") },
+                        value = lastName.value,
+                        onValueChange = { input ->
+                            lastName.value = input
+                            isValidLastName = input.text.isNotEmpty()
+                        },
+                        isError = !isValidLastName,
+                        supportingText = {
+                            if (!isValidLastName) {
+                                Text("Last name field must not be empty")
+                            }
+                        },
+                        trailingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Close,
+                                contentDescription = "Empty LastName",
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier
+                                    .clickable { lastName.value = TextFieldValue("") }
+                                    .size(20.dp)
+                            )
+                        }
+                    )
+
+                }
+
+            },
+            icon = {
+                Icon(
+                    imageVector = Icons.Default.Person,
+                    contentDescription = "Person Icon",
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
+        )
     }
 }
+
 
 /**
  * This composable is the Book Condition Dropdown. It displays a dropdown for
@@ -1209,7 +1455,7 @@ fun BookConditionDropdown(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Start
         ) {
-            Text(text = "Condition: ")
+            ConditionTooltip()
             TextButton(onClick = { isDropdownExpanded = true }
             ) {
                 Text(selectedCondition)
@@ -1226,11 +1472,11 @@ fun BookConditionDropdown(
                 MCondition.conditions.forEach { condition ->
                     DropdownMenuItem(
                         onClick = {
-                            onConditionSelected(condition.toString())
+                            onConditionSelected(condition.returnCondition())
                             isDropdownExpanded = false
                         }
                     ) {
-                        Text(condition.toString(), color = Color.Black)
+                        Text(condition.returnCondition(), color = MaterialTheme.colorScheme.inverseSurface)
                     }
                 }
             }
@@ -1561,20 +1807,24 @@ fun BookThumbnail(
 
         Text(
             text = book.title,
-            fontWeight = FontWeight.Bold,
+            fontWeight = FontWeight.ExtraBold,
             color = MaterialTheme.colorScheme.primary,
             maxLines = 1,
-            modifier = Modifier.padding(top = 20.dp)
+            modifier = Modifier
+                .padding(top = 20.dp)
+                .fillMaxWidth(0.7f),
+            overflow = TextOverflow.Ellipsis,
+            textAlign = TextAlign.Center
         )
 
-        Text(text = "by ${book.author}")
+        Text(text = "by ${book.author}", fontSize = 14.sp, textAlign = TextAlign.Center)
 
 
         Text(
             text = "Price: $${book.price}",
             color = MaterialTheme.colorScheme.secondary,
         )
-        Text(text = "Condition: ${book.condition}")
+        Text(text = "Condition: ${book.condition}", fontWeight = FontWeight.Bold, fontSize = 14.sp, textAlign = TextAlign.Center)
         Column() {
             Row(verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center,
@@ -1608,12 +1858,13 @@ fun BookThumbnail(
                     Text(text = "Purchase")
                 }
                 Icon(
-                    Icons.Default.MoreHoriz,
+                    Icons.Outlined.Info,
                     tint = MaterialTheme.colorScheme.primary,
                     contentDescription = "View More",
                     modifier = Modifier
                         .clickable { navController.navigate("${AppScreens.BookInfoScreen.name}/${book.bookID}") }
-                        .padding(top = 15.dp, start = 15.dp)
+                        .padding(start = 10.dp)
+                        .size(30.dp)
                 )
             }
         }
