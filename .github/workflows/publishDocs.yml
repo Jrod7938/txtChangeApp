@@ -3,7 +3,7 @@ name: Generate and Publish Dokka Documentation
 on:
   push:
     branches:
-      - master 
+      - Sprint-3 
   workflow_dispatch: 
 
 jobs:
