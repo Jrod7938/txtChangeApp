@@ -148,7 +148,6 @@ class LoginScreenViewModel: ViewModel() {
                             },
                             onVerificationFailed = {
                                 _errorMessage.value = "Your verification link has expired. Please try again."
-                                FirebaseAuth.getInstance().currentUser?.delete()
                                 // delete user info from data base if not verified
                             }
                         )
@@ -193,7 +192,12 @@ class LoginScreenViewModel: ViewModel() {
                 else {
                     _isVerificationSent.value = false
                     _errorMessage.value = "We encountered an error trying to validate your email."
+                    user.delete()
                 }
+            }
+            ?.addOnCanceledListener {
+                user.delete()
+                _isVerificationSent.value = false
             }
     }
 
@@ -216,7 +220,7 @@ class LoginScreenViewModel: ViewModel() {
         val user = auth.currentUser
 
         var retries = 0
-        val maxRetries = 300 // 5 minutes
+        val maxRetries = 5 // 5 minutes
 
         while(user != null && !user.isEmailVerified && retries < maxRetries){
             delay(1000)
