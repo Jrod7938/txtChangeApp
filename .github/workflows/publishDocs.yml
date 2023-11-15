@@ -3,7 +3,8 @@ name: Generate and Publish Dokka Documentation
 on:
   push:
     branches:
-      - main  # Set your default branch here
+      - master 
+  workflow_dispatch: 
 
 jobs:
   build-and-deploy:
