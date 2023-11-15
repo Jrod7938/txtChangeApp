@@ -143,6 +143,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.focus.onFocusEvent
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalConfiguration
@@ -188,6 +190,7 @@ import com.jrod7938.textchangeapp.navigation.BottomNavItem
 import com.jrod7938.textchangeapp.screens.account.AccountScreenViewModel
 import com.jrod7938.textchangeapp.screens.details.BookInfoScreenViewModel
 import com.jrod7938.textchangeapp.screens.home.HomeScreen
+import com.jrod7938.textchangeapp.screens.login.LoginScreenViewModel
 import com.jrod7938.textchangeapp.screens.search.SearchType
 import com.jrod7938.textchangeapp.screens.sell.ListingSubmissionData
 import com.jrod7938.textchangeapp.screens.sell.SellScreenViewModel
@@ -374,10 +377,11 @@ fun InputField(
 //@Preview(showBackground = true)
 @Composable
 fun UserForm(
-    loading: Boolean = false,
+    loading: Boolean,
     isCreateAccount: Boolean = false,
     errorMessage: String?,
-    onDone: (String, String, String, String) -> Unit = { firstName, lastName, email, pwd -> }
+    viewModel: LoginScreenViewModel,
+    onDone: (String, String, String, String) -> Unit = { firstName, lastName, email, pwd -> },
 ) {
     val email = rememberSaveable { mutableStateOf("") }
     val password = rememberSaveable { mutableStateOf("") }
@@ -388,9 +392,9 @@ fun UserForm(
     val keyboardController = LocalSoftwareKeyboardController.current
     val valid = remember(email.value, password.value, firstName.value, lastName.value) {
         email.value.trim().isNotEmpty()
-                && email.value.contains("@pride.hofstra.edu")
                 && password.value.trim().isNotEmpty()
                 && password.value.length >= 6
+                && email.value.endsWith("@pride.hofstra.edu")
     }
 
     val scrollState = rememberScrollState()
@@ -400,7 +404,8 @@ fun UserForm(
             .fillMaxHeight()
             .background(color = MaterialTheme.colorScheme.background)
             .verticalScroll(scrollState)
-            .padding(start = 10.dp, top = 10.dp),
+            .padding(start = 10.dp, top = 10.dp)
+            .onFocusChanged { viewModel.resetErrorMessage(it) },
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.Start
     ) {
@@ -472,12 +477,13 @@ fun UserForm(
             )
             keyboardController?.hide()
         }
+
         if (errorMessage != null) {
             Text(
                 text = errorMessage,
                 color = MaterialTheme.colorScheme.error,
                 fontStyle = FontStyle.Italic,
-                fontSize = 14.sp,
+                fontSize = 12.sp,
                 modifier = Modifier.padding(start = 10.dp, top = 15.dp),
             )
         }
@@ -2516,15 +2522,15 @@ fun VerificationDialog(isVisible: Boolean) {
             onDismissRequest = { setView(false) },
             confirmButton = {
                 TextButton(onClick = { setView(false) })
-                { Text("Continue", fontWeight = FontWeight.Bold) }
+                { Text("Okay", fontWeight = FontWeight.Bold) }
             },
             title = {
                 Text("Check your email",
                     fontSize = 16.sp,
                     color = MaterialTheme.colorScheme.primary) },
             text = {
-                Text("We sent a verification link with instructions to your email. " +
-                        "Please follow the instructions to complete your registration",
+                Text("We sent a verification link with instructions to the email you provided. " +
+                        "Please open the email and follow the instructions to complete your registration",
                     fontSize = 14.sp,
                     color = MaterialTheme.colorScheme.primary) }
         )

@@ -50,6 +50,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
@@ -79,6 +80,7 @@ fun LoginScreen(
     viewModel: LoginScreenViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
 ) {
     val showLoginForm = rememberSaveable { mutableStateOf(true) }
+    val loading by viewModel.loading.observeAsState(initial = false)
     val errorMessage by viewModel.errorMessage.collectAsState()
     val accountCreated by viewModel.accountCreatedSignal.collectAsState(initial = false)
     val isVerificationSent by viewModel.isVerificationSent.collectAsState(initial = false)
@@ -107,16 +109,17 @@ fun LoginScreen(
         ) {
             AppLogo()
             if (showLoginForm.value) {
-                UserForm(loading = false, isCreateAccount = false, errorMessage = errorMessage) { _, _, email, password ->
+                UserForm(loading = loading, isCreateAccount = false, errorMessage = errorMessage, viewModel = viewModel) { _, _, email, password ->
                     viewModel.signInWithEmailAndPassword(email, password) {
                         navController.navigate(AppScreens.HomeScreen.name)
                     }
                 }
             } else {
                 UserForm(
-                    loading = false,
+                    loading = loading,
                     isCreateAccount = true,
-                    errorMessage = errorMessage
+                    errorMessage = errorMessage,
+                    viewModel = viewModel,
                 ) { firstName, lastName, email, password ->
                     viewModel.createUserWithEmailAndPassword(
                         firstName,
@@ -124,7 +127,6 @@ fun LoginScreen(
                         email,
                         password,
                         home = { navController.navigate(AppScreens.HomeScreen.name) },
-                        login = { navController.navigate(AppScreens.LoginScreen.name) },
                     )
                 }
             }

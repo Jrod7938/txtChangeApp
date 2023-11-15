@@ -32,6 +32,7 @@
 package com.jrod7938.textchangeapp.screens.login
 
 import android.util.Log
+import androidx.compose.ui.focus.FocusState
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -126,7 +127,6 @@ class LoginScreenViewModel: ViewModel() {
         email: String,
         password: String,
         home: () -> Unit,
-        login: () -> Unit
     ){
 
         if(_loading.value == false){
@@ -134,7 +134,7 @@ class LoginScreenViewModel: ViewModel() {
             auth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener { task ->
                     if (task.isSuccessful){
-                        sendEmailVerification(
+                        emailVerificationAction(
                             onVerificationComplete = {
                                 val displayName = task.result?.user?.email?.split('@')?.get(0)
                                 createUser(displayName, firstName, lastName)
@@ -142,35 +142,48 @@ class LoginScreenViewModel: ViewModel() {
                                     "Firebase",
                                     "createUserWithEmailAndPassword: Success ${task.result}"
                                 )
+
                                 _accountCreatedSignal.value = true
                                 home()
                             },
                             onVerificationFailed = {
-                                _errorMessage.value = "Could not verify user email."
-                                _loading.value = false
-                                login()
+                                _errorMessage.value = "Your verification link has expired. Please try again."
+                                FirebaseAuth.getInstance().currentUser?.delete()
+                                // delete user info from data base if not verified
                             }
                         )
                     } else {
                         _errorMessage.value = "Failed to create user"
                     }
                     _loading.value = false
+                    _isVerificationSent.value = false
+                    // in case of verification failure, we want to reset back to default value
                 }
         }
     }
 
-    private fun sendEmailVerification(
+    /**
+     * Calls the sendEmailVerification method on user.
+     * This function provided by firebase does not inherently check if the mailbox of the specified user exists.
+     *
+     * @return Unit
+     * @param onVerificationComplete : () -> Unit
+     * @param onVerificationFailed : () -> Unit
+     *
+     * @see waitForEmailVerification
+     */
+
+    private fun emailVerificationAction(
         onVerificationComplete: () -> Unit,
         onVerificationFailed: () -> Unit
     ){
-        val auth = FirebaseAuth.getInstance()
+        Log.d("loadingStatus", "${loading.value}")
         val user = auth.currentUser
-
         user?.sendEmailVerification()
             ?.addOnCompleteListener { task ->
                 if(task.isSuccessful){
                     _isVerificationSent.value = true
-                    CoroutineScope(Dispatchers.Main).launch {
+                    viewModelScope.launch {
                         waitForEmailVerification(
                             onVerificationComplete = onVerificationComplete,
                             onVerificationFailed = onVerificationFailed
@@ -178,20 +191,32 @@ class LoginScreenViewModel: ViewModel() {
                     }
                 }
                 else {
-                    _errorMessage.value = "We encountered an error trying to validate your email."
                     _isVerificationSent.value = false
+                    _errorMessage.value = "We encountered an error trying to validate your email."
                 }
             }
     }
+
+    /**
+     * Defines expiration for verification token sent to user inbox by waiting for user interaction.
+     * Makes this check a certain number of times before it fails, and the token is expired.
+     * Defines events in the case of success and failure
+     *
+     * @return Unit
+     * @param onVerificationComplete : () -> Unit
+     * @param onVerificationFailed: () -> Unit
+     *
+     * @see emailVerificationAction
+     */
 
     private suspend fun waitForEmailVerification(
         onVerificationComplete: () -> Unit,
         onVerificationFailed: () -> Unit
     ){
-        val user = FirebaseAuth.getInstance().currentUser
+        val user = auth.currentUser
 
         var retries = 0
-        val maxRetries = 300 // execute loop to wait for user verification times before sending error
+        val maxRetries = 300 // 5 minutes
 
         while(user != null && !user.isEmailVerified && retries < maxRetries){
             delay(1000)
@@ -208,6 +233,20 @@ class LoginScreenViewModel: ViewModel() {
         }
         else {
             onVerificationFailed.invoke()
+        }
+    }
+
+    /**
+     * Reset error message as the focus on the user form changes
+     *
+     * @return Unit
+     * @param focusState : FocusState
+     *
+     */
+
+    fun resetErrorMessage(focusState: FocusState){
+        if(focusState.isFocused){
+            if(!_errorMessage.value.isNullOrEmpty()) _errorMessage.value = null
         }
     }
 
