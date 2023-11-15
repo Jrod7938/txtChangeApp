@@ -35,6 +35,8 @@ plugins {
     id("com.google.gms.google-services")
     id("dagger.hilt.android.plugin")
     id("kotlin-kapt")
+    id("kotlin-android")
+    id("org.jetbrains.dokka")
 }
 
 android {
