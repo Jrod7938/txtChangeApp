@@ -71,6 +71,7 @@ fun SplashScreen(
     scale: Animatable<Float,
             AnimationVector1D> = Animatable(0f)
 ) {
+    val user = FirebaseAuth.getInstance().currentUser
     val scale = remember{
         scale
     }
@@ -92,8 +93,8 @@ fun SplashScreen(
 
         // If user is logged in goto Home else goto Login Screen
         // The creation of a display name indicates the verification process is complete
-        if (FirebaseAuth.getInstance().currentUser?.displayName.isNullOrEmpty()) {
-            navController.navigate(AppScreens.LoginScreen.name)
+        if (user?.displayName.isNullOrEmpty()) {
+             navController.navigate(AppScreens.LoginScreen.name)
         } else {
             navController.navigate(AppScreens.HomeScreen.name)
         }

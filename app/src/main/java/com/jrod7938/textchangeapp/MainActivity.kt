@@ -44,6 +44,14 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseAuthException
+import com.google.firebase.auth.FirebaseAuthProvider
+import com.google.firebase.auth.FirebaseAuthRegistrar
+import com.google.firebase.auth.FirebaseAuthSettings
+import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.auth.FirebaseAuthCredentialsProvider
 import com.jrod7938.textchangeapp.navigation.AppNavigation
 import com.jrod7938.textchangeapp.ui.theme.TexTchangeAppTheme
 

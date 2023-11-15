@@ -38,6 +38,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.ktx.Firebase
@@ -149,6 +150,7 @@ class LoginScreenViewModel: ViewModel() {
                             onVerificationFailed = {
                                 _errorMessage.value = "Your verification link has expired. Please try again."
                                 // delete user info from data base if not verified
+                                auth.currentUser?.delete()
                             }
                         )
                     } else {
@@ -192,7 +194,6 @@ class LoginScreenViewModel: ViewModel() {
                 else {
                     _isVerificationSent.value = false
                     _errorMessage.value = "We encountered an error trying to validate your email."
-                    user.delete()
                 }
             }
             ?.addOnCanceledListener {
@@ -253,6 +254,7 @@ class LoginScreenViewModel: ViewModel() {
             if(!_errorMessage.value.isNullOrEmpty()) _errorMessage.value = null
         }
     }
+
 
     /**
      * Reset the ViewModel

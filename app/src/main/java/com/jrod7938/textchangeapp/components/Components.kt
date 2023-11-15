@@ -393,7 +393,7 @@ fun UserForm(
     val valid = remember(email.value, password.value, firstName.value, lastName.value) {
         email.value.trim().isNotEmpty()
                 && password.value.trim().isNotEmpty()
-                && password.value.length >= 6
+                && password.value.matches(Regex("((?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[\\W]).{6,64})"))
                 && email.value.endsWith("@pride.hofstra.edu")
     }
 
@@ -454,6 +454,7 @@ fun UserForm(
             labelId = "Password",
             enabled = !loading,
             passwordVisibility = passwordVisibility,
+            isCreateAccount = isCreateAccount,
             onAction = KeyboardActions {
                 if (!valid) return@KeyboardActions
                 onDone(
@@ -541,8 +542,10 @@ fun PasswordInput(
     enabled: Boolean,
     passwordVisibility: MutableState<Boolean>,
     imeAction: ImeAction = ImeAction.Done,
-    onAction: KeyboardActions = KeyboardActions.Default
+    onAction: KeyboardActions = KeyboardActions.Default,
+    isCreateAccount: Boolean,
 ) {
+
     val visualTransformation =
         if (passwordVisibility.value) VisualTransformation.None else PasswordVisualTransformation()
     OutlinedTextField(
@@ -564,7 +567,28 @@ fun PasswordInput(
         ),
         visualTransformation = visualTransformation,
         trailingIcon = { PasswordVisibility(passwordVisibility = passwordVisibility) },
-        keyboardActions = onAction
+        keyboardActions = onAction,
+        supportingText = {
+            Column {
+                if(isCreateAccount) {
+                    if (!passwordState.value.contains(Regex("(?=.*\\d)"))) {
+                        Text("Password must contain at least one digit")
+                    }
+                    if (!passwordState.value.contains(Regex("(?=.*[a-z])"))) {
+                        Text("Password must contain at least one lowercase letter")
+                    }
+                    if (!passwordState.value.contains(Regex("(?=.*[A-Z])"))) {
+                        Text("Password must contain at least one uppercase letter")
+                    }
+                    if (!passwordState.value.contains(Regex("(?=.*[\\W])"))) {
+                        Text("Password must contain at least one special character")
+                    }
+                    if ((passwordState.value.length < 6) || (passwordState.value.length > 64)) {
+                        Text("Password length must be between 6 and 64 characters")
+                    }
+                }
+            }
+        }
     )
 }
 

@@ -86,6 +86,7 @@ fun LoginScreen(
     val isVerificationSent by viewModel.isVerificationSent.collectAsState(initial = false)
     val context = LocalContext.current
 
+
     if (accountCreated) {
         LaunchedEffect(key1 = true) {
             Toast.makeText(context, "Account Created Successfully!", Toast.LENGTH_SHORT).show()
@@ -130,9 +131,6 @@ fun LoginScreen(
                     )
                 }
             }
-            // if (!errorMessage.isNullOrEmpty()) {
-
-            //}
 
         }
         Row(
