@@ -104,5 +104,4 @@ fun HomeScreen(
         }
         DisplayCategories(bookCategories, navController)
     }
-
 }

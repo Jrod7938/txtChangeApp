@@ -57,7 +57,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.jrod7938.textchangeapp.components.BookInfoView
-import com.jrod7938.textchangeapp.components.SellFAB
 
 /**
  * Screen that displays the details of a book.

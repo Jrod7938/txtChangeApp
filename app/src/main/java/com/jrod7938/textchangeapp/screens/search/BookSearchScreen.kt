@@ -31,7 +31,6 @@
 
 package com.jrod7938.textchangeapp.screens.search
 
-
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -79,9 +78,10 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.jrod7938.textchangeapp.components.DisplaySearchResults
-import com.jrod7938.textchangeapp.components.SelectionType
 import com.jrod7938.textchangeapp.components.ToggleButton
-import com.jrod7938.textchangeapp.components.ToggleButtonOption
+import com.jrod7938.textchangeapp.model.SearchType
+import com.jrod7938.textchangeapp.model.SelectionType
+import com.jrod7938.textchangeapp.model.ToggleButtonOption
 import com.jrod7938.textchangeapp.navigation.AppScreens
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers

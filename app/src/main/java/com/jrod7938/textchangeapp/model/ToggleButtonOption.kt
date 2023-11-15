@@ -29,28 +29,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.jrod7938.textchangeapp.screens.sell
+package com.jrod7938.textchangeapp.model
 
 /**
- * Data class that captures user information for listing submission
- *
- * @property isbn
- * @property price
- * @property category
- * @property condition
- * @property isbnValid
- * @property priceValid
- * @property categoryValid
- * @property conditionValid
+ * Data class that represents a toggle button option.
  */
-data class ListingSubmissionData (
-    val isbn: String,
-    val price: String,
-    val category: String,
-    val condition: String,
-
-    val isbnValid: Boolean,
-    val priceValid: Boolean,
-    val categoryValid: Boolean,
-    val conditionValid: Boolean,
+data class ToggleButtonOption(
+    val text: String,
+    val iconRes: Int?,
 )
