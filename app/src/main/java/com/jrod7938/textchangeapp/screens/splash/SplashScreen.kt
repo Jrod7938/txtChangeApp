@@ -93,9 +93,8 @@ fun SplashScreen(
         delay(2000L)
 
         // If user is logged in goto Home else goto Login Screen
-        // The creation of a display name indicates the verification process is complete
-        if (user?.displayName.isNullOrEmpty()) {
-             navController.navigate(AppScreens.LoginScreen.name)
+        if (FirebaseAuth.getInstance().currentUser?.email.isNullOrEmpty()) {
+            navController.navigate(AppScreens.LoginScreen.name)
         } else {
             navController.navigate(AppScreens.HomeScreen.name)
         }
