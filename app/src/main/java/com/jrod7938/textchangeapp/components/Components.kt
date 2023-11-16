@@ -2300,7 +2300,7 @@ fun PostListingForm(
     val textStateISBN = remember { mutableStateOf(TextFieldValue()) } // ISBN Text-field value
     var isValidISBN by remember { mutableStateOf(true) }
     fun checkISBN(isbn: String): Boolean {
-        return isbn.matches(Regex("^[0-9]*\$"))
+        return isbn.matches(Regex("^[0-9X]*\$"))
     }
 
     val textStatePrice = remember { mutableStateOf(TextFieldValue()) } // Price Text-field value
