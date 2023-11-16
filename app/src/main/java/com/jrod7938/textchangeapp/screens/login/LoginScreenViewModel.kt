@@ -190,6 +190,7 @@ class LoginScreenViewModel: ViewModel() {
                 else {
                     _isVerificationSent.value = false
                     _errorMessage.value = "We encountered an error trying to validate your email."
+                    user.delete()
                 }
             }
             ?.addOnCanceledListener {
