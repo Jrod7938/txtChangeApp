@@ -2772,6 +2772,12 @@ fun ConditionsDescriptions() {
 
 }
 
+/**
+ * This composable is the Verification Dialog. It displays a dialog for
+ * the user to verify their email.
+ *
+ * @param isVisible Boolean whether the dialog is visible
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun VerificationDialog(isVisible: Boolean) {
