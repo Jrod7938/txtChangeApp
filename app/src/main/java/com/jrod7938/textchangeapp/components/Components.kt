@@ -32,6 +32,7 @@
 package com.jrod7938.textchangeapp.components
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.widget.Toast
 import androidx.compose.animation.animateColor
 import androidx.compose.animation.core.Animatable
@@ -42,6 +43,7 @@ import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDp
 import androidx.compose.animation.core.keyframes
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -62,6 +64,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -72,24 +75,29 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.BottomNavigation
-import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.Icon
 import androidx.compose.material.IconToggleButton
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.ExitToApp
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.DeleteForever
+import androidx.compose.material.icons.filled.DeleteOutline
+import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.MoreHoriz
+import androidx.compose.material.icons.filled.HelpOutline
+import androidx.compose.material.icons.filled.Logout
+import androidx.compose.material.icons.filled.ModeEditOutline
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material.icons.outlined.FavoriteBorder
-import androidx.compose.material.icons.outlined.Lock
-import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -97,22 +105,35 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.PlainTooltipBox
+import androidx.compose.material3.RichTooltipBox
+import androidx.compose.material3.RichTooltipState
+import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -122,7 +143,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.focus.onFocusEvent
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
@@ -130,10 +155,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -147,37 +174,56 @@ import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import coil.compose.rememberAsyncImagePainter
+import com.exyte.animatednavbar.AnimatedNavigationBar
+import com.exyte.animatednavbar.animation.balltrajectory.Parabolic
+import com.exyte.animatednavbar.animation.indendshape.Height
+import com.exyte.animatednavbar.animation.indendshape.shapeCornerRadius
+import com.exyte.animatednavbar.utils.noRippleClickable
 import com.google.firebase.auth.FirebaseAuth
 import com.jrod7938.textchangeapp.R
 import com.jrod7938.textchangeapp.model.MBook
+import com.jrod7938.textchangeapp.model.MCategory
 import com.jrod7938.textchangeapp.model.MCondition
 import com.jrod7938.textchangeapp.model.MUser
+import com.jrod7938.textchangeapp.model.SearchType
+import com.jrod7938.textchangeapp.model.SelectionType
+import com.jrod7938.textchangeapp.model.ToggleButtonOption
 import com.jrod7938.textchangeapp.navigation.AppScreens
 import com.jrod7938.textchangeapp.navigation.BottomNavItem
 import com.jrod7938.textchangeapp.screens.account.AccountScreenViewModel
 import com.jrod7938.textchangeapp.screens.details.BookInfoScreenViewModel
 import com.jrod7938.textchangeapp.screens.home.HomeScreen
-import com.jrod7938.textchangeapp.screens.search.SearchType
+import com.jrod7938.textchangeapp.screens.login.LoginScreenViewModel
+import com.jrod7938.textchangeapp.screens.sell.ListingSubmissionData
+import com.jrod7938.textchangeapp.screens.sell.SellScreenViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+/**
+ * This composable is the txtChange name plate. It displays the txtChange name
+ * plate.
+ *
+ * @param size the size of the name plate
+ * @param overrideTopPadding the top padding of the name plate
+ * @param isRegistered whether the name plate is registered
+ */
 @Composable
 fun NamePlate(
     size: Dp = 200.dp,
     overrideTopPadding: Dp = 50.dp,
     isRegistered: Boolean = true,
-){
-    val getResourceId = if(isRegistered){
-        if(isSystemInDarkTheme()) R.drawable.suppreg_dark else R.drawable.suppreg_light
-    } else if(isSystemInDarkTheme()) R.drawable.supp_unreg_dark else R.drawable.supp_unreg_light
+) {
+    val getResourceId = if (isRegistered) {
+        if (isSystemInDarkTheme()) R.drawable.suppreg_dark else R.drawable.suppreg_light
+    } else if (isSystemInDarkTheme()) R.drawable.supp_unreg_dark else R.drawable.supp_unreg_light
 
     Surface(
         modifier = Modifier
             .width(size)
             .padding(top = overrideTopPadding)
-    ){
+    ) {
         Image(
             modifier = Modifier.size(60.dp),
             painter = painterResource(id = getResourceId),
@@ -186,34 +232,38 @@ fun NamePlate(
 
     }
 }
+
 /**
- * This composable is the App Logo. It displays the app logo as a circle with
- * the text "txt. CHANGE" inside of it.
+ * This composable is the AppLogo. It displays the app logo.
  *
- * @param txtSize the size of the "txt." text
- * @param changeSize the size of the "CHANGE" text
+ * @param appLogoSize the size of the app logo
+ * @param namePlateSize the size of the name plate
+ * @param namePlateTopPadding the top padding of the name plate
+ * @param namePlateRegistered whether the name plate is registered
  */
 @Composable
 fun AppLogo(
-    appLogoSize: Dp = 50.dp,
-    namePlateSize: Dp = 175.dp,
+    appLogoSize: Dp = 60.dp,
+    namePlateSize: Dp = 200.dp,
     namePlateTopPadding: Dp = 0.dp,
-    namePlateRegistered: Boolean = false,
+    namePlateRegistered: Boolean = true,
 ) {
     Row(
         modifier = Modifier
             .padding(10.dp),
-        horizontalArrangement = Arrangement.Center,
-        verticalAlignment = Alignment.CenterVertically
+        horizontalArrangement = Arrangement.Start,
+        verticalAlignment = Alignment.Bottom
     ) {
         Image(
             modifier = Modifier.size(appLogoSize),
             painter = painterResource(id = R.drawable.applogo),
             contentDescription = "App Logo"
         )
-        NamePlate(size = namePlateSize,
+        NamePlate(
+            size = namePlateSize,
             overrideTopPadding = namePlateTopPadding,
-            isRegistered = namePlateRegistered )
+            isRegistered = namePlateRegistered
+        )
     }
 }
 
@@ -347,9 +397,11 @@ fun InputField(
 //@Preview(showBackground = true)
 @Composable
 fun UserForm(
-    loading: Boolean = false,
+    loading: Boolean,
     isCreateAccount: Boolean = false,
-    onDone: (String, String, String, String) -> Unit = { firstName, lastName, email, pwd -> }
+    errorMessage: String?,
+    viewModel: LoginScreenViewModel,
+    onDone: (String, String, String, String) -> Unit = { firstName, lastName, email, pwd -> },
 ) {
     val email = rememberSaveable { mutableStateOf("") }
     val password = rememberSaveable { mutableStateOf("") }
@@ -358,48 +410,75 @@ fun UserForm(
     val passwordVisibility = rememberSaveable { mutableStateOf(false) }
     val passwordFocusRequest = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
+    fun isPasswordValid(password : String) : Boolean {
+        return if(isCreateAccount) password.matches(Regex("((?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[\\W]).{6,64})"))
+        else password.length in 6..64
+    }
     val valid = remember(email.value, password.value, firstName.value, lastName.value) {
         email.value.trim().isNotEmpty()
-                && email.value.contains("@pride.hofstra.edu")
                 && password.value.trim().isNotEmpty()
-                && password.value.length >= 6
+                && (isPasswordValid(password.value))
+                && email.value.endsWith("@pride.hofstra.edu")
     }
 
     val scrollState = rememberScrollState()
 
     Column(
         modifier = Modifier
-            .fillMaxHeight(.6f)
+            .fillMaxHeight()
             .background(color = MaterialTheme.colorScheme.background)
-            .verticalScroll(scrollState),
+            .verticalScroll(scrollState)
+            .padding(start = 10.dp, top = 10.dp, bottom = 15.dp)
+            .onFocusChanged { viewModel.resetErrorMessage(it) },
         verticalArrangement = Arrangement.Top,
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.Start
     ) {
         if (isCreateAccount) {
             Text(
-                text = stringResource(id = R.string.create_acct),
-                modifier = Modifier.padding(4.dp),
-                textAlign = TextAlign.Center
+                text = "Hello!",
+                modifier = Modifier.padding(start = 10.dp),
+                fontSize = 20.sp,
+                fontWeight = FontWeight.ExtraBold,
+                color = MaterialTheme.colorScheme.primary
             )
-            FirstNameInput(firstNameState = firstName)
-            LastNameInput(lastNameState = lastName)
+            Text(
+                text = stringResource(id = R.string.create_acct),
+                modifier = Modifier.padding(start = 10.dp, end = 10.dp),
+                fontSize = 14.sp,
+                color = MaterialTheme.colorScheme.inverseSurface
+            )
+            FirstNameInput(firstNameState = firstName, modifier = Modifier.fillMaxWidth(0.9f))
+            LastNameInput(lastNameState = lastName, modifier = Modifier.fillMaxWidth(0.9f))
         } else {
             Text(
-                text = "Welcome, please login to continue!",
-                modifier = Modifier.padding(4.dp)
+                text = "Welcome back!",
+                modifier = Modifier.padding(start = 10.dp),
+                fontSize = 20.sp,
+                fontWeight = FontWeight.ExtraBold,
+                color = MaterialTheme.colorScheme.primary
+            )
+            Text(
+                text = "Please sign in with your email and password to continue.",
+                modifier = Modifier.padding(start = 10.dp, end = 10.dp),
+                fontSize = 14.sp,
+                color = MaterialTheme.colorScheme.inverseSurface
             )
         }
         EmailInput(
             emailState = email,
             enabled = !loading,
-            onAction = KeyboardActions { passwordFocusRequest.requestFocus() }
+            onAction = KeyboardActions { passwordFocusRequest.requestFocus()},
+            modifier = Modifier.fillMaxWidth(0.9f)
         )
         PasswordInput(
-            modifier = Modifier.focusRequester(passwordFocusRequest),
+            modifier = Modifier
+                .focusRequester(passwordFocusRequest)
+                .fillMaxWidth(0.9f),
             passwordState = password,
             labelId = "Password",
             enabled = !loading,
             passwordVisibility = passwordVisibility,
+            isCreateAccount = isCreateAccount,
             onAction = KeyboardActions {
                 if (!valid) return@KeyboardActions
                 onDone(
@@ -424,6 +503,16 @@ fun UserForm(
             keyboardController?.hide()
         }
 
+        if (errorMessage != null) {
+            Text(
+                text = errorMessage,
+                color = MaterialTheme.colorScheme.error,
+                fontStyle = FontStyle.Italic,
+                fontSize = 12.sp,
+                modifier = Modifier.padding(start = 10.dp, top = 15.dp),
+            )
+        }
+
     }
 }
 
@@ -445,14 +534,14 @@ fun SubmitButton(
 ) {
     Button(
         modifier = Modifier
-            .padding(10.dp)
-            .fillMaxWidth(),
+            .padding(start = 10.dp, top = 15.dp)
+            .fillMaxWidth(0.5f),
         enabled = !loading && validInputs,
-        shape = CircleShape,
+        shape = MaterialTheme.shapes.small,
         onClick = onClick
     ) {
         if (loading) CircularProgressIndicator(modifier = Modifier.size(25.dp))
-        else Text(text = textId, modifier = Modifier.padding(5.dp))
+        else Text(text = textId, fontSize = 14.sp, modifier = Modifier.padding(5.dp))
     }
 }
 
@@ -467,6 +556,7 @@ fun SubmitButton(
  * @param passwordVisibility whether the password is visible
  * @param imeAction the IME action for the input field
  * @param onAction the keyboard actions for the input field
+ * @param isCreateAccount is the form the registration or log in
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -477,14 +567,17 @@ fun PasswordInput(
     enabled: Boolean,
     passwordVisibility: MutableState<Boolean>,
     imeAction: ImeAction = ImeAction.Done,
-    onAction: KeyboardActions = KeyboardActions.Default
+    onAction: KeyboardActions = KeyboardActions.Default,
+    isCreateAccount: Boolean,
 ) {
+    var isFocused by remember { mutableStateOf(false)}
     val visualTransformation =
         if (passwordVisibility.value) VisualTransformation.None else PasswordVisualTransformation()
     OutlinedTextField(
         modifier = modifier
             .padding(10.dp)
-            .fillMaxWidth(),
+            .fillMaxWidth()
+            .onFocusEvent { isFocused = it.isFocused },
         value = passwordState.value,
         label = { Text(text = labelId) },
         singleLine = true,
@@ -500,7 +593,28 @@ fun PasswordInput(
         ),
         visualTransformation = visualTransformation,
         trailingIcon = { PasswordVisibility(passwordVisibility = passwordVisibility) },
-        keyboardActions = onAction
+        keyboardActions = onAction,
+        supportingText = {
+            Column {
+                if(isCreateAccount && isFocused ) {
+                    if (!passwordState.value.contains(Regex("(?=.*\\d)"))) {
+                        Text("Password must contain at least one digit")
+                    }
+                    if (!passwordState.value.contains(Regex("(?=.*[a-z])"))) {
+                        Text("Password must contain at least one lowercase letter")
+                    }
+                    if (!passwordState.value.contains(Regex("(?=.*[A-Z])"))) {
+                        Text("Password must contain at least one uppercase letter")
+                    }
+                    if (!passwordState.value.contains(Regex("(?=.*[\\W])"))) {
+                        Text("Password must contain at least one special character")
+                    }
+                    if ((passwordState.value.length < 6) || (passwordState.value.length > 64)) {
+                        Text("Password length must be between 6 and 64 characters")
+                    }
+                }
+            }
+        }
     )
 }
 
@@ -515,9 +629,10 @@ fun PasswordVisibility(passwordVisibility: MutableState<Boolean>) {
     val visible = passwordVisibility.value
     IconButton(onClick = { passwordVisibility.value = !visible }) {
         Icon(
-            imageVector = if (visible) Icons.Outlined.Lock else Icons.Default.Lock,
+            imageVector = if (visible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
             contentDescription = null,
-            tint = MaterialTheme.colorScheme.onBackground
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(20.dp)
         )
     }
 }
@@ -533,45 +648,50 @@ fun PasswordVisibility(passwordVisibility: MutableState<Boolean>) {
  * @see BottomNavItem
  */
 @Composable
-fun BottomNavigationBar(
+fun BottomNavBar(
     navController: NavHostController,
     items: List<BottomNavItem>
 ) {
-    BottomNavigation(
-        elevation = 10.dp,
+    var selectedIndex by remember { mutableIntStateOf(0) }
+
+    AnimatedNavigationBar(
         modifier = Modifier.height(70.dp),
-        backgroundColor = MaterialTheme.colorScheme.background,
-        contentColor = MaterialTheme.colorScheme.onBackground
+        selectedIndex = selectedIndex,
+        ballColor = MaterialTheme.colorScheme.primary,
+        cornerRadius = shapeCornerRadius(cornerRadius = 0.dp),
+        ballAnimation = Parabolic(tween(300)),
+        indentAnimation = Height(tween(300)),
+        barColor = MaterialTheme.colorScheme.primary
     ) {
+
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentRoute = navBackStackEntry?.destination?.route
+
         items.forEach { item ->
-            BottomNavigationItem(
-                icon = {
-                    Icon(
-                        modifier = Modifier.size(40.dp),
-                        imageVector = if (currentRoute?.contains(item.route) == true) item.selectedIcon else item.unselectedIcon,
-                        contentDescription = null,
-                        tint = if (currentRoute?.contains(item.route) == true) MaterialTheme.colorScheme.primary else Color.DarkGray
-                    )
-                },
-                label = {
-                    Text(
-                        item.title,
-                        color = if (currentRoute == item.route) MaterialTheme.colorScheme.primary else Color.DarkGray
-                    )
-                },
-                selected = currentRoute == item.route,
-                onClick = {
-                    if (currentRoute != item.route) {
-                        navController.navigate(item.route)
-                    }
-                },
-                selectedContentColor = MaterialTheme.colorScheme.onBackground,
-                unselectedContentColor = Color.DarkGray
-            )
+            if (currentRoute?.contains(item.route) == true) selectedIndex = items.indexOf(item)
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .noRippleClickable {
+                        if (currentRoute != item.route) {
+                            selectedIndex = items.indexOf(item)
+                            navController.navigate(item.route)
+                            // selectedIndex = item.ordinal
+                        }
+                    },
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    modifier = Modifier.size(30.dp),
+                    imageVector = if (currentRoute?.contains(item.route) == true) item.selectedIcon else item.unselectedIcon,
+                    contentDescription = null,
+                    tint = if (currentRoute?.contains(item.route) == true) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.background
+                )
+            }
         }
+
     }
+
 }
 
 /**
@@ -584,46 +704,114 @@ fun BottomNavigationBar(
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TxTchangeAppBar(navController: NavHostController) {
+fun TopNavigationBar(
+    navController: NavHostController,
+    items: List<BottomNavItem>
+) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
+    val (title, setTitle) = remember { mutableStateOf("") }
+
+    val (expanded, setExpanded) = remember { mutableStateOf(false) }
+
+    val context = LocalContext.current
+
+    val sendInvite = inviteFriends()
+    val sendFeedback = sendFeedback()
+
+
+    items.forEach { item ->
+        if (currentRoute?.contains(item.route) == true) setTitle(item.title)
+    }
     TopAppBar(
         modifier = Modifier
-            .fillMaxHeight(.1f)
-            .padding(10.dp),
+            .fillMaxHeight(0.1f)
+            .padding(top = 15.dp, bottom = 5.dp, start = 10.dp, end = 10.dp),
         title = {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Start
+            Text(
+                text = title,
+                fontWeight = FontWeight.ExtraBold,
+                fontSize = 25.sp,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(top = 10.dp)
+            )
+        },
+        actions = {
+            Box(
+                modifier = Modifier
+                    .wrapContentSize(Alignment.TopEnd)
             ) {
-                AppLogo(appLogoSize = 54.dp,
-                    namePlateTopPadding = 0.dp,
-                    namePlateSize = 120.dp,
-                    namePlateRegistered = false)
-                Spacer(modifier = Modifier.fillMaxWidth(0.4f))
-                Icon(
-                    modifier = Modifier
-                        .size(34.dp)
-                        .clickable { navController.navigate(AppScreens.SavedBooksScreen.name) },
-                    imageVector = if (currentRoute == AppScreens.SavedBooksScreen.name) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
-                    tint = if (currentRoute == AppScreens.SavedBooksScreen.name) MaterialTheme.colorScheme.primary else Color.DarkGray,
-                    contentDescription = "Favorite"
-                )
-                Spacer(modifier = Modifier.fillMaxWidth(0.1f))
-                Icon(
-                    modifier = Modifier
-                        .size(34.dp)
-                        .clickable { navController.navigate(AppScreens.AccountScreen.name) },
-                    imageVector = if (currentRoute == AppScreens.AccountScreen.name) Icons.Filled.Person else Icons.Outlined.Person,
-                    tint = if (currentRoute == AppScreens.AccountScreen.name) MaterialTheme.colorScheme.primary else Color.DarkGray,
-                    contentDescription = "Account"
-                )
+                IconButton(
+                    onClick = { setExpanded(true) },
+
+                    ) {
+                    Icon(
+                        imageVector = Icons.Filled.MoreVert,
+                        tint = MaterialTheme.colorScheme.primary,
+                        contentDescription = "More Vertical"
+                    )
+                }
+                DropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { setExpanded(false) }
+                ) {
+                    DropdownMenuItem(
+                        content = { Text("Invite Friends") },
+                        onClick = { sendInvite.let { context.startActivity(sendInvite) } }
+                    )
+                    DropdownMenuItem(
+                        content = { Text("Send Feedback") },
+                        onClick = { sendFeedback.let { context.startActivity(sendFeedback) } }
+                    )
+                }
+
             }
-        }
+        },
     )
+
 }
 
+/**
+ * This composable is the invite friends intent. It displays an intent for the
+ * user to invite friends.
+ *
+ * @return the intent to invite friends
+ */
+@Composable
+fun inviteFriends(): Intent {
+    val invitation = Intent(Intent.ACTION_SEND).apply {
+        type = "text/plain"
+        putExtra(
+            Intent.EXTRA_TEXT, "Hello there fellow Hofstra Student!" +
+                    "\n\nI invite you to check out txtChange." +
+                    "\n\nI am using it to buy and sell from other students"
+        )
+        putExtra(Intent.EXTRA_SUBJECT, "Join txtChange Today!")
+    }
+    return invitation
+}
+
+/**
+ * This composable is the send feedback intent. It displays an intent for the
+ * user to send feedback.
+ *
+ * @return the intent to send feedback
+ */
+@Composable
+fun sendFeedback(): Intent {
+    val feedback = Intent(Intent.ACTION_SEND).apply {
+        type = "text/plain"
+        putExtra(
+            Intent.EXTRA_EMAIL, arrayOf("txtChangeTeam@gmail.com")
+        )
+        putExtra(
+            Intent.EXTRA_SUBJECT, "txtChange Feedback"
+        )
+    }
+
+    return feedback
+}
 
 /**
  * A card that displays a book category
@@ -690,7 +878,10 @@ fun CategoryCard(
  * @see HomeScreen
  */
 @Composable
-fun DisplayCategories(bookCategories: HashMap<String, MBook>, navController: NavHostController) {
+fun DisplayCategories(
+    bookCategories: HashMap<String, MBook>,
+    navController: NavHostController
+) {
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier = Modifier.fillMaxWidth()
@@ -716,7 +907,10 @@ fun DisplayCategories(bookCategories: HashMap<String, MBook>, navController: Nav
  * @see HomeScreen
  */
 @Composable
-fun HomeScreenButtons(navController: NavHostController) {
+fun HomeScreenButtons(
+    navController: NavHostController
+) {
+    var show by remember { mutableStateOf(false) }
     Column(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -734,10 +928,12 @@ fun HomeScreenButtons(navController: NavHostController) {
             modifier = Modifier
                 .padding(16.dp)
                 .size(width = 200.dp, height = 40.dp),
-            onClick = { navController.navigate(AppScreens.SellBookScreen.name) }
+            onClick = { show = true }
         ) {
             Text(text = "Sell A Book")
         }
+
+        if (show) PostListingMBS(onSheetDismissed = { show = false })
     }
 }
 
@@ -813,7 +1009,11 @@ fun LastNameInput(
  * @see MBook
  */
 @Composable
-fun EditBookDialog(book: MBook, onConfirm: (MBook) -> Unit, onDismiss: () -> Unit) {
+fun EditBookDialog(
+    book: MBook,
+    onConfirm: (MBook) -> Unit,
+    onDismiss: () -> Unit
+) {
     var editedCondition by remember { mutableStateOf(book.condition) }
     var editedPrice by remember { mutableStateOf(book.price.toString()) }
 
@@ -827,7 +1027,7 @@ fun EditBookDialog(book: MBook, onConfirm: (MBook) -> Unit, onDismiss: () -> Uni
 
     AlertDialog(
         onDismissRequest = { onDismiss() },
-        title = { Text("Edit ${book.title}") },
+        title = { Text("Edit ${book.title}", fontSize = 14.sp) },
         text = {
             Column {
                 BookConditionDropdown(
@@ -852,7 +1052,7 @@ fun EditBookDialog(book: MBook, onConfirm: (MBook) -> Unit, onDismiss: () -> Uni
             }
         },
         confirmButton = {
-            Button(onClick = {
+            TextButton(onClick = {
                 if (valid) {
                     onConfirm(
                         book.copy(
@@ -863,12 +1063,12 @@ fun EditBookDialog(book: MBook, onConfirm: (MBook) -> Unit, onDismiss: () -> Uni
                     onDismiss()
                 }
             }) {
-                Text("Confirm")
+                Text("Confirm", fontWeight = FontWeight.Bold)
             }
         },
         dismissButton = {
-            Button(onClick = { onDismiss() }) {
-                Text("Cancel")
+            TextButton(onClick = { onDismiss() }) {
+                Text("Cancel", fontWeight = FontWeight.Bold)
             }
         }
     )
@@ -891,70 +1091,239 @@ fun AccountListings(
     viewModel: AccountScreenViewModel = viewModel(),
     navController: NavController
 ) {
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(2),
-        modifier = Modifier.fillMaxWidth()
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(bottom = 8.dp, top = 15.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        items(bookListings.size) { index ->
-            val book = bookListings[index]
-            Card(
+        bookListings.chunked(2).forEach { row ->
+            Row(
                 modifier = Modifier
-                    .padding(8.dp)
-                    .height(250.dp)
-                    .fillMaxWidth(),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.background,
-                    contentColor = MaterialTheme.colorScheme.onBackground
-                ),
-                border = BorderStroke(2.dp, MaterialTheme.colorScheme.primary),
-                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    Image(
-                        painter = rememberAsyncImagePainter(book.imageURL),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(140.dp)
-                            .padding(8.dp)
-                            .clickable {
-                                navController.navigate("${AppScreens.BookInfoScreen.name}/${book.bookID}")
-                            }
-                    )
-                    Text(
-                        modifier = Modifier.height(40.dp),
-                        text = book.title,
-                        style = MaterialTheme.typography.bodyMedium,
-                        textAlign = TextAlign.Center,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Button(
-                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-                            onClick = { currentlyEditingBook.value = book }
-                        ) {
-                            Text(text = "Edit", fontSize = 12.sp)
-                        }
-                        Button(
-                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-                            onClick = { viewModel.deleteBook(book) }
-                        ) {
-                            Text(text = "Delete", fontSize = 12.sp)
-                        }
-                    }
-                }
+                BookListingRows(
+                    rowItems = row,
+                    viewModel = viewModel,
+                    currentlyEditingBook = currentlyEditingBook,
+                    navController = navController,
+                )
             }
         }
+    }
+}
+
+/**
+ * Book Listing Rows
+ *
+ * @param rowItems List<MBook> the list of book listings
+ * @param viewModel AccountScreenViewModel the viewmodel for the screen
+ * @param currentlyEditingBook MutableState<MBook?> the book that is currently being edited
+ * @param navController NavController the nav controller
+ *
+ * @see MBook
+ * @see AccountScreenViewModel
+ */
+@Composable
+fun BookListingRows(
+    rowItems: List<MBook>,
+    viewModel: AccountScreenViewModel,
+    currentlyEditingBook: MutableState<MBook?>,
+    navController: NavController
+) {
+    for (item in rowItems) {
+        BookListingItem(
+            book = item,
+            viewModel = viewModel,
+            currentlyEditingBook = currentlyEditingBook,
+            navController = navController
+        )
+    }
+}
+
+/**
+ * Book Listing Item
+ *
+ * @param book MBook the book
+ * @param viewModel AccountScreenViewModel the viewmodel for the screen
+ * @param currentlyEditingBook MutableState<MBook?> the book that is currently being edited
+ * @param navController NavController the nav controller
+ */
+@Composable
+fun BookListingItem(
+    book: MBook,
+    viewModel: AccountScreenViewModel,
+    currentlyEditingBook: MutableState<MBook?>,
+    navController: NavController
+) {
+
+    val configuration = LocalConfiguration.current
+    val screenWidth = configuration.screenWidthDp.dp
+
+    var show by remember { mutableStateOf(false) }
+    Card(
+        modifier = Modifier
+            .height(250.dp)
+            .width((screenWidth / 2) - 8.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.background,
+            contentColor = MaterialTheme.colorScheme.onBackground
+        ),
+        shape = MaterialTheme.shapes.extraSmall,
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(15.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Row {
+                Image(
+                    painter = rememberAsyncImagePainter(book.imageURL),
+                    contentDescription = "Book Image",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(150.dp)
+                        .padding(8.dp)
+                        .clickable {
+                            navController.navigate("${AppScreens.BookInfoScreen.name}/${book.bookID}")
+                        }
+                )
+            }
+
+            Text(
+                text = book.title,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary,
+                textAlign = TextAlign.Center,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 5.dp),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                IconButton(
+                    onClick = { currentlyEditingBook.value = book },
+                    colors = IconButtonDefaults.iconButtonColors(
+                        contentColor = MaterialTheme.colorScheme.secondaryContainer,
+                        containerColor = MaterialTheme.colorScheme.primary,
+                    ),
+                    content = {
+                        Icon(
+                            imageVector = Icons.Default.ModeEditOutline,
+                            contentDescription = "Edit Book",
+                            tint = MaterialTheme.colorScheme.secondaryContainer,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+                )
+
+                IconButton(
+                    onClick = { show = true },
+                    colors = IconButtonDefaults.iconButtonColors(
+                        contentColor = MaterialTheme.colorScheme.primary,
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    ),
+                    content = {
+                        Icon(
+                            imageVector = Icons.Default.DeleteOutline,
+                            contentDescription = "Delete Book",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+                )
+            }
+            if (show) {
+                DestructiveActionDialog(
+                    isVisible = true,
+                    onConfirmAction = { viewModel.deleteBook(book) },
+                    onDismissAction = { show = false },
+                    title = "Are You Sure?",
+                    text = "You are about to delete '${book.title}'. This action cannot be undone. Do you still want to proceed?",
+                    confirmButtonText = "Continue",
+                    dismissButtonText = "Cancel",
+                    imageVector = Icons.Default.DeleteForever
+                )
+            }
+        }
+    }
+}
+
+
+/**
+ * This composable is the confirmation dialog when
+ * the user wants to delete or edit book.
+ *
+ * @param isVisible Boolean whether the dialog is visible
+ * @param onConfirmAction () -> Unit the function to call when the user confirms the action
+ * @param onDismissAction () -> Unit the function to call when the user dismisses the action
+ * @param title String the title of the dialog
+ * @param text String the text of the dialog
+ * @param confirmButtonText String the text of the confirm button
+ * @param dismissButtonText String the text of the dismiss button
+ * @param imageVector ImageVector the image vector of the dialog
+ */
+@Composable
+fun DestructiveActionDialog(
+    isVisible: Boolean,
+    onConfirmAction: () -> Unit,
+    onDismissAction: () -> Unit,
+    title: String,
+    text: String,
+    confirmButtonText: String,
+    dismissButtonText: String,
+    imageVector: ImageVector,
+) {
+    val (view, setView) = remember { mutableStateOf(isVisible) }
+    if (view) {
+        AlertDialog(
+            onDismissRequest = onDismissAction.also { setView(false) },
+            confirmButton = {
+                TextButton(
+                    onClick = onConfirmAction,
+                    content = {
+                        Text(
+                            confirmButtonText,
+                            color = MaterialTheme.colorScheme.error,
+                            fontWeight = FontWeight.ExtraBold
+                        )
+                    }
+                )
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = onDismissAction.also { setView(false) },
+                    content = { Text(dismissButtonText) }
+                )
+            },
+            title = {
+                Text(
+                    text = title,
+                    fontSize = 14.sp,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            },
+            text = {
+                Text(text)
+            },
+            icon = {
+                Icon(
+                    imageVector = imageVector,
+                    contentDescription = "Delete Warning",
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
+        )
     }
 }
 
@@ -962,65 +1331,240 @@ fun AccountListings(
  * Account Info
  *
  * @param user MUser the user
+ * @param viewModel AccountScreenViewModel the viewmodel for the screen
  *
  * @see MUser
  */
 @Composable
-fun AccountInfo(user: MUser, navController: NavController) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceEvenly,
-        verticalAlignment = Alignment.CenterVertically
+fun AccountInfo(
+    user: MUser, navController: NavController,
+    viewModel: AccountScreenViewModel
+) {
+    var showLogout by remember { mutableStateOf(false) }
+    var showUpdate by remember { mutableStateOf(false) }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.secondaryContainer)
+            .padding(top = 30.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
+        Button(
+            enabled = false,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.inverseSurface,
+                contentColor = MaterialTheme.colorScheme.background,
+                disabledContainerColor = MaterialTheme.colorScheme.inverseSurface,
+                disabledContentColor = MaterialTheme.colorScheme.background
+            ),
+            onClick = {},
+            content = { Text("${user.firstName[0]}", fontSize = 40.sp) },
+            modifier = Modifier.size(100.dp)
+        )
         Text(
-            modifier = Modifier.fillMaxWidth(0.7f),
-            text = "Hello, ${user.firstName} ${user.lastName}.",
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 15.dp),
+            text = "${user.firstName} ${user.lastName}",
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold,
             maxLines = 1,
-            overflow = TextOverflow.Ellipsis
+            overflow = TextOverflow.Ellipsis,
+            textAlign = TextAlign.Center,
         )
-        IconButton(
-            modifier = Modifier.size(30.dp),
-            onClick = {
-                FirebaseAuth.getInstance().signOut()
-                navController.navigate(AppScreens.LoginScreen.name) {
-                    popUpTo(navController.graph.startDestinationRoute!!) { inclusive = true }
-                    launchSingleTop = true
-                }
-            }
+        Text(
+            modifier = Modifier.fillMaxWidth(),
+            text = "@${user.displayName}",
+            color = MaterialTheme.colorScheme.primary,
+            fontSize = 16.sp,
+            textAlign = TextAlign.Center,
+            fontStyle = FontStyle.Italic
+        )
+        Text(
+            modifier = Modifier.fillMaxWidth(),
+            text = "${user.bookListings.size} Listings | ${user.savedBooks.size} Saved",
+            fontSize = 16.sp,
+            textAlign = TextAlign.Center,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.primary,
+        )
+        Row(
+            verticalAlignment = Alignment.Bottom,
+            modifier = Modifier.padding(bottom = 15.dp)
         ) {
-            Icon(
-                imageVector = Icons.Default.ExitToApp,
-                contentDescription = "Logout",
-                tint = MaterialTheme.colorScheme.error
-            )
+            Button(onClick = { showUpdate = true }) {
+                Text("Edit Profile")
+            }
+            IconButton(
+                onClick = { showLogout = true },
+                modifier = Modifier
+                    .size(40.dp)
+                    .padding(start = 5.dp, bottom = 5.dp),
+                colors = IconButtonDefaults.iconButtonColors(
+                    contentColor = MaterialTheme.colorScheme.onError,
+                    containerColor = MaterialTheme.colorScheme.error
+                )
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Logout,
+                    contentDescription = "Logout",
+                    tint = MaterialTheme.colorScheme.onError,
+                    modifier = Modifier
+                        .padding(start = 5.dp)
+                        .size(20.dp)
+                )
+            }
         }
     }
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.background,
-            contentColor = MaterialTheme.colorScheme.onBackground
-        ),
-        border = BorderStroke(2.dp, MaterialTheme.colorScheme.primary),
-        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalAlignment = Alignment.Start,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Text(text = "Name: ${user.firstName} ${user?.lastName}")
-            Text(text = "Display Name: ${user.displayName}")
-            Text(text = "Email: ${user.email}")
-        }
+    if (showUpdate) EditProfileDialog(
+        viewModel = viewModel,
+        onDismissAction = { showUpdate = false },
+        isVisible = true
+    )
+
+    if (showLogout) DestructiveActionDialog(
+        isVisible = true,
+        onConfirmAction = {
+            FirebaseAuth.getInstance().signOut()
+            navController.navigate(AppScreens.LoginScreen.name) {
+                popUpTo(navController.graph.startDestinationRoute!!) { inclusive = true }
+                launchSingleTop = true
+            }
+        },
+        onDismissAction = { showLogout = false },
+        title = "Log out",
+        text = "Are you sure you want to log out?",
+        confirmButtonText = "Logout",
+        dismissButtonText = "Cancel",
+        imageVector = Icons.Default.Logout
+    )
+}
+
+/**
+ * This composable is the Edit Profile Dialog. It displays a dialog for the user to
+ * edit their profile.
+ *
+ * @param viewModel AccountScreenViewModel the viewmodel for the screen
+ * @param onDismissAction () -> Unit the function to call when the user dismisses the action
+ * @param isVisible Boolean whether the dialog is visible
+ */
+@Composable
+fun EditProfileDialog(
+    viewModel: AccountScreenViewModel,
+    onDismissAction: () -> Unit,
+    isVisible: Boolean
+) {
+    val (view, setView) = remember { mutableStateOf(isVisible) }
+    val firstName = remember { mutableStateOf(TextFieldValue("")) }
+    var isValidFirstName by remember { mutableStateOf(false) }
+
+    val lastName = remember { mutableStateOf(TextFieldValue("")) }
+    var isValidLastName by remember { mutableStateOf(false) }
+
+    if (view) {
+        AlertDialog(
+            onDismissRequest = onDismissAction.also { setView(false) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        onDismissAction.also {
+                            viewModel.editUserProfile(
+                                firstName.value.text,
+                                lastName.value.text
+                            )
+                            setView(false)
+                        }
+                    },
+                    content = {
+                        Text(
+                            "Update",
+                            fontWeight = FontWeight.ExtraBold
+                        )
+                    },
+                    enabled = isValidFirstName && isValidLastName
+                )
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = onDismissAction.also { setView(false) },
+                    content = { Text("Cancel") }
+                )
+            },
+            title = {
+                Text(
+                    text = "Edit User Profile",
+                    fontSize = 14.sp,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            },
+            text = {
+                Column(horizontalAlignment = Alignment.Start) {
+                    OutlinedTextField(
+                        label = { Text("First Name") },
+                        value = firstName.value,
+                        onValueChange = { input ->
+                            firstName.value = input
+                            isValidFirstName = input.text.isNotEmpty()
+                        },
+                        isError = !isValidFirstName,
+                        supportingText = {
+                            if (!isValidFirstName) {
+                                Text("First name field must not be empty")
+                            }
+                        },
+                        trailingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Close,
+                                contentDescription = "Empty FirstName",
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier
+                                    .clickable { firstName.value = TextFieldValue("") }
+                                    .size(20.dp)
+                            )
+                        }
+                    )
+
+                    OutlinedTextField(
+                        label = { Text("Last Name") },
+                        value = lastName.value,
+                        onValueChange = { input ->
+                            lastName.value = input
+                            isValidLastName = input.text.isNotEmpty()
+                        },
+                        isError = !isValidLastName,
+                        supportingText = {
+                            if (!isValidLastName) {
+                                Text("Last name field must not be empty")
+                            }
+                        },
+                        trailingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Close,
+                                contentDescription = "Empty LastName",
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier
+                                    .clickable { lastName.value = TextFieldValue("") }
+                                    .size(20.dp)
+                            )
+                        }
+                    )
+
+                }
+
+            },
+            icon = {
+                Icon(
+                    imageVector = Icons.Default.Person,
+                    contentDescription = "Person Icon",
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
+        )
     }
 }
+
 
 /**
  * This composable is the Book Condition Dropdown. It displays a dropdown for
@@ -1046,7 +1590,7 @@ fun BookConditionDropdown(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Start
         ) {
-            Text(text = "Condition: ")
+            ConditionTooltip()
             TextButton(onClick = { isDropdownExpanded = true }
             ) {
                 Text(selectedCondition)
@@ -1063,11 +1607,14 @@ fun BookConditionDropdown(
                 MCondition.conditions.forEach { condition ->
                     DropdownMenuItem(
                         onClick = {
-                            onConditionSelected(condition.toString())
+                            onConditionSelected(condition.returnCondition())
                             isDropdownExpanded = false
                         }
                     ) {
-                        Text(condition.toString(), color = Color.Black)
+                        Text(
+                            condition.returnCondition(),
+                            color = MaterialTheme.colorScheme.inverseSurface
+                        )
                     }
                 }
             }
@@ -1232,6 +1779,13 @@ fun BookInfoView(
     }
 }
 
+/**
+ * This composable is the Book Condition Tooltip. It displays a tooltip for
+ * the user to see the condition of their book.
+ *
+ * @see MCondition
+ * @see BookConditionDropdown
+ */
 @Composable
 fun SelectionPill(
     option: ToggleButtonOption,
@@ -1240,13 +1794,13 @@ fun SelectionPill(
 ) {
 
     Button(
-        onClick = { onClick(option)},
+        onClick = { onClick(option) },
         colors = ButtonDefaults.buttonColors(
-            containerColor = if(selected) MaterialTheme.colorScheme.primary
+            containerColor = if (selected) MaterialTheme.colorScheme.primary
             else MaterialTheme.colorScheme.background,
         ),
         shape = MaterialTheme.shapes.extraLarge,
-        elevation  = ButtonDefaults.elevatedButtonElevation(0.dp),
+        elevation = ButtonDefaults.elevatedButtonElevation(0.dp),
         contentPadding = ButtonDefaults.ContentPadding,
         modifier = Modifier.padding(14.dp, 0.dp),
     ) {
@@ -1274,17 +1828,14 @@ fun SelectionPill(
     }
 }
 
-enum class SelectionType {
-    NONE,
-    SINGLE,
-    MULTIPLE,
-}
-
-data class ToggleButtonOption(
-    val text: String,
-    val iconRes: Int?,
-)
-
+/**
+ * This toggle button is a button that allows the user to select multiple options.
+ *
+ * @param options the options for the toggle button
+ * @param modifier the modifier for the toggle button
+ * @param type the type of selection for the toggle button
+ * @param onClick the function to call when the user clicks the toggle button
+ */
 @Composable
 fun ToggleButton(
     options: Array<ToggleButtonOption>,
@@ -1292,7 +1843,7 @@ fun ToggleButton(
     type: SelectionType = SelectionType.SINGLE,
     onClick: (selectedOptions: Array<ToggleButtonOption>) -> Unit = {},
 ) {
-    val state = remember  { mutableStateMapOf<String, ToggleButtonOption>() }
+    val state = remember { mutableStateMapOf<String, ToggleButtonOption>() }
 
     OutlinedButton(
         onClick = { },
@@ -1361,13 +1912,19 @@ fun ToggleButton(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+/**
+ * This composable is the Book Thumbnail. It displays a thumbnail for
+ * the user to see the book.
+ *
+ * @param book the book to display
+ * @param viewModel BookInfoScreenViewModel the viewmodel for the screen
+ */
 @Composable
 fun BookThumbnail(
     book: MBook,
     viewModel: BookInfoScreenViewModel = viewModel(),
     navController: NavHostController,
-    ) {
+) {
 
     val user by viewModel.user.observeAsState(initial = null)
     val isBookSaved = user?.savedBooks?.contains(book.bookID) == true
@@ -1398,28 +1955,39 @@ fun BookThumbnail(
 
         Text(
             text = book.title,
-            fontWeight = FontWeight.Bold,
+            fontWeight = FontWeight.ExtraBold,
             color = MaterialTheme.colorScheme.primary,
             maxLines = 1,
-            modifier = Modifier.padding(top = 20.dp)
+            modifier = Modifier
+                .padding(top = 20.dp)
+                .fillMaxWidth(0.7f),
+            overflow = TextOverflow.Ellipsis,
+            textAlign = TextAlign.Center
         )
 
-        Text(text = "by ${book.author}")
+        Text(text = "by ${book.author}", fontSize = 14.sp, textAlign = TextAlign.Center)
 
 
         Text(
             text = "Price: $${book.price}",
             color = MaterialTheme.colorScheme.secondary,
         )
-        Text(text = "Condition: ${book.condition}")
+        Text(
+            text = "Condition: ${book.condition}",
+            fontWeight = FontWeight.Bold,
+            fontSize = 14.sp,
+            textAlign = TextAlign.Center
+        )
         Column() {
-            Row(verticalAlignment = Alignment.CenterVertically,
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center,
-                modifier = Modifier.fillMaxWidth()) {
+                modifier = Modifier.fillMaxWidth()
+            ) {
                 SavedToFavoritesButton(
                     isChecked = isChecked,
                     onClick = {
-                        if(user?.savedBooks?.contains(book.bookID)!!){
+                        if (user?.savedBooks?.contains(book.bookID)!!) {
                             viewModel.unsaveBook(book)
                             viewModel.viewModelScope.launch { viewModel.getUser() }
                             Toast.makeText(
@@ -1437,7 +2005,7 @@ fun BookThumbnail(
                                 Toast.LENGTH_SHORT
                             ).show()
                         }
-                            setChecked(!isChecked)
+                        setChecked(!isChecked)
                     })
                 Button(
                     onClick = { setView(true) }
@@ -1445,17 +2013,18 @@ fun BookThumbnail(
                     Text(text = "Purchase")
                 }
                 Icon(
-                    Icons.Default.MoreHoriz,
+                    Icons.Outlined.Info,
                     tint = MaterialTheme.colorScheme.primary,
                     contentDescription = "View More",
                     modifier = Modifier
                         .clickable { navController.navigate("${AppScreens.BookInfoScreen.name}/${book.bookID}") }
-                        .padding(top = 15.dp, start = 15.dp)
+                        .padding(start = 10.dp)
+                        .size(30.dp)
                 )
             }
         }
     }
-    if(view) {
+    if (view) {
 
         AlertDialog(
             shape = MaterialTheme.shapes.medium,
@@ -1477,17 +2046,37 @@ fun BookThumbnail(
 
             },
             title = {
-                Text("Contact Seller?",
+                Text(
+                    "Contact Seller?",
                     fontSize = 14.sp,
-                    color = MaterialTheme.colorScheme.primary) },
+                    color = MaterialTheme.colorScheme.primary
+                )
+            },
             text = {
-                Text("Email the seller of this listing to the begin transaction.",
-                fontSize = 15.sp,
-                color = MaterialTheme.colorScheme.primary) }
+                Text(
+                    "Email the seller of this listing to the begin transaction.",
+                    fontSize = 15.sp,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
         )
     }
 }
 
+/**
+ * This composable is the Book Search Bar. It displays a search bar for
+ * the user to search for books.
+ *
+ * @param bookList List<MBook> the list of books
+ * @param text String the text to search for
+ * @param filter SearchType the type of search
+ * @param navController NavController the nav controller
+ * @param viewModel BookInfoScreenViewModel the viewmodel for the screen
+ *
+ * @see MBook
+ * @see SearchType
+ * @see BookInfoScreenViewModel
+ */
 @Composable
 fun DisplaySearchResults(
     bookList: List<MBook>,
@@ -1497,33 +2086,36 @@ fun DisplaySearchResults(
     viewModel: BookInfoScreenViewModel = viewModel()
 ) {
 
-    val (searchText, setSearchText ) = remember { mutableStateOf("")}
-    val (searchType, setSearchType) = remember { mutableStateOf(filter)}
+    val (searchText, setSearchText) = remember { mutableStateOf("") }
+    val (searchType, setSearchType) = remember { mutableStateOf(filter) }
 
     setSearchType(filter)
 
     LaunchedEffect(true) { viewModel.getUser() }
 
     Column() {
-        if(bookList.isEmpty()) {
-            Column(verticalArrangement = Arrangement.Center,
+        if (bookList.isEmpty()) {
+            Column(
+                verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Text(text = "Sorry, we couldn't find anything for your query",
+                Text(
+                    text = "Sorry, we couldn't find anything for your query",
                     modifier = Modifier
                         .padding(top = 15.dp, start = 30.dp)
                         .fillMaxWidth(0.70f),
                     fontSize = 15.sp,
-                    softWrap = true,)
+                    softWrap = true,
+                )
             }
-        } else  {
+        } else {
 
             // check if this display needs to be changed
 
-            if(searchText != text && text.isNotEmpty()){
-                if(((searchType == SearchType.ISBN) || (searchType == SearchType.None)) && searchText != bookList[0].isbn){
+            if (searchText != text && text.isNotEmpty()) {
+                if (((searchType == SearchType.ISBN) || (searchType == SearchType.None)) && searchText != bookList[0].isbn) {
                     setSearchType(SearchType.ISBN)
-                    if(searchType == filter && text == bookList[0].isbn) setSearchText(text)
+                    if (searchType == filter && text == bookList[0].isbn) setSearchText(text)
 
                 } else if ((searchType == SearchType.Title) && searchText != bookList[0].title) {
                     setSearchType(SearchType.Title)
@@ -1533,8 +2125,6 @@ fun DisplaySearchResults(
                     setSearchType(SearchType.Author)
                     if (searchType == filter && text == bookList[0].author) setSearchText(text)
                 }
-            } else {
-                setSearchText(text)
             }
 
             Column() {
@@ -1549,12 +2139,14 @@ fun DisplaySearchResults(
                         append("'${if (searchText.isNotEmpty()) searchText else text}'")
                     }
                 }
-                Text(text = annotatedString,
+                Text(
+                    text = annotatedString,
                     modifier = Modifier
                         .padding(start = 20.dp, end = 20.dp, top = 15.dp, bottom = 15.dp)
                         .fillMaxWidth(),
                     textAlign = TextAlign.Center,
-                    softWrap = true,)
+                    softWrap = true,
+                )
 
                 LazyColumn {
 
@@ -1563,13 +2155,19 @@ fun DisplaySearchResults(
                             BookThumbnail(book, navController = navController)
                         }
                     }
-                    }
                 }
             }
         }
     }
+}
 
-
+/**
+ * This composable is the SavedToFavoritesButton. It displays a button for
+ * the user to save a book to their favorites.
+ *
+ * @param isChecked Boolean whether the book is saved
+ * @param onClick () -> Unit the function to call when the user clicks the button
+ */
 @SuppressLint("UnusedTransitionTargetStateParameter")
 @Composable
 fun SavedToFavoritesButton(
@@ -1614,3 +2212,594 @@ fun SavedToFavoritesButton(
     }
 }
 
+/**
+ * This composable is the Sell FAB. It displays a FAB for
+ * the user to sell a book.
+ *
+ * @see PostListingMBS
+ */
+@Composable
+fun SellFAB() {
+    var show by remember { mutableStateOf(false) }
+    SmallFloatingActionButton(
+        content = {
+            Icon(
+                Icons.Filled.Add,
+                contentDescription = "",
+                modifier = Modifier.size(30.dp),
+                tint = MaterialTheme.colorScheme.background
+            )
+        },
+        shape = CircleShape,
+        contentColor = MaterialTheme.colorScheme.background,
+        containerColor = MaterialTheme.colorScheme.primary,
+        modifier = Modifier.size(65.dp),
+        onClick = { show = true }
+    )
+
+    if (show) {
+        PostListingMBS(onSheetDismissed = { show = false })
+    }
+}
+
+/**
+ * This composable is the Post Listing Modal Bottom Sheet. It displays a modal bottom sheet for
+ * the user to post a listing.
+ *
+ * @param onSheetDismissed () -> Unit the function to call when the user dismisses the sheet
+ * @param viewModel SellScreenViewModel the viewmodel for the screen
+ *
+ * @see SellScreenViewModel
+ * @see PostListingForm
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@SuppressLint("CoroutineCreationDuringComposition")
+@Composable
+fun PostListingMBS(
+    onSheetDismissed: () -> Unit,
+    viewModel: SellScreenViewModel = viewModel()
+) {
+    val message by viewModel.message.collectAsState()
+    val loading by viewModel.loading.observeAsState(initial = false)
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    ModalBottomSheet(
+        onDismissRequest = onSheetDismissed,
+        sheetState = sheetState,
+    ) {
+
+        PostListingForm(viewModel, loading, message)
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+        }
+    }
+
+}
+
+/**
+ * This composable is the Post Listing Form. It displays a form for
+ * the user to post a listing.
+ *
+ * @param viewModel SellScreenViewModel the viewmodel for the screen
+ * @param loading Boolean whether the form is loading
+ * @param message String the message to display
+ *
+ * @see SellScreenViewModel
+ * @see PostListingMBS
+ * @see DestructiveActionDialog
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun PostListingForm(
+    viewModel: SellScreenViewModel,
+    loading: Boolean,
+    message: String?
+) {
+    val textStateISBN = remember { mutableStateOf(TextFieldValue()) } // ISBN Text-field value
+    var isValidISBN by remember { mutableStateOf(true) }
+    fun checkISBN(isbn: String): Boolean {
+        return isbn.matches(Regex("^[0-9X]*\$"))
+    }
+
+    val textStatePrice = remember { mutableStateOf(TextFieldValue()) } // Price Text-field value
+    var isValidPrice by remember { mutableStateOf(true) }
+    fun checkPrice(price: String): Boolean {
+        return price.matches(Regex("([0-9]*[.])?[0-9]+")) // field validation rege
+    }
+
+    var isConditionExpanded by remember { mutableStateOf(false) } // condition drop down state
+    var selectedCondition by remember { mutableStateOf("") } // selection
+    var isValidCondition by remember { mutableStateOf(true) }
+
+    var isCategoryExpanded by remember { mutableStateOf(false) } // category drop down state
+    var selectedCategory by remember { mutableStateOf("") } // selection
+    var isValidCategory by remember { mutableStateOf(true) }
+
+    var onFormConfirm by remember { mutableStateOf(false) }
+
+    if (onFormConfirm) { // when form is submitted and confirm, reset values
+        textStateISBN.value = TextFieldValue("")
+        textStatePrice.value = TextFieldValue("")
+        selectedCategory = ""
+        selectedCondition = ""
+    }
+
+    Column {
+
+        Text(
+            text = "Create Textbook Listing",
+            color = MaterialTheme.colorScheme.primary,
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier
+                .padding(start = 20.dp, top = 10.dp)
+                .fillMaxWidth(),
+            maxLines = 1,
+        )
+        OutlinedTextField(
+            label = { ISBNTooltip() },
+            enabled = true,
+            value = textStateISBN.value,
+            onValueChange = { input ->
+                onFormConfirm = false
+                textStateISBN.value = input
+                isValidISBN = input.text.isNotEmpty() && checkISBN(input.text)
+            },
+            modifier = Modifier
+                .padding(
+                    start = 20.dp,
+                    end = 20.dp,
+                    top = 15.dp
+                )
+                .fillMaxWidth(),
+            isError = !isValidISBN,
+            maxLines = 1,
+            trailingIcon = {
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = "Close ISBN",
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier
+                        .clickable { textStateISBN.value = TextFieldValue("") }
+                        .size(20.dp)
+                )
+            },
+
+            supportingText = {
+                if (!isValidISBN) {
+                    ErrToolTip(
+                        message = "ISBN must not be empty and must only contain numbers",
+                        contentDescription = "ISBN Error Tooltip"
+                    )
+                }
+            },
+
+            )
+
+        // CATEGORY
+        ExposedDropdownMenuBox(
+            expanded = isCategoryExpanded,
+            onExpandedChange = { newValue -> isCategoryExpanded = newValue },
+            modifier = Modifier.padding(
+                start = 20.dp,
+                bottom = 15.dp,
+                end = 20.dp,
+                top = 15.dp
+            ),
+        ) {
+            OutlinedTextField(
+                modifier = Modifier
+                    .menuAnchor()
+                    .fillMaxWidth(),
+                readOnly = true,
+                label = { Text("Category", fontSize = 15.sp) },
+                value = selectedCategory,
+                onValueChange = { input ->
+                    onFormConfirm = false
+                    isValidCategory = input.isNotEmpty()
+                },
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isCategoryExpanded) },
+                isError = !isValidCategory,
+                maxLines = 1,
+            )
+            ExposedDropdownMenu(
+                expanded = isCategoryExpanded,
+                onDismissRequest = { isCategoryExpanded = false }
+            ) {
+                MCategory.categories.forEach { category ->
+                    DropdownMenuItem(
+                        content = {
+                            Text(
+                                category.toString(),
+                                color = MaterialTheme.colorScheme.inverseSurface
+                            )
+                        },
+                        onClick = {
+                            selectedCategory = category.toString()
+                            isCategoryExpanded = false
+                        },
+                        contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
+                    )
+                }
+            }
+        }
+        Row {
+            OutlinedTextField(
+                label = { Text("Price", fontSize = 15.sp) },
+                value = textStatePrice.value,
+                onValueChange = { input ->
+                    onFormConfirm = false
+                    textStatePrice.value = input
+                    isValidPrice = input.text.isNotEmpty() && checkPrice(input.text)
+                },
+                modifier = Modifier
+                    .padding(
+                        start = 20.dp,
+                        bottom = 15.dp,
+                        top = 15.dp
+                    )
+                    .fillMaxWidth(0.4f),
+                isError = !isValidPrice,
+                maxLines = 1,
+                trailingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = "Clear Price",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier
+                            .clickable { textStatePrice.value = TextFieldValue("") }
+                            .size(20.dp)
+                    )
+
+                },
+                supportingText = {
+                    if (!isValidPrice) {
+                        ErrToolTip(
+                            message = "Price must not be empty and only contain whole numbers or decimals",
+                            contentDescription = "Price Error ToolTip"
+                        )
+                    }
+                }
+            )
+
+            // TEXTBOOK CONDITION
+            ExposedDropdownMenuBox(
+                expanded = isConditionExpanded,
+                onExpandedChange = { newValue -> isConditionExpanded = newValue },
+                modifier = Modifier.padding(
+                    top = 15.dp,
+                    bottom = 15.dp,
+                    start = 20.dp,
+                    end = 20.dp
+                ),
+            ) {
+                OutlinedTextField(
+                    modifier = Modifier
+                        .menuAnchor()
+                        .fillMaxWidth(),
+                    readOnly = true,
+                    label = { ConditionTooltip() },
+                    value = selectedCondition,
+                    onValueChange = { input ->
+                        onFormConfirm = false
+                        isValidCondition = input.isNotEmpty()
+                    },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isConditionExpanded) },
+                    isError = !isValidCondition,
+                    maxLines = 1,
+                )
+                ExposedDropdownMenu(
+                    expanded = isConditionExpanded,
+                    onDismissRequest = { isConditionExpanded = false }
+                ) {
+                    MCondition.conditions.forEach { condition ->
+                        DropdownMenuItem(
+                            content = {
+                                Text(
+                                    condition.returnCondition(),
+                                    color = MaterialTheme.colorScheme.inverseSurface
+                                )
+                            },
+                            onClick = {
+                                selectedCondition =
+                                    condition.returnCondition(); isConditionExpanded =
+                                false
+                            },
+                            contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
+                        )
+
+                    }
+                }
+            }
+        }
+        SellSubmitButton(
+            loading,
+            viewModel,
+            ListingSubmissionData(
+                isbn = textStateISBN.value.text,
+                price = textStatePrice.value.text,
+                condition = selectedCondition,
+                category = selectedCategory,
+
+                isbnValid = isValidISBN,
+                priceValid = isValidPrice,
+                conditionValid = isValidCondition,
+                categoryValid = isValidCategory
+            )
+        )
+
+    }
+
+    if (!message.isNullOrEmpty()) {
+        if (message.contains("Error") || message.contains("No results")) {
+            ConfirmDialog(
+                title = "Oops..",
+                content = "$message\n\nPlease try again.",
+                isVisible = true,
+                confirmButtonText = "Okay",
+                onClick = { viewModel.reset() }
+            )
+        } else {
+            ConfirmDialog(
+                title = "Congratulations!",
+                content = "$message\n\nClick anywhere outside the form to exit the editor or keep working.",
+                isVisible = true,
+                confirmButtonText = "Okay",
+                onClick = { viewModel.reset(); onFormConfirm = true }
+            )
+        }
+    }
+}
+
+/**
+ * This composable is the Sell Submit Button. It displays a button for
+ * the user to submit a listing.
+ *
+ * @param loading Boolean whether the form is loading
+ * @param viewModel SellScreenViewModel the viewmodel for the screen
+ * @param submissionData ListingSubmissionData the data to submits
+ */
+@Composable
+fun SellSubmitButton(
+    loading: Boolean,
+    viewModel: SellScreenViewModel,
+    submissionData: ListingSubmissionData
+) {
+    Button(
+        content = {
+            // get loading from view model, if loading set content to loading indicator
+            if (loading) CircularProgressIndicator(
+                color = MaterialTheme.colorScheme.background,
+                modifier = Modifier.size(10.dp),
+                strokeWidth = 1.dp,
+            )
+            else {
+                Text(
+                    text = "Create",
+                    color = MaterialTheme.colorScheme.background,
+                    fontSize = 16.sp
+                )
+            }
+        },
+        onClick = {
+            viewModel.viewModelScope.launch {
+                viewModel.createBookListing(
+                    MBook(
+                        isbn = submissionData.isbn,
+                        condition = submissionData.condition,
+                        price = submissionData.price.toDouble(),
+                        mCategory = submissionData.category,
+                    )
+                )
+            }
+        },
+        shape = MaterialTheme.shapes.large,
+        enabled = (
+                (submissionData.isbnValid && submissionData.isbn.isNotEmpty()) &&
+                        (submissionData.priceValid && submissionData.price.isNotEmpty()) &&
+                        (submissionData.categoryValid && submissionData.category.isNotEmpty()) &&
+                        (submissionData.conditionValid && submissionData.condition.isNotEmpty())
+                ),
+        modifier = Modifier.padding(start = 20.dp, bottom = 20.dp)
+
+    )
+}
+
+/**
+ * This composable is the Destructive Action Dialog. It displays a dialog for
+ * the user to confirm a destructive action.
+ *
+ * @param title String the title of the dialog
+ * @param content String the content of the dialog
+ * @param isVisible Boolean whether the dialog is visible
+ * @param confirmButtonText String the text for the confirm button
+ * @param onClick () -> Unit the function to call when the user clicks the button
+ */
+@Composable
+fun ConfirmDialog(
+    title: String,
+    content: String,
+    isVisible: Boolean,
+    confirmButtonText: String,
+    onClick: () -> Unit,
+) {
+
+    val (view, setView) = remember { mutableStateOf(isVisible) }
+
+    if (view) {
+        AlertDialog(
+            onDismissRequest = { setView(false) },
+            confirmButton = {
+                TextButton(onClick = onClick,
+                    content = {
+                        Text(confirmButtonText, fontWeight = FontWeight.Bold)
+                    }
+                )
+            },
+            title = {
+                Text(
+                    text = title,
+                    fontSize = 14.sp,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            },
+            text = {
+                Text(
+                    text = content,
+                    fontSize = 15.sp,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            },
+            shape = MaterialTheme.shapes.medium
+        )
+    }
+}
+
+/**
+ * ISBN Tooltip Composable that displays a tooltip for the user to see the ISBN.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ISBNTooltip() {
+    Row {
+        Text("ISBN", fontSize = 15.sp)
+        PlainTooltipBox(
+            tooltip = { Text("The rest of the book information will be populated using the ISBN.") },
+            modifier = Modifier.padding(start = 20.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.HelpOutline,
+                contentDescription = "ISBN Help Icon",
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier
+                    .padding(start = 5.dp, top = 5.dp)
+                    .tooltipAnchor()
+                    .size(15.dp)
+            )
+        }
+    }
+}
+
+/**
+ * Condition Tooltip Composable that displays a tooltip for the user to see the condition.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ConditionTooltip() {
+    val scope = rememberCoroutineScope()
+    val tooltipState by remember { mutableStateOf(RichTooltipState()) }
+    Row {
+        Text("Condition", fontSize = 15.sp)
+        RichTooltipBox(
+            title = { Text("Guide To Used Book Conditions") },
+            text = { ConditionsDescriptions() },
+            tooltipState = tooltipState,
+            modifier = Modifier.padding(end = 30.dp),
+            action =
+            {
+                TextButton(
+                    onClick = {
+                        scope.launch {
+                            tooltipState.dismiss()
+                        }
+                    },
+                    content = { Text("Close", fontWeight = FontWeight.Bold, fontSize = 15.sp) })
+            },
+        ) {
+            Icon(
+                imageVector = Icons.Default.HelpOutline,
+                contentDescription = "Condition ToolTip Icon",
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier
+                    .padding(start = 5.dp, top = 5.dp)
+                    .tooltipAnchor()
+                    .size(15.dp)
+            )
+        }
+    }
+
+}
+
+/**
+ * Error Tooltip Composable that displays a tooltip for the user to see the error.
+ *
+ * @param message String the message to display
+ * @param contentDescription String the content description
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ErrToolTip(
+    message: String,
+    contentDescription: String
+) {
+    Row {
+        PlainTooltipBox(
+            tooltip = { Text(message) },
+            modifier = Modifier.padding(start = 20.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.ErrorOutline,
+                contentDescription = contentDescription,
+                tint = MaterialTheme.colorScheme.error,
+                modifier = Modifier
+                    .padding(end = 5.dp, top = 2.dp)
+                    .tooltipAnchor()
+                    .size(15.dp)
+            )
+        }
+        Text("View Errors")
+    }
+}
+
+/**
+ * This composable is the Conditions Descriptions. It displays a list of conditions
+ */
+@Composable
+fun ConditionsDescriptions() {
+    LazyColumn {
+        MCondition.conditions.forEach { item ->
+            item {
+                Column {
+                    Text(item.returnCondition(), fontWeight = FontWeight.Bold)
+                    Text(item.returnDescription())
+                    Spacer(Modifier.height(10.dp))
+                }
+            }
+        }
+    }
+
+}
+
+/**
+ * This composable is the Verification Dialog. It displays a dialog for
+ * the user to verify their email.
+ *
+ * @param isVisible Boolean whether the dialog is visible
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun VerificationDialog(isVisible: Boolean) {
+    val (view, setView) = remember { mutableStateOf(isVisible) }
+    if(view) {
+        AlertDialog(
+            shape = MaterialTheme.shapes.medium,
+            onDismissRequest = { setView(false) },
+            confirmButton = {
+                TextButton(onClick = { setView(false) })
+                { Text("Okay", fontWeight = FontWeight.Bold) }
+            },
+            title = {
+                Text("Check your email",
+                    fontSize = 16.sp,
+                    color = MaterialTheme.colorScheme.primary) },
+            text = {
+                Text("We sent a verification link with instructions to the email you provided. " +
+                        "Please open the email and follow the instructions to complete your registration",
+                    fontSize = 14.sp,
+                    color = MaterialTheme.colorScheme.primary) }
+        )
+    }
+
+}

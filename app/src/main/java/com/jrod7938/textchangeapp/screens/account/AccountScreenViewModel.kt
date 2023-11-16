@@ -153,6 +153,54 @@ class AccountScreenViewModel : ViewModel() {
     }
 
     /**
+     * Allows the user to edit their account information: first name and last name
+     * @param firstName First name of the user
+     * @param lastName Last name of the user
+     */
+
+    fun editUserProfile(
+        firstName: String,
+        lastName: String,
+    ){
+        viewModelScope.launch {
+            _loading.value = true
+            try {
+                if (userDocID != null) {
+                    db.collection("users").document(userDocID)
+                        .update(
+                            mapOf(
+                                "first_name" to firstName,
+                                "last_name" to lastName
+                            )
+                        ).addOnSuccessListener {
+                            Log.d("AccountScreenViewModel", "User info updated successfully")
+                            viewModelScope.launch {
+                                _mUser.value = getUserInfo()
+                            }
+                            _message.tryEmit("User profile updated successfully!")
+                        }.addOnFailureListener{ e ->
+                            Log.e("AccountScreenViewModel", "Error updating user information", e)
+                            _message.tryEmit(e.localizedMessage)
+                        }
+                }
+            }
+            catch (e: Exception) {
+                Log.e("AccountScreenViewModel", "Error updating user information", e)
+                _message.tryEmit(e.localizedMessage)
+            }
+
+            _loading.value = false
+        }
+    }
+
+    /**
+     * Resets the View Model
+     */
+    fun reset() {
+        _loading.value = false
+        _message.value = null
+    }
+    /**
      * Deletes the book from the mCategory, books, and users collection
      * Also deletes the book from the saved_books array of all users that have saved the book
      *

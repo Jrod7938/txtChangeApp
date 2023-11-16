@@ -31,6 +31,7 @@
 
 package com.jrod7938.textchangeapp.screens.home
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -61,6 +62,7 @@ import com.jrod7938.textchangeapp.components.HomeScreenButtons
  * @see HomeScreenButtons
  * @see DisplayCategories
  */
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun HomeScreen(
     navController: NavHostController,
@@ -69,6 +71,7 @@ fun HomeScreen(
     val bookCategories by viewModel.bookCategories.observeAsState(initial = HashMap())
     val errorMessage by viewModel.message.collectAsState(initial = "")
     val loading by viewModel.loading.observeAsState(initial = false)
+    
 
     Column(
         modifier = Modifier

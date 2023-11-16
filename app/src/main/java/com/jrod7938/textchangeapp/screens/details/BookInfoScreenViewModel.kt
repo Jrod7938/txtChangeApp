@@ -92,7 +92,7 @@ class BookInfoScreenViewModel : ViewModel() {
      *
      * @return Intent
      *
-     * @see Int
+     * @see Intent
      */
     fun prepareInterestEmailIntent(mBook: MBook): Intent {
         val emailIntent = Intent(Intent.ACTION_SEND).apply {
