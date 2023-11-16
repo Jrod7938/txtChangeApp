@@ -38,13 +38,10 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.ktx.Firebase
 import com.jrod7938.textchangeapp.model.MUser
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -96,9 +93,7 @@ class LoginScreenViewModel: ViewModel() {
                 .addOnCompleteListener{ task ->
                     if (task.isSuccessful){
                         Log.d("Firebase", "signInWithEmailAndPassword: ${task.result}")
-                        Log.d("Firebase", "${auth.currentUser?.displayName}")
-                        if(!auth.currentUser?.displayName.isNullOrEmpty()) home()
-                        else _errorMessage.value = "There seems be an error logging you in"
+                        home()
                     } else {
                         _errorMessage.value = "Incorrect email or password"
                     }
