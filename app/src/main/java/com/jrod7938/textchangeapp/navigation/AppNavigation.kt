@@ -45,6 +45,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.google.firebase.auth.FirebaseAuth
 import com.jrod7938.textchangeapp.components.BottomNavBar
 import com.jrod7938.textchangeapp.components.SellFAB
 import com.jrod7938.textchangeapp.components.TopNavigationBar
@@ -113,6 +114,7 @@ fun AppNavigation() {
                     }
                     HomeScreen(navController = navController)
                 }
+
                 composable(route = AppScreens.LoginScreen.name) {
                     DisposableEffect(Unit) {
                         showAppBars.value = false
@@ -120,6 +122,7 @@ fun AppNavigation() {
                     }
                     LoginScreen(navController = navController)
                 }
+
                 composable(
                     route = "${AppScreens.SearchScreen.name}/{category}",
                     arguments = listOf(navArgument("category") { type = NavType.StringType })

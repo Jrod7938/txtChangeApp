@@ -90,14 +90,14 @@ import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.HelpOutline
-import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.ModeEditOutline
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -143,6 +143,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.focus.onFocusEvent
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalConfiguration
@@ -191,6 +193,7 @@ import com.jrod7938.textchangeapp.navigation.BottomNavItem
 import com.jrod7938.textchangeapp.screens.account.AccountScreenViewModel
 import com.jrod7938.textchangeapp.screens.details.BookInfoScreenViewModel
 import com.jrod7938.textchangeapp.screens.home.HomeScreen
+import com.jrod7938.textchangeapp.screens.login.LoginScreenViewModel
 import com.jrod7938.textchangeapp.screens.sell.ListingSubmissionData
 import com.jrod7938.textchangeapp.screens.sell.SellScreenViewModel
 import kotlinx.coroutines.Dispatchers
@@ -240,16 +243,16 @@ fun NamePlate(
  */
 @Composable
 fun AppLogo(
-    appLogoSize: Dp = 50.dp,
-    namePlateSize: Dp = 175.dp,
+    appLogoSize: Dp = 60.dp,
+    namePlateSize: Dp = 200.dp,
     namePlateTopPadding: Dp = 0.dp,
-    namePlateRegistered: Boolean = false,
+    namePlateRegistered: Boolean = true,
 ) {
     Row(
         modifier = Modifier
             .padding(10.dp),
-        horizontalArrangement = Arrangement.Center,
-        verticalAlignment = Alignment.CenterVertically
+        horizontalArrangement = Arrangement.Start,
+        verticalAlignment = Alignment.Bottom
     ) {
         Image(
             modifier = Modifier.size(appLogoSize),
@@ -394,9 +397,11 @@ fun InputField(
 //@Preview(showBackground = true)
 @Composable
 fun UserForm(
-    loading: Boolean = false,
+    loading: Boolean,
     isCreateAccount: Boolean = false,
-    onDone: (String, String, String, String) -> Unit = { firstName, lastName, email, pwd -> }
+    errorMessage: String?,
+    viewModel: LoginScreenViewModel,
+    onDone: (String, String, String, String) -> Unit = { firstName, lastName, email, pwd -> },
 ) {
     val email = rememberSaveable { mutableStateOf("") }
     val password = rememberSaveable { mutableStateOf("") }
@@ -405,48 +410,75 @@ fun UserForm(
     val passwordVisibility = rememberSaveable { mutableStateOf(false) }
     val passwordFocusRequest = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
+    fun isPasswordValid(password : String) : Boolean {
+        return if(isCreateAccount) password.matches(Regex("((?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[\\W]).{6,64})"))
+        else password.length in 6..64
+    }
     val valid = remember(email.value, password.value, firstName.value, lastName.value) {
         email.value.trim().isNotEmpty()
-                && email.value.contains("@pride.hofstra.edu")
                 && password.value.trim().isNotEmpty()
-                && password.value.length >= 6
+                && (isPasswordValid(password.value))
+                && email.value.endsWith("@pride.hofstra.edu")
     }
 
     val scrollState = rememberScrollState()
 
     Column(
         modifier = Modifier
-            .fillMaxHeight(.6f)
+            .fillMaxHeight()
             .background(color = MaterialTheme.colorScheme.background)
-            .verticalScroll(scrollState),
+            .verticalScroll(scrollState)
+            .padding(start = 10.dp, top = 10.dp, bottom = 15.dp)
+            .onFocusChanged { viewModel.resetErrorMessage(it) },
         verticalArrangement = Arrangement.Top,
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.Start
     ) {
         if (isCreateAccount) {
             Text(
-                text = stringResource(id = R.string.create_acct),
-                modifier = Modifier.padding(4.dp),
-                textAlign = TextAlign.Center
+                text = "Hello!",
+                modifier = Modifier.padding(start = 10.dp),
+                fontSize = 20.sp,
+                fontWeight = FontWeight.ExtraBold,
+                color = MaterialTheme.colorScheme.primary
             )
-            FirstNameInput(firstNameState = firstName)
-            LastNameInput(lastNameState = lastName)
+            Text(
+                text = stringResource(id = R.string.create_acct),
+                modifier = Modifier.padding(start = 10.dp, end = 10.dp),
+                fontSize = 14.sp,
+                color = MaterialTheme.colorScheme.inverseSurface
+            )
+            FirstNameInput(firstNameState = firstName, modifier = Modifier.fillMaxWidth(0.9f))
+            LastNameInput(lastNameState = lastName, modifier = Modifier.fillMaxWidth(0.9f))
         } else {
             Text(
-                text = "Welcome, please login to continue!",
-                modifier = Modifier.padding(4.dp)
+                text = "Welcome back!",
+                modifier = Modifier.padding(start = 10.dp),
+                fontSize = 20.sp,
+                fontWeight = FontWeight.ExtraBold,
+                color = MaterialTheme.colorScheme.primary
+            )
+            Text(
+                text = "Please sign in with your email and password to continue.",
+                modifier = Modifier.padding(start = 10.dp, end = 10.dp),
+                fontSize = 14.sp,
+                color = MaterialTheme.colorScheme.inverseSurface
             )
         }
         EmailInput(
             emailState = email,
             enabled = !loading,
-            onAction = KeyboardActions { passwordFocusRequest.requestFocus() }
+            onAction = KeyboardActions { passwordFocusRequest.requestFocus()},
+            modifier = Modifier.fillMaxWidth(0.9f)
         )
         PasswordInput(
-            modifier = Modifier.focusRequester(passwordFocusRequest),
+            modifier = Modifier
+                .focusRequester(passwordFocusRequest)
+                .fillMaxWidth(0.9f),
             passwordState = password,
             labelId = "Password",
             enabled = !loading,
             passwordVisibility = passwordVisibility,
+            isCreateAccount = isCreateAccount,
             onAction = KeyboardActions {
                 if (!valid) return@KeyboardActions
                 onDone(
@@ -471,6 +503,16 @@ fun UserForm(
             keyboardController?.hide()
         }
 
+        if (errorMessage != null) {
+            Text(
+                text = errorMessage,
+                color = MaterialTheme.colorScheme.error,
+                fontStyle = FontStyle.Italic,
+                fontSize = 12.sp,
+                modifier = Modifier.padding(start = 10.dp, top = 15.dp),
+            )
+        }
+
     }
 }
 
@@ -492,14 +534,14 @@ fun SubmitButton(
 ) {
     Button(
         modifier = Modifier
-            .padding(10.dp)
-            .fillMaxWidth(),
+            .padding(start = 10.dp, top = 15.dp)
+            .fillMaxWidth(0.5f),
         enabled = !loading && validInputs,
-        shape = CircleShape,
+        shape = MaterialTheme.shapes.small,
         onClick = onClick
     ) {
         if (loading) CircularProgressIndicator(modifier = Modifier.size(25.dp))
-        else Text(text = textId, modifier = Modifier.padding(5.dp))
+        else Text(text = textId, fontSize = 14.sp, modifier = Modifier.padding(5.dp))
     }
 }
 
@@ -514,6 +556,7 @@ fun SubmitButton(
  * @param passwordVisibility whether the password is visible
  * @param imeAction the IME action for the input field
  * @param onAction the keyboard actions for the input field
+ * @param isCreateAccount is the form the registration or log in
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -524,14 +567,17 @@ fun PasswordInput(
     enabled: Boolean,
     passwordVisibility: MutableState<Boolean>,
     imeAction: ImeAction = ImeAction.Done,
-    onAction: KeyboardActions = KeyboardActions.Default
+    onAction: KeyboardActions = KeyboardActions.Default,
+    isCreateAccount: Boolean,
 ) {
+    var isFocused by remember { mutableStateOf(false)}
     val visualTransformation =
         if (passwordVisibility.value) VisualTransformation.None else PasswordVisualTransformation()
     OutlinedTextField(
         modifier = modifier
             .padding(10.dp)
-            .fillMaxWidth(),
+            .fillMaxWidth()
+            .onFocusEvent { isFocused = it.isFocused },
         value = passwordState.value,
         label = { Text(text = labelId) },
         singleLine = true,
@@ -547,7 +593,28 @@ fun PasswordInput(
         ),
         visualTransformation = visualTransformation,
         trailingIcon = { PasswordVisibility(passwordVisibility = passwordVisibility) },
-        keyboardActions = onAction
+        keyboardActions = onAction,
+        supportingText = {
+            Column {
+                if(isCreateAccount && isFocused ) {
+                    if (!passwordState.value.contains(Regex("(?=.*\\d)"))) {
+                        Text("Password must contain at least one digit")
+                    }
+                    if (!passwordState.value.contains(Regex("(?=.*[a-z])"))) {
+                        Text("Password must contain at least one lowercase letter")
+                    }
+                    if (!passwordState.value.contains(Regex("(?=.*[A-Z])"))) {
+                        Text("Password must contain at least one uppercase letter")
+                    }
+                    if (!passwordState.value.contains(Regex("(?=.*[\\W])"))) {
+                        Text("Password must contain at least one special character")
+                    }
+                    if ((passwordState.value.length < 6) || (passwordState.value.length > 64)) {
+                        Text("Password length must be between 6 and 64 characters")
+                    }
+                }
+            }
+        }
     )
 }
 
@@ -562,9 +629,10 @@ fun PasswordVisibility(passwordVisibility: MutableState<Boolean>) {
     val visible = passwordVisibility.value
     IconButton(onClick = { passwordVisibility.value = !visible }) {
         Icon(
-            imageVector = if (visible) Icons.Outlined.Lock else Icons.Default.Lock,
+            imageVector = if (visible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
             contentDescription = null,
-            tint = MaterialTheme.colorScheme.onBackground
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(20.dp)
         )
     }
 }
@@ -2232,7 +2300,7 @@ fun PostListingForm(
     val textStateISBN = remember { mutableStateOf(TextFieldValue()) } // ISBN Text-field value
     var isValidISBN by remember { mutableStateOf(true) }
     fun checkISBN(isbn: String): Boolean {
-        return isbn.matches(Regex("^[0-9]*\$"))
+        return isbn.matches(Regex("^[0-9X]*\$"))
     }
 
     val textStatePrice = remember { mutableStateOf(TextFieldValue()) } // Price Text-field value
@@ -2704,3 +2772,28 @@ fun ConditionsDescriptions() {
 
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun VerificationDialog(isVisible: Boolean) {
+    val (view, setView) = remember { mutableStateOf(isVisible) }
+    if(view) {
+        AlertDialog(
+            shape = MaterialTheme.shapes.medium,
+            onDismissRequest = { setView(false) },
+            confirmButton = {
+                TextButton(onClick = { setView(false) })
+                { Text("Okay", fontWeight = FontWeight.Bold) }
+            },
+            title = {
+                Text("Check your email",
+                    fontSize = 16.sp,
+                    color = MaterialTheme.colorScheme.primary) },
+            text = {
+                Text("We sent a verification link with instructions to the email you provided. " +
+                        "Please open the email and follow the instructions to complete your registration",
+                    fontSize = 14.sp,
+                    color = MaterialTheme.colorScheme.primary) }
+        )
+    }
+
+}
