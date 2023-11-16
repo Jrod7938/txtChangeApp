@@ -89,13 +89,31 @@ class LoginScreenViewModel: ViewModel() {
      */
     fun signInWithEmailAndPassword(email: String, password: String, home: () -> Unit) = viewModelScope.launch{
         try {
+            _loading.value = true
             auth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener{ task ->
                     if (task.isSuccessful){
                         Log.d("Firebase", "signInWithEmailAndPassword: ${task.result}")
-                        home()
+                        FirebaseFirestore.getInstance().collection("users")
+                            .whereEqualTo("email", email)
+                            .get()
+                            .addOnSuccessListener {
+                                try {
+                                    val user = MUser.fromDocument(it.documents[0])
+                                    if(user.displayName.isNotEmpty()) home()
+                                } catch (e : Exception){
+                                    _errorMessage.value = "There seems to be an error logging you in"
+                                    _loading.value = false
+                                }
+                                // check if user has been instantiated properly
+                                // one way to do so is if they have a displayName
+                            }.addOnFailureListener {
+                                _errorMessage.value = "There seems to be an error logging you in"
+                                _loading.value = false
+                            }
                     } else {
                         _errorMessage.value = "Incorrect email or password"
+                        _loading.value = false
                     }
                 }
 
