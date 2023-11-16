@@ -93,7 +93,7 @@ fun SplashScreen(
         delay(2000L)
 
         // If user is logged in goto Home else goto Login Screen
-        if (user?.isEmailVerified == true) {
+        if (user?.isEmailVerified == false || user?.email.isNullOrEmpty()) {
             navController.navigate(AppScreens.LoginScreen.name)
         } else {
             navController.navigate(AppScreens.HomeScreen.name)
