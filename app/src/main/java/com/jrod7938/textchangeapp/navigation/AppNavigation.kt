@@ -45,15 +45,16 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.jrod7938.textchangeapp.components.BottomNavigationBar
-import com.jrod7938.textchangeapp.components.TxTchangeAppBar
+import com.google.firebase.auth.FirebaseAuth
+import com.jrod7938.textchangeapp.components.BottomNavBar
+import com.jrod7938.textchangeapp.components.SellFAB
+import com.jrod7938.textchangeapp.components.TopNavigationBar
 import com.jrod7938.textchangeapp.screens.account.AccountScreen
 import com.jrod7938.textchangeapp.screens.details.BookInfoScreen
 import com.jrod7938.textchangeapp.screens.home.HomeScreen
 import com.jrod7938.textchangeapp.screens.login.LoginScreen
 import com.jrod7938.textchangeapp.screens.saved.SavedBooksScreen
 import com.jrod7938.textchangeapp.screens.search.SearchScreen
-import com.jrod7938.textchangeapp.screens.sell.SellBooksScreen
 import com.jrod7938.textchangeapp.screens.splash.SplashScreen
 
 /**
@@ -67,10 +68,12 @@ import com.jrod7938.textchangeapp.screens.splash.SplashScreen
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
+
     val bottomNavItems = listOf(
         BottomNavItem.Home,
-        BottomNavItem.Sell,
-        BottomNavItem.Search
+        BottomNavItem.Search,
+        BottomNavItem.Saved,
+        BottomNavItem.Account,
     )
 
     val showAppBars = remember { mutableStateOf(true) }
@@ -78,14 +81,19 @@ fun AppNavigation() {
     Scaffold(
         topBar = {
             if (showAppBars.value) {
-                TxTchangeAppBar(navController = navController)
+                TopNavigationBar(navController = navController, items = bottomNavItems)
             }
         },
         bottomBar = {
-            if (showAppBars.value) {  // Conditionally display BottomNavigationBar
-                BottomNavigationBar(navController = navController, items = bottomNavItems)
+            if (showAppBars.value) {
+                BottomNavBar(navController = navController, items = bottomNavItems)
             }
-        }
+        },
+        floatingActionButton = {
+            if(showAppBars.value) {
+                SellFAB()
+            }
+        },
     ) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)) {
             NavHost(
@@ -106,6 +114,7 @@ fun AppNavigation() {
                     }
                     HomeScreen(navController = navController)
                 }
+
                 composable(route = AppScreens.LoginScreen.name) {
                     DisposableEffect(Unit) {
                         showAppBars.value = false
@@ -113,6 +122,7 @@ fun AppNavigation() {
                     }
                     LoginScreen(navController = navController)
                 }
+
                 composable(
                     route = "${AppScreens.SearchScreen.name}/{category}",
                     arguments = listOf(navArgument("category") { type = NavType.StringType })
@@ -153,13 +163,6 @@ fun AppNavigation() {
                     val bookId = it.arguments?.getString("bookId")
                     BookInfoScreen(navController = navController, bookId = bookId)
                 }
-                composable(route = AppScreens.SellBookScreen.name) {
-                    DisposableEffect(Unit) {
-                        showAppBars.value = true
-                        onDispose { }
-                    }
-                    SellBooksScreen(navController = navController)
-                }
                 composable(route = AppScreens.AccountScreen.name) {
                     DisposableEffect(Unit) {
                         showAppBars.value = true
@@ -171,5 +174,3 @@ fun AppNavigation() {
         }
     }
 }
-
-

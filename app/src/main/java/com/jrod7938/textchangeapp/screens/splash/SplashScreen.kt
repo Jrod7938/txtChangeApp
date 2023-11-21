@@ -40,11 +40,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
@@ -53,15 +56,13 @@ import com.jrod7938.textchangeapp.components.AppSplashScreenLogo
 import com.jrod7938.textchangeapp.components.NamePlate
 import com.jrod7938.textchangeapp.navigation.AppScreens
 import kotlinx.coroutines.delay
-import androidx.compose.material3.Text
-import androidx.compose.ui.draw.scale
-import androidx.compose.ui.text.style.TextAlign
 
 
 /**
  * SplashScreen composable
  *
  * @param navController NavHostController to navigate between screens
+ * @param scale Animatable<Float, AnimationVector1D> the scale of the logo
  *
  * @constructor Creates a SplashScreen composable
  */
@@ -71,6 +72,7 @@ fun SplashScreen(
     scale: Animatable<Float,
             AnimationVector1D> = Animatable(0f)
 ) {
+    val user = FirebaseAuth.getInstance().currentUser
     val scale = remember{
         scale
     }
@@ -91,7 +93,7 @@ fun SplashScreen(
         delay(2000L)
 
         // If user is logged in goto Home else goto Login Screen
-        if (FirebaseAuth.getInstance().currentUser?.email.isNullOrEmpty()) {
+        if (user?.isEmailVerified == false || user?.email.isNullOrEmpty()) {
             navController.navigate(AppScreens.LoginScreen.name)
         } else {
             navController.navigate(AppScreens.HomeScreen.name)

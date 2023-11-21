@@ -29,14 +29,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.jrod7938.textchangeapp.screens.sell
+package com.jrod7938.textchangeapp.model
 
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.navigation.NavHostController
-
-@Composable
-fun SellBooksScreen(navController: NavHostController) {
-    Text(text = "Sell Screen")
-
-}
+/**
+ * Data class that represents a toggle button option.
+ */
+data class ToggleButtonOption(
+    val text: String,
+    val iconRes: Int?,
+)

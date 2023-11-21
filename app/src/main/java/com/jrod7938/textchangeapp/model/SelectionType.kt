@@ -29,40 +29,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.jrod7938.textchangeapp.navigation
+package com.jrod7938.textchangeapp.model
 
 /**
- * Enum class to represent the different screens of the app
- *
- * @constructor Creates an enum class to represent the different screens of the app
+ * Enum class that represents the type of selection that a list can have.
  */
-enum class AppScreens {
-    SplashScreen,
-    LoginScreen,
-    AccountScreen,
-    HomeScreen,
-    SearchScreen,
-    BookInfoScreen,
-    SavedBooksScreen;
-
-    companion object {
-        /**
-         * Get the screen from the route
-         *
-         * @param route route to get the screen from
-         *
-         * @return AppScreens
-         */
-        fun fromRoute(route: String): AppScreens = when (route?.substringBefore("/")) {
-            SplashScreen.name -> SplashScreen
-            LoginScreen.name -> LoginScreen
-            AccountScreen.name -> AccountScreen
-            HomeScreen.name -> HomeScreen
-            SearchScreen.name -> SearchScreen
-            BookInfoScreen.name -> BookInfoScreen
-            SavedBooksScreen.name -> SavedBooksScreen
-            null -> HomeScreen
-            else -> throw IllegalArgumentException("Route $route is not recognized.")
-        }
-    }
+enum class SelectionType {
+    NONE,
+    SINGLE,
+    MULTIPLE,
 }

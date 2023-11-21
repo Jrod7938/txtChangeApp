@@ -29,40 +29,28 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.jrod7938.textchangeapp.navigation
+package com.jrod7938.textchangeapp.screens.sell
 
 /**
- * Enum class to represent the different screens of the app
+ * Data class that captures user information for listing submission
  *
- * @constructor Creates an enum class to represent the different screens of the app
+ * @property isbn
+ * @property price
+ * @property category
+ * @property condition
+ * @property isbnValid
+ * @property priceValid
+ * @property categoryValid
+ * @property conditionValid
  */
-enum class AppScreens {
-    SplashScreen,
-    LoginScreen,
-    AccountScreen,
-    HomeScreen,
-    SearchScreen,
-    BookInfoScreen,
-    SavedBooksScreen;
+data class ListingSubmissionData (
+    val isbn: String,
+    val price: String,
+    val category: String,
+    val condition: String,
 
-    companion object {
-        /**
-         * Get the screen from the route
-         *
-         * @param route route to get the screen from
-         *
-         * @return AppScreens
-         */
-        fun fromRoute(route: String): AppScreens = when (route?.substringBefore("/")) {
-            SplashScreen.name -> SplashScreen
-            LoginScreen.name -> LoginScreen
-            AccountScreen.name -> AccountScreen
-            HomeScreen.name -> HomeScreen
-            SearchScreen.name -> SearchScreen
-            BookInfoScreen.name -> BookInfoScreen
-            SavedBooksScreen.name -> SavedBooksScreen
-            null -> HomeScreen
-            else -> throw IllegalArgumentException("Route $route is not recognized.")
-        }
-    }
-}
+    val isbnValid: Boolean,
+    val priceValid: Boolean,
+    val categoryValid: Boolean,
+    val conditionValid: Boolean,
+)

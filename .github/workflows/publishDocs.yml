@@ -1,0 +1,31 @@
+name: Generate and Publish Dokka Documentation
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch: 
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v3
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+
+    - name: Run dokkaHtml
+      run: ./gradlew dokkaHtml
+
+    - name: Deploy to GitHub Pages
+      uses: JamesIves/github-pages-deploy-action@4.1.4
+      with:
+        branch: gh-pages  # The branch the action should deploy to.
+        folder: app/build/dokka/html  # The folder the action should deploy.
+        token: ${{ secrets.GITHUB_TOKEN }}

@@ -29,7 +29,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.jrod7938.textchangeapp.screens.search
+package com.jrod7938.textchangeapp.model
 
 enum class SearchType {
     None,
