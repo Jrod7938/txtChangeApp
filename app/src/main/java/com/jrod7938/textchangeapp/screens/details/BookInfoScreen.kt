@@ -31,6 +31,7 @@
 
 package com.jrod7938.textchangeapp.screens.details
 
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -54,9 +55,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.jrod7938.textchangeapp.components.BookInfoView
+import kotlinx.coroutines.launch
 
 /**
  * Screen that displays the details of a book.
@@ -120,7 +123,9 @@ fun BookInfoScreen(
 
             AlertDialog(
                 backgroundColor = MaterialTheme.colorScheme.background,
-                onDismissRequest = { setContactInfo(false) },
+                onDismissRequest = {
+                    setContactInfo(false)
+               },
                 title = {
                     Text(
                         modifier = Modifier.fillMaxWidth(),
@@ -134,7 +139,9 @@ fun BookInfoScreen(
                             .fillMaxWidth()
                             .padding(top = 16.dp, start = 16.dp, end = 16.dp),
                         onClick = {
+                            Log.d("INTEREST", "HI")
                             book!!.let { book ->
+                               user?.let { viewModel.addInterestObject(book, it.userId) }
                                 val emailIntent = viewModel.prepareInterestEmailIntent(book)
                                 emailIntent.let {
                                     context.startActivity(emailIntent)

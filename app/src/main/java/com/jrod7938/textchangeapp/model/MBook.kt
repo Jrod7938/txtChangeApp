@@ -64,8 +64,7 @@ data class MBook(
     var imageURL: String = "",
     var description: String = "",
     val isbn: String,
-    var sellerConfirm: Boolean = false,
-    var buyerConfirm: Boolean = false,
+    var interestList: List<InterestObject>
 ) {
     fun toMap(): MutableMap<String, Any> {
         return mutableMapOf<String, Any>(
@@ -81,8 +80,7 @@ data class MBook(
             "imageURL" to this.imageURL,
             "description" to this.description,
             "isbn" to this.isbn,
-            "seller_confirm" to this.sellerConfirm,
-            "buyer_confirm" to this.buyerConfirm
+            "interest_list" to this.interestList,
         )
     }
 
@@ -111,8 +109,7 @@ data class MBook(
                 imageURL = document.getString("imageURL") ?: "",
                 description = document.getString("description") ?: "",
                 isbn = document.getString("isbn") ?: "",
-                sellerConfirm = document.getBoolean("seller_confirm") ?: false,
-                buyerConfirm = document.getBoolean("buyer_confirm") ?: false
+                interestList = document.get("interest_list") as List<InterestObject>,
             )
         }
     }

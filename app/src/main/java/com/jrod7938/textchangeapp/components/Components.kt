@@ -33,6 +33,7 @@ package com.jrod7938.textchangeapp.components
 
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.animation.animateColor
 import androidx.compose.animation.core.Animatable
@@ -181,6 +182,7 @@ import com.exyte.animatednavbar.animation.indendshape.shapeCornerRadius
 import com.exyte.animatednavbar.utils.noRippleClickable
 import com.google.firebase.auth.FirebaseAuth
 import com.jrod7938.textchangeapp.R
+import com.jrod7938.textchangeapp.model.InterestObject
 import com.jrod7938.textchangeapp.model.MBook
 import com.jrod7938.textchangeapp.model.MCategory
 import com.jrod7938.textchangeapp.model.MCondition
@@ -1641,6 +1643,9 @@ fun BookInfoView(
     onContactClicked: () -> Unit,
     viewModel: BookInfoScreenViewModel = viewModel()
 ) {
+
+    val currInterestObject = book.interestList.find { it.interestId ==  user.userId + book.bookID }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -1680,7 +1685,8 @@ fun BookInfoView(
                     Button(
                         colors = ButtonDefaults
                             .buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-                        onClick = onContactClicked
+                        onClick = onContactClicked,
+                        enabled = currInterestObject != null
                     ) {
                         Text(text = "Contact Seller", fontSize = 16.sp)
                     }
@@ -1732,44 +1738,44 @@ fun BookInfoView(
                         enabled = book.email != viewModel.email
                     ) {
                         viewModel.buyerVerifiedBook(book)
-                        book.buyerConfirm = true
+                        // book.buyerConfirm = true
                         viewModel.fetchBookDetails(book.bookID)
-                        viewModel.removeBookIfBothPartiesVerified(book)
+                        // viewModel.removeBookIfBothPartiesVerified(book)
                     }
                 ) {
                     Row {
                         Text(text = "Buyer Verification: ")
-                        androidx.compose.material3.Icon(
-                            modifier = Modifier.border(
-                                width = 3.dp,
-                                color = MaterialTheme.colorScheme.onBackground
-                            ),
-                            imageVector = if (book.buyerConfirm) Icons.Default.Check else Icons.Default.Clear,
-                            tint = if (book.buyerConfirm) Color.Green else Color.Red,
-                            contentDescription = "Buyer Verification"
-                        )
+//                        Icon(
+//                            modifier = Modifier.border(
+//                                width = 3.dp,
+//                                color = MaterialTheme.colorScheme.onBackground
+//                            ),
+//                            imageVector = if (book.buyerConfirm) Icons.Default.Check else Icons.Default.Clear,
+//                            tint = if (book.buyerConfirm) Color.Green else Color.Red,
+//                            contentDescription = "Buyer Verification"
+//                        )
                     }
                 }
 
                 Box(modifier = Modifier
                     .clickable(enabled = book.email == viewModel.email) {
                         viewModel.sellerVerifiedBook(book)
-                        book.sellerConfirm = true
+                        // .sellerConfirm = true
                         viewModel.fetchBookDetails(book.bookID)
-                        viewModel.removeBookIfBothPartiesVerified(book)
+                        // viewModel.removeBookIfBothPartiesVerified(book)
                     }
                 ) {
                     Row {
                         Text(text = "Seller Verification: ")
-                        androidx.compose.material3.Icon(
-                            modifier = Modifier.border(
-                                width = 3.dp,
-                                color = MaterialTheme.colorScheme.onBackground
-                            ),
-                            imageVector = if (book.sellerConfirm) Icons.Default.Check else Icons.Default.Clear,
-                            tint = if (book.sellerConfirm) Color.Green else Color.Red,
-                            contentDescription = "Buyer Verification"
-                        )
+//                        Icon(
+//                            modifier = Modifier.border(
+//                                width = 3.dp,
+//                                color = MaterialTheme.colorScheme.onBackground
+//                            ),
+//                            imageVector = if (book.sellerConfirm) Icons.Default.Check else Icons.Default.Clear,
+//                            tint = if (book.sellerConfirm) Color.Green else Color.Red,
+//                            contentDescription = "Buyer Verification"
+//                        )
                     }
                 }
             }
@@ -2591,6 +2597,7 @@ fun SellSubmitButton(
                         condition = submissionData.condition,
                         price = submissionData.price.toDouble(),
                         mCategory = submissionData.category,
+                        interestList = mutableListOf<InterestObject>()
                     )
                 )
             }

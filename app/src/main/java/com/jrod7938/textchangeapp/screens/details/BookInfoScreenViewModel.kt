@@ -36,15 +36,19 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
+import com.jrod7938.textchangeapp.model.InterestObject
 import com.jrod7938.textchangeapp.model.MBook
 import com.jrod7938.textchangeapp.model.MUser
 import com.jrod7938.textchangeapp.screens.account.AccountScreenViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 
 /**
@@ -150,10 +154,13 @@ class BookInfoScreenViewModel : ViewModel() {
             .document(bookId)
             .get()
             .addOnSuccessListener { document ->
-                val book = MBook.fromDocument(document)
-                _book.postValue(book)
-                _loading.postValue(false)
-                Log.d("fetchBookDetails", "Successfully fetched book details")
+                viewModelScope.launch {
+                    val book = MBook.fromDocument(document)
+                    book.interestList = reloadInterestList(book)
+                    _book.postValue(book)
+                    _loading.postValue(false)
+                    Log.d("fetchBookDetails", "Successfully fetched book details")
+                }
             }.addOnFailureListener { exception ->
                 _message.value = "Failed to fetch book details: ${exception.message}"
                 _loading.postValue(false)
@@ -173,29 +180,29 @@ class BookInfoScreenViewModel : ViewModel() {
     fun buyerVerifiedBook(mBook: MBook) {
         val db = FirebaseFirestore.getInstance()
 
-        val bookReference = db.collection("books").document(mBook.bookID)
-        bookReference.update("buyer_confirm", !mBook.buyerConfirm)
-            .addOnSuccessListener {
-                Log.d("buyerVerifiedBook", "Successfully updated buyerConfirm in books collection.")
-            }.addOnFailureListener { e ->
-                Log.e("buyerVerifiedBook", "Error updating buyerConfirm in books collection: $e")
-                _message.value = e.message
-            }
-
-        val categoryReference = db.collection(mBook.mCategory).document(mBook.bookID)
-        categoryReference.update("buyer_confirm", !mBook.buyerConfirm)
-            .addOnSuccessListener {
-                Log.d(
-                    "buyerVerifiedBook",
-                    "Successfully updated buyerConfirm in books mCategory collection."
-                )
-            }.addOnFailureListener { e ->
-                Log.e(
-                    "buyerVerifiedBook",
-                    "Error updating buyerConfirm in books mCategory collection: $e"
-                )
-                _message.value = e.message
-            }
+//        val bookReference = db.collection("books").document(mBook.bookID)
+//        bookReference.update("buyer_confirm", !mBook.buyerConfirm)
+//            .addOnSuccessListener {
+//                Log.d("buyerVerifiedBook", "Successfully updated buyerConfirm in books collection.")
+//            }.addOnFailureListener { e ->
+//                Log.e("buyerVerifiedBook", "Error updating buyerConfirm in books collection: $e")
+//                _message.value = e.message
+//            }
+//
+//        val categoryReference = db.collection(mBook.mCategory).document(mBook.bookID)
+//        categoryReference.update("buyer_confirm", !mBook.buyerConfirm)
+//            .addOnSuccessListener {
+//                Log.d(
+//                    "buyerVerifiedBook",
+//                    "Successfully updated buyerConfirm in books mCategory collection."
+//                )
+//            }.addOnFailureListener { e ->
+//                Log.e(
+//                    "buyerVerifiedBook",
+//                    "Error updating buyerConfirm in books mCategory collection: $e"
+//                )
+//                _message.value = e.message
+//            }
     }
 
     /**
@@ -210,51 +217,51 @@ class BookInfoScreenViewModel : ViewModel() {
     fun sellerVerifiedBook(mBook: MBook) {
         val db = FirebaseFirestore.getInstance()
 
-        val bookReference = db.collection("books").document(mBook.bookID)
-        bookReference.update("seller_confirm", !mBook.sellerConfirm)
-            .addOnSuccessListener {
-                Log.d(
-                    "sellerVerifiedBook",
-                    "Successfully updated sellerConfirm in books collection."
-                )
-            }.addOnFailureListener { e ->
-                Log.e("sellerVerifiedBook", "Error updating sellerConfirm in books collection: $e")
-                _message.value = e.message
-            }
-
-        val categoryReference = db.collection(mBook.mCategory).document(mBook.bookID)
-        categoryReference.update("seller_confirm", !mBook.sellerConfirm)
-            .addOnSuccessListener {
-                Log.d(
-                    "sellerVerifiedBook",
-                    "Successfully updated sellerConfirm in books mCategory collection."
-                )
-            }.addOnFailureListener { e ->
-                Log.e(
-                    "sellerVerifiedBook",
-                    "Error updating sellerConfirm in books mCategory collection: $e"
-                )
-                _message.value = e.message
-            }
+//        val bookReference = db.collection("books").document(mBook.bookID)
+//        bookReference.update("seller_confirm", !mBook.sellerConfirm)
+//            .addOnSuccessListener {
+//                Log.d(
+//                    "sellerVerifiedBook",
+//                    "Successfully updated sellerConfirm in books collection."
+//                )
+//            }.addOnFailureListener { e ->
+//                Log.e("sellerVerifiedBook", "Error updating sellerConfirm in books collection: $e")
+//                _message.value = e.message
+//            }
+//
+//        val categoryReference = db.collection(mBook.mCategory).document(mBook.bookID)
+//        categoryReference.update("seller_confirm", !mBook.sellerConfirm)
+//            .addOnSuccessListener {
+//                Log.d(
+//                    "sellerVerifiedBook",
+//                    "Successfully updated sellerConfirm in books mCategory collection."
+//                )
+//            }.addOnFailureListener { e ->
+//                Log.e(
+//                    "sellerVerifiedBook",
+//                    "Error updating sellerConfirm in books mCategory collection: $e"
+//                )
+//                _message.value = e.message
+//            }
     }
 
     /**
      * Removes the book from the database if both buyer and seller have confirmed.
      *
-     * @param mBook MBook the book to be checked and possibly removed.
+     * @param book MBook the book to be checked and possibly removed.
      *
      * @return Unit
      *
      * @see MBook
      */
-    fun removeBookIfBothPartiesVerified(mBook: MBook) {
+    fun removeBookIfBothPartiesVerified(book: MBook, currInterestObject: InterestObject) {
         val db = FirebaseFirestore.getInstance()
 
-        if (mBook.buyerConfirm && mBook.sellerConfirm) {
+        if (currInterestObject.buyerConfirm && currInterestObject.sellerConfirm) {
 
-            val userID = mBook.email.split("@")[0]
+            val userID = book.email.split("@")[0]
             val userReference = db.collection("users").document(userID)
-            userReference.update("book_listings", FieldValue.arrayRemove(mBook.bookID))
+            userReference.update("book_listings", FieldValue.arrayRemove(book.bookID))
                 .addOnSuccessListener {
                     Log.d("removeBook", "Successfully removed book from user's book_listings.")
                 }.addOnFailureListener { e ->
@@ -262,12 +269,12 @@ class BookInfoScreenViewModel : ViewModel() {
                 }
 
             val usersCollection = db.collection("users")
-            usersCollection.whereArrayContains("saved_books", mBook.bookID)
+            usersCollection.whereArrayContains("saved_books", book.bookID)
                 .get().addOnSuccessListener { querySnapshot ->
                     for (document in querySnapshot) {
                         document.reference.update(
                             "saved_books",
-                            FieldValue.arrayRemove(mBook.bookID)
+                            FieldValue.arrayRemove(book.bookID)
                         )
                     }
                     Log.d("removeBook", "Successfully removed book from saved books of all users.")
@@ -275,7 +282,7 @@ class BookInfoScreenViewModel : ViewModel() {
                     Log.e("removeBook", "Error removing book from saved books: $e")
                 }
 
-            val categoryReference = db.collection(mBook.mCategory).document(mBook.bookID)
+            val categoryReference = db.collection(book.mCategory).document(book.bookID)
             categoryReference.delete()
                 .addOnSuccessListener {
                     Log.d("removeBook", "Successfully removed book from category collection.")
@@ -283,7 +290,7 @@ class BookInfoScreenViewModel : ViewModel() {
                     Log.e("removeBook", "Error removing book from category collection: $e")
                 }
 
-            val bookReference = db.collection("books").document(mBook.bookID)
+            val bookReference = db.collection("books").document(book.bookID)
             bookReference.delete()
                 .addOnSuccessListener {
                     Log.d("removeBook", "Successfully removed book from books collection.")
@@ -337,5 +344,57 @@ class BookInfoScreenViewModel : ViewModel() {
                 _message.value = e.message
             }
     }
+
+    fun addInterestObject(book: MBook, buyerId: String){
+        val db = FirebaseFirestore.getInstance()
+
+        val newInterestObject =
+            InterestObject(
+                interestId = book.userId + buyerId,
+                buyerConfirm = false,
+                sellerConfirm = false,
+            )
+        viewModelScope.launch {
+            val bookReference = db.collection("books").document(book.bookID)
+            bookReference.update("interest_list", FieldValue.arrayUnion(newInterestObject.toMap()))
+                .addOnSuccessListener {
+                    Log.d("addInterestObject", "Interest object added successfully")
+                    viewModelScope.launch { _book.value?.interestList = reloadInterestList(book) }
+                }
+                .addOnFailureListener { e ->
+                    Log.e("addInterestObject", "Error adding interest object")
+                    _message.value = e.message
+                }
+        }
+
+    }
+
+    private suspend fun reloadInterestList(book: MBook): List<InterestObject> = withContext(Dispatchers.IO){
+        val db = FirebaseFirestore.getInstance()
+        val interestList = mutableListOf<InterestObject>()
+
+        try {
+            val bookReference = db.collection("books").document(book.bookID).get().await()
+            val thisInterestList = bookReference.get("interest_list") as? ArrayList<HashMap<String, Any>> ?: listOf()
+
+            for(item in thisInterestList) {
+                try {
+                    val interestItem = InterestObject.fromMap(item)
+                    interestList.add(interestItem)
+                    Log.d("INTEREST", "$interestItem")
+                    Log.d("reloadInterestList", "InterestObject added to list")
+                } catch (e: Exception) {
+                    Log.e("reloadInterestList", "Error adding InterestObject to list", e)
+                    _message.emit(e.message)
+                }
+            }
+        } catch(e: Exception){
+            Log.e("reloadInterestList", "Error reloading interest list", e)
+            _message.emit(e.message)
+        }
+
+        return@withContext interestList
+    }
+
 
 }
