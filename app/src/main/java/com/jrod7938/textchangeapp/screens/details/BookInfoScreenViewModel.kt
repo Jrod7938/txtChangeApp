@@ -171,38 +171,101 @@ class BookInfoScreenViewModel : ViewModel() {
     /**
      * Updates the book in the database with the provided details.
      *
-     * @param mBook MBook the edited book details.
+     * @param book MBook the edited book details.
      *
      * @return Unit
      *
      * @see MBook
      */
-    fun buyerVerifiedBook(mBook: MBook) {
-        val db = FirebaseFirestore.getInstance()
+    fun buyerVerifiedBook(book: MBook, currInterestObject: InterestObject) {
+        viewModelScope.launch {
+            val db = FirebaseFirestore.getInstance()
 
-//        val bookReference = db.collection("books").document(mBook.bookID)
-//        bookReference.update("buyer_confirm", !mBook.buyerConfirm)
-//            .addOnSuccessListener {
-//                Log.d("buyerVerifiedBook", "Successfully updated buyerConfirm in books collection.")
-//            }.addOnFailureListener { e ->
-//                Log.e("buyerVerifiedBook", "Error updating buyerConfirm in books collection: $e")
-//                _message.value = e.message
-//            }
-//
-//        val categoryReference = db.collection(mBook.mCategory).document(mBook.bookID)
-//        categoryReference.update("buyer_confirm", !mBook.buyerConfirm)
-//            .addOnSuccessListener {
-//                Log.d(
-//                    "buyerVerifiedBook",
-//                    "Successfully updated buyerConfirm in books mCategory collection."
-//                )
-//            }.addOnFailureListener { e ->
-//                Log.e(
-//                    "buyerVerifiedBook",
-//                    "Error updating buyerConfirm in books mCategory collection: $e"
-//                )
-//                _message.value = e.message
-//            }
+            val refByBook = db.collection("books")
+            val refByCategory = db.collection(book.mCategory)
+
+
+            // update by book
+
+            refByBook.whereEqualTo("book_id", book.bookID)
+                .get()
+                .addOnSuccessListener { snapShot ->
+                    for (document in snapShot.documents) {
+                        val convertedInterestList = mutableListOf<InterestObject>()
+                        val interestList = document.get("interest_list") as ArrayList<HashMap<String, Any>>
+
+                        for(item in interestList){ convertedInterestList.add(InterestObject.fromMap(item)) }
+
+                        val updatedInterestObject =
+                            convertedInterestList.find { it.interestId == currInterestObject.interestId }
+                        updatedInterestObject?.let {
+                            it.buyerConfirm = !it.buyerConfirm
+
+                            document.reference.update(
+                                "interest_list", FieldValue.arrayRemove(currInterestObject.toMap()),
+                                "interest_list", FieldValue.arrayUnion(it.toMap())
+                            )
+                                .addOnSuccessListener {
+                                    Log.d(
+                                        "buyerVerifiedBook: BY BOOK",
+                                        "Buyer verified value updated successfully"
+                                    )
+                                }
+                                .addOnFailureListener {
+                                    Log.d(
+                                        "buyerVerifiedBook: BY BOOK",
+                                        "Error updating buyer verified value"
+                                    )
+                                }
+                        }
+
+                    }
+                }
+                .addOnFailureListener { e ->
+                    Log.d("buyerVerifiedBook", "Error retrieving document: $e")
+                }
+
+
+            // update by category
+
+            refByCategory.whereEqualTo("book_id", book.bookID)
+                .get()
+                .addOnSuccessListener { snapShot ->
+                    for (document in snapShot.documents) {
+                        val convertedInterestList = mutableListOf<InterestObject>()
+                        val interestList = document.get("interest_list") as ArrayList<HashMap<String, Any>>
+
+                        for(item in interestList){ convertedInterestList.add(InterestObject.fromMap(item)) }
+
+                        val updatedInterestObject =
+                            convertedInterestList.find { it.interestId == currInterestObject.interestId }
+                        updatedInterestObject?.let {
+                            it.buyerConfirm = !it.buyerConfirm
+
+                            document.reference.update(
+                                "interest_list", FieldValue.arrayRemove(currInterestObject.toMap()),
+                                "interest_list", FieldValue.arrayUnion(it.toMap())
+                            )
+                                .addOnSuccessListener {
+                                    Log.d(
+                                        "buyerVerifiedBook: BY CAT",
+                                        "Buyer verified value updated successfully"
+                                    )
+                                }
+                                .addOnFailureListener {
+                                    Log.d(
+                                        "buyerVerifiedBook: BY CAT",
+                                        "Error updating buyer verified value"
+                                    )
+                                }
+                        }
+
+                    }
+                }
+                .addOnFailureListener { e ->
+                    Log.d("buyerVerifiedBook", "Error retrieving document: $e")
+                }
+        }
     }
 
     /**
@@ -214,35 +277,95 @@ class BookInfoScreenViewModel : ViewModel() {
      *
      * @see MBook
      */
-    fun sellerVerifiedBook(mBook: MBook) {
-        val db = FirebaseFirestore.getInstance()
+    fun sellerVerifiedBook(book: MBook, currInterestObject: InterestObject) {
+        viewModelScope.launch {
+            val db = FirebaseFirestore.getInstance()
 
-//        val bookReference = db.collection("books").document(mBook.bookID)
-//        bookReference.update("seller_confirm", !mBook.sellerConfirm)
-//            .addOnSuccessListener {
-//                Log.d(
-//                    "sellerVerifiedBook",
-//                    "Successfully updated sellerConfirm in books collection."
-//                )
-//            }.addOnFailureListener { e ->
-//                Log.e("sellerVerifiedBook", "Error updating sellerConfirm in books collection: $e")
-//                _message.value = e.message
-//            }
-//
-//        val categoryReference = db.collection(mBook.mCategory).document(mBook.bookID)
-//        categoryReference.update("seller_confirm", !mBook.sellerConfirm)
-//            .addOnSuccessListener {
-//                Log.d(
-//                    "sellerVerifiedBook",
-//                    "Successfully updated sellerConfirm in books mCategory collection."
-//                )
-//            }.addOnFailureListener { e ->
-//                Log.e(
-//                    "sellerVerifiedBook",
-//                    "Error updating sellerConfirm in books mCategory collection: $e"
-//                )
-//                _message.value = e.message
-//            }
+            val refByBook = db.collection("books")
+            val refByCategory = db.collection(book.mCategory)
+
+
+            // update by book
+
+            refByBook.whereEqualTo("book_id", book.bookID)
+                .get()
+                .addOnSuccessListener { snapShot ->
+                    for (document in snapShot.documents) {
+                        val convertedInterestList = mutableListOf<InterestObject>()
+                        val interestList = document.get("interest_list") as ArrayList<HashMap<String, Any>>
+
+                        for(item in interestList){ convertedInterestList.add(InterestObject.fromMap(item)) }
+
+                        val updatedInterestObject =
+                            convertedInterestList.find { it.interestId == currInterestObject.interestId }
+                        updatedInterestObject?.let {
+                            it.sellerConfirm = !it.sellerConfirm
+
+                            document.reference.update(
+                                "interest_list", FieldValue.arrayRemove(currInterestObject.toMap()),
+                                "interest_list", FieldValue.arrayUnion(it.toMap())
+                            )
+                                .addOnSuccessListener {
+                                    Log.d(
+                                        "sellerVerifiedBook: BY BOOK",
+                                        "Seller verified value updated successfully"
+                                    )
+                                }
+                                .addOnFailureListener {
+                                    Log.d(
+                                        "sellerVerifiedBook: BY BOOK",
+                                        "Error updating seller verified value"
+                                    )
+                                }
+                        }
+
+                    }
+                }
+                .addOnFailureListener { e ->
+                    Log.d("sellerVerifiedBook", "Error retrieving document: $e")
+                }
+
+
+            // update by category
+
+            refByCategory.whereEqualTo("book_id", book.bookID)
+                .get()
+                .addOnSuccessListener { snapShot ->
+                    for (document in snapShot.documents) {
+                        val convertedInterestList = mutableListOf<InterestObject>()
+                        val interestList = document.get("interest_list") as ArrayList<HashMap<String, Any>>
+
+                        for(item in interestList){ convertedInterestList.add(InterestObject.fromMap(item)) }
+
+                        val updatedInterestObject =
+                            convertedInterestList.find { it.interestId == currInterestObject.interestId }
+                        updatedInterestObject?.let {
+                            it.sellerConfirm = !it.sellerConfirm
+
+                            document.reference.update(
+                                "interest_list", FieldValue.arrayRemove(currInterestObject.toMap()),
+                                "interest_list", FieldValue.arrayUnion(it.toMap())
+                            )
+                                .addOnSuccessListener {
+                                    Log.d(
+                                        "sellerVerifiedBook: BY CAT",
+                                        "Seller verified value updated successfully"
+                                    )
+                                }
+                                .addOnFailureListener {
+                                    Log.d(
+                                        "sellerVerifiedBook: BY CAT",
+                                        "Error updating seller verified value"
+                                    )
+                                }
+                        }
+
+                    }
+                }
+                .addOnFailureListener { e ->
+                    Log.d("sellerVerifiedBook", "Error retrieving document: $e")
+                }
+        }
     }
 
     /**
@@ -350,19 +473,32 @@ class BookInfoScreenViewModel : ViewModel() {
 
         val newInterestObject =
             InterestObject(
-                interestId = book.userId + buyerId,
+                interestId = buyerId + book.userId,
                 buyerConfirm = false,
                 sellerConfirm = false,
             )
         viewModelScope.launch {
-            val bookReference = db.collection("books").document(book.bookID)
-            bookReference.update("interest_list", FieldValue.arrayUnion(newInterestObject.toMap()))
+            // add by book
+            val refByBook = db.collection("books").document(book.bookID)
+            refByBook.update("interest_list", FieldValue.arrayUnion(newInterestObject.toMap()))
                 .addOnSuccessListener {
-                    Log.d("addInterestObject", "Interest object added successfully")
+                    Log.d("addInterestObject: BY BOOK", "Interest object added successfully")
                     viewModelScope.launch { _book.value?.interestList = reloadInterestList(book) }
                 }
                 .addOnFailureListener { e ->
-                    Log.e("addInterestObject", "Error adding interest object")
+                    Log.e("addInterestObject: BY BOOK", "Error adding interest object")
+                    _message.value = e.message
+                }
+
+            // add by category
+            val refByCategory = db.collection(book.mCategory).document(book.bookID)
+            refByCategory.update("interest_list", FieldValue.arrayUnion(newInterestObject.toMap()))
+                .addOnSuccessListener {
+                    Log.d("addInterestObject: BY CAT", "Interest object added successfully")
+                    viewModelScope.launch { _book.value?.interestList = reloadInterestList(book) }
+                }
+                .addOnFailureListener{ e ->
+                    Log.e("addInterestObject: BY CAT", "Error adding interest object")
                     _message.value = e.message
                 }
         }

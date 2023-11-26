@@ -104,6 +104,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -1644,7 +1645,13 @@ fun BookInfoView(
     viewModel: BookInfoScreenViewModel = viewModel()
 ) {
 
-    val currInterestObject = book.interestList.find { it.interestId ==  user.userId + book.bookID }
+    val currInterestObject = book.interestList.find { it.interestId ==  user.userId + book.userId }
+
+    val isSellerConfirmed = currInterestObject?.sellerConfirm == true
+    var sellerCheckedState = remember { mutableStateOf(isSellerConfirmed) }
+
+    val isBuyerConfirmed = currInterestObject?.buyerConfirm == true
+    var buyerCheckedState = remember { mutableStateOf(isBuyerConfirmed) }
 
     Card(
         modifier = Modifier
@@ -1686,7 +1693,7 @@ fun BookInfoView(
                         colors = ButtonDefaults
                             .buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                         onClick = onContactClicked,
-                        enabled = currInterestObject != null
+                        enabled = currInterestObject == null
                     ) {
                         Text(text = "Contact Seller", fontSize = 16.sp)
                     }
@@ -1732,50 +1739,31 @@ fun BookInfoView(
             Column(
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text(text = "Status:", fontWeight = FontWeight.Bold)
-                Box(modifier = Modifier
-                    .clickable(
-                        enabled = book.email != viewModel.email
-                    ) {
-                        viewModel.buyerVerifiedBook(book)
-                        // book.buyerConfirm = true
-                        viewModel.fetchBookDetails(book.bookID)
-                        // viewModel.removeBookIfBothPartiesVerified(book)
-                    }
-                ) {
-                    Row {
-                        Text(text = "Buyer Verification: ")
-//                        Icon(
-//                            modifier = Modifier.border(
-//                                width = 3.dp,
-//                                color = MaterialTheme.colorScheme.onBackground
-//                            ),
-//                            imageVector = if (book.buyerConfirm) Icons.Default.Check else Icons.Default.Clear,
-//                            tint = if (book.buyerConfirm) Color.Green else Color.Red,
-//                            contentDescription = "Buyer Verification"
-//                        )
-                    }
-                }
+                Text(text = "Sale Status:", fontWeight = FontWeight.Bold)
+                if (currInterestObject != null) {
 
-                Box(modifier = Modifier
-                    .clickable(enabled = book.email == viewModel.email) {
-                        viewModel.sellerVerifiedBook(book)
-                        // .sellerConfirm = true
-                        viewModel.fetchBookDetails(book.bookID)
-                        // viewModel.removeBookIfBothPartiesVerified(book)
-                    }
-                ) {
                     Row {
-                        Text(text = "Seller Verification: ")
-//                        Icon(
-//                            modifier = Modifier.border(
-//                                width = 3.dp,
-//                                color = MaterialTheme.colorScheme.onBackground
-//                            ),
-//                            imageVector = if (book.sellerConfirm) Icons.Default.Check else Icons.Default.Clear,
-//                            tint = if (book.sellerConfirm) Color.Green else Color.Red,
-//                            contentDescription = "Buyer Verification"
-//                        )
+                        Text(text = "Buyer Verification: ", modifier = Modifier.padding(top = 16.dp))
+                        Checkbox(
+                            enabled = (book.email != viewModel.email),
+                            onCheckedChange = {
+                                viewModel.buyerVerifiedBook(book, currInterestObject)
+                                viewModel.fetchBookDetails(book.bookID)
+                            },
+                            checked = buyerCheckedState.value
+                        )
+                    }
+
+                    Row {
+                        Text(text = "Seller Verification: ", modifier = Modifier.padding(top = 16.dp))
+                        Checkbox(
+                            enabled = (book.email == viewModel.email),
+                            onCheckedChange = {
+                                viewModel.sellerVerifiedBook(book, currInterestObject)
+                                viewModel.fetchBookDetails(book.bookID)
+                            },
+                            checked = sellerCheckedState.value
+                        )
                     }
                 }
             }
