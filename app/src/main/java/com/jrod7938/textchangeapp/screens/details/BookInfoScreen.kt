@@ -141,7 +141,7 @@ fun BookInfoScreen(
                         onClick = {
                             Log.d("INTEREST", "HI")
                             book!!.let { book ->
-                               user?.let { viewModel.addInterestObject(book, it.userId)  }
+                               user?.let { viewModel.addInterestObject(book, it)  }
                                 val emailIntent = viewModel.prepareInterestEmailIntent(book)
                                 emailIntent.let {
                                     context.startActivity(emailIntent)

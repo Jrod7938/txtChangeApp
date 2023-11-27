@@ -155,6 +155,7 @@ fun SearchScreen(
                             queryItems += text
                         }
                         viewModel.viewModelScope.launch {
+
                             when (filter) {
                                 SearchType.ISBN -> viewModel.searchBookByISBN(text)
                                 SearchType.Title -> viewModel.searchBookByTitle(text)

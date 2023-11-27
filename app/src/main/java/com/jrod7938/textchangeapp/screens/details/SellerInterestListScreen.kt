@@ -29,31 +29,44 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.jrod7938.textchangeapp.model
+package com.jrod7938.textchangeapp.screens.details
 
-data class InterestObject(
-    val interestId: String,
-    val userDisplayName: String,
-    var buyerConfirm: Boolean,
-    var sellerConfirm: Boolean
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.navigation.NavController
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.jrod7938.textchangeapp.components.SellerInterestView
+import com.jrod7938.textchangeapp.model.MBook
+
+@Composable
+fun SellerInterestListScreen(
+    navController: NavController,
+    viewModel: BookInfoScreenViewModel = viewModel()
 ) {
+    val loading by viewModel.loading.observeAsState(initial = false)
+    val user by viewModel.user.observeAsState(initial = null)
+    val sellerInterestList by viewModel.sellerInterestList.observeAsState(initial = listOf())
 
-    companion object {
-        fun fromMap(map: HashMap<String, Any>): InterestObject {
-            return InterestObject(
-                interestId = map["interest_id"].toString(),
-                userDisplayName = map["user_display_name"].toString(),
-                buyerConfirm = map["buyer_confirm"] as Boolean,
-                sellerConfirm = map["seller_confirm"] as Boolean,
-            )
-        }
+    LaunchedEffect(key1 = true) {
+        viewModel.getUser()
     }
-    fun toMap(): MutableMap<String, Any> {
-        return mutableMapOf(
-            "interest_id" to this.interestId,
-            "user_display_name" to this.userDisplayName,
-            "buyer_confirm" to this.buyerConfirm,
-            "seller_confirm" to this.sellerConfirm
+
+    LaunchedEffect(user != null){
+        user?.let { viewModel.retrieveSellerInterestList(it) }
+    }
+
+
+    AnimatedVisibility(visible = sellerInterestList.isNotEmpty()) {
+        SellerInterestView(
+            sellerInterestList = sellerInterestList,
+            viewModel = viewModel,
+            navController = navController,
+            loading = loading
         )
     }
+
 }

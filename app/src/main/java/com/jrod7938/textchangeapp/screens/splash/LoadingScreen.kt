@@ -29,31 +29,29 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.jrod7938.textchangeapp.model
+package com.jrod7938.textchangeapp.screens.splash
 
-data class InterestObject(
-    val interestId: String,
-    val userDisplayName: String,
-    var buyerConfirm: Boolean,
-    var sellerConfirm: Boolean
-) {
+import androidx.compose.foundation.layout.Column
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.navigation.NavHostController
+import com.jrod7938.textchangeapp.navigation.AppScreens
+import kotlinx.coroutines.delay
 
-    companion object {
-        fun fromMap(map: HashMap<String, Any>): InterestObject {
-            return InterestObject(
-                interestId = map["interest_id"].toString(),
-                userDisplayName = map["user_display_name"].toString(),
-                buyerConfirm = map["buyer_confirm"] as Boolean,
-                sellerConfirm = map["seller_confirm"] as Boolean,
-            )
-        }
+
+@Composable
+fun LoadingScreen(
+    navController: NavHostController,
+){
+    Column{
+        CircularProgressIndicator()
+        Text("Loading")
     }
-    fun toMap(): MutableMap<String, Any> {
-        return mutableMapOf(
-            "interest_id" to this.interestId,
-            "user_display_name" to this.userDisplayName,
-            "buyer_confirm" to this.buyerConfirm,
-            "seller_confirm" to this.sellerConfirm
-        )
+
+    LaunchedEffect(key1 = true){
+        delay(1000L)
+        navController.navigate(AppScreens.SellerInterestListScreen.name)
     }
 }

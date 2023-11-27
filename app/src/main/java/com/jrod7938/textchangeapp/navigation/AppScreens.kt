@@ -43,7 +43,9 @@ enum class AppScreens {
     HomeScreen,
     SearchScreen,
     BookInfoScreen,
-    SavedBooksScreen;
+    SavedBooksScreen,
+    SellerInterestListScreen,
+    LoadingScreen;
 
     companion object {
         /**
@@ -61,6 +63,8 @@ enum class AppScreens {
             SearchScreen.name -> SearchScreen
             BookInfoScreen.name -> BookInfoScreen
             SavedBooksScreen.name -> SavedBooksScreen
+            SellerInterestListScreen.name -> SellerInterestListScreen
+            LoadingScreen.name -> LoadingScreen
             null -> HomeScreen
             else -> throw IllegalArgumentException("Route $route is not recognized.")
         }

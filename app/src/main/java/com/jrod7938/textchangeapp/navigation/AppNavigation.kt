@@ -51,10 +51,12 @@ import com.jrod7938.textchangeapp.components.SellFAB
 import com.jrod7938.textchangeapp.components.TopNavigationBar
 import com.jrod7938.textchangeapp.screens.account.AccountScreen
 import com.jrod7938.textchangeapp.screens.details.BookInfoScreen
+import com.jrod7938.textchangeapp.screens.details.SellerInterestListScreen
 import com.jrod7938.textchangeapp.screens.home.HomeScreen
 import com.jrod7938.textchangeapp.screens.login.LoginScreen
 import com.jrod7938.textchangeapp.screens.saved.SavedBooksScreen
 import com.jrod7938.textchangeapp.screens.search.SearchScreen
+import com.jrod7938.textchangeapp.screens.splash.LoadingScreen
 import com.jrod7938.textchangeapp.screens.splash.SplashScreen
 
 /**
@@ -169,6 +171,22 @@ fun AppNavigation() {
                         onDispose { }
                     }
                     AccountScreen(navController = navController)
+                }
+
+                composable(route = AppScreens.SellerInterestListScreen.name) {
+                    DisposableEffect(Unit) {
+                        showAppBars.value = true
+                        onDispose { }
+                    }
+                    SellerInterestListScreen(navController = navController)
+                }
+                
+                composable(route = AppScreens.LoadingScreen.name) {
+                    DisposableEffect(Unit) {
+                        showAppBars.value = false
+                        onDispose { }
+                    }
+                    LoadingScreen(navController = navController)
                 }
             }
         }
