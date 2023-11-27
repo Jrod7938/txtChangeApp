@@ -143,16 +143,24 @@ fun AccountScreen(
             }
             Divider(modifier = Modifier.fillMaxWidth())
         }
+
         item {
             if(!loading && user!= null && bookListings != null) {
-                AccountListings(
-                    bookListings = bookListings!!,
-                    currentlyEditingBook = currentlyEditingBook,
-                    navController = navController,
-                )
-            }
-            if(!loading && user != null && bookListings?.isEmpty() == true) {
-                Text("Whoops..Looks like you've reached the end.", color =  MaterialTheme.colorScheme.onPrimaryContainer)
+                if(bookListings!!.isEmpty()) {
+                    Text(
+                        text = "This page is empty. Post some listings for books to get started.",
+                        fontSize = 14.sp,
+                        modifier = Modifier.padding(15.dp),
+                        fontWeight = FontWeight.Bold,
+                        )
+                }
+                else {
+                    AccountListings(
+                        bookListings = bookListings!!,
+                        currentlyEditingBook = currentlyEditingBook,
+                        navController = navController,
+                    )
+                }
             }
         }
     }

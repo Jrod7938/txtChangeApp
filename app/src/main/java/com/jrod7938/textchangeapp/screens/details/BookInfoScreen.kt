@@ -99,11 +99,7 @@ fun BookInfoScreen(
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(
-                text = "Book Info Screen",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold
-            )
+
             if (book != null && user != null) {
                 BookInfoView(
                     book = book!!,

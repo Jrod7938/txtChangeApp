@@ -33,6 +33,7 @@ package com.jrod7938.textchangeapp.screens.details
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -60,7 +61,7 @@ fun SellerInterestListScreen(
     }
 
 
-    AnimatedVisibility(visible = sellerInterestList.isNotEmpty()) {
+    AnimatedVisibility(visible = !loading) {
         SellerInterestView(
             sellerInterestList = sellerInterestList,
             viewModel = viewModel,

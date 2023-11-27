@@ -56,6 +56,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
@@ -92,6 +93,14 @@ fun SavedBooksScreen(
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onBackground
             )
+            if(savedBooks.isEmpty())
+                Text(
+                    text = "This page is empty. Add some books to your saved list to get started.",
+                    fontSize = 14.sp,
+                    modifier = Modifier.padding(15.dp),
+                    fontWeight = FontWeight.Bold,
+
+                    )
             LazyColumn(
                 modifier = Modifier
                     .fillMaxWidth()

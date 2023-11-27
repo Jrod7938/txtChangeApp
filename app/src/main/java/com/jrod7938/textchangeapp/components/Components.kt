@@ -35,6 +35,7 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.util.Log
 import android.widget.Toast
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColor
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector1D
@@ -88,15 +89,19 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.CurrencyExchange
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.DeleteForever
 import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.HelpOutline
 import androidx.compose.material.icons.filled.Logout
+import androidx.compose.material.icons.filled.Mail
 import androidx.compose.material.icons.filled.ModeEditOutline
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.ReportProblem
 import androidx.compose.material.icons.filled.Sell
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
@@ -107,6 +112,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CardElevation
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
@@ -158,6 +164,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -169,6 +176,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
@@ -729,6 +737,9 @@ fun TopNavigationBar(
 
     items.forEach { item ->
         if (currentRoute?.contains(item.route) == true) setTitle(item.title)
+        else if (currentRoute?.contains(AppScreens.SellerInterestListScreen.name) == true ){
+            setTitle("Listing Interests")
+        }
     }
 
     TopAppBar(
@@ -1261,13 +1272,25 @@ fun BookListingItem(
                     }
                 )
             }
+
+
+            val annotatedString = buildAnnotatedString {
+                append("You are about to delete ")
+                withStyle(
+                    style = SpanStyle(fontWeight = FontWeight.Bold)
+                ){
+                    append("'$book.title'. ")
+                }
+                append("This action cannot be undone. Do you still want to proceed?")
+            }
+
             if (show) {
                 DestructiveActionDialog(
                     isVisible = true,
                     onConfirmAction = { viewModel.deleteBook(book) },
                     onDismissAction = { show = false },
                     title = "Are You Sure?",
-                    text = "You are about to delete '${book.title}'. This action cannot be undone. Do you still want to proceed?",
+                    text = annotatedString,
                     confirmButtonText = "Continue",
                     dismissButtonText = "Cancel",
                     imageVector = Icons.Default.DeleteForever
@@ -1297,7 +1320,7 @@ fun DestructiveActionDialog(
     onConfirmAction: () -> Unit,
     onDismissAction: () -> Unit,
     title: String,
-    text: String,
+    text: AnnotatedString,
     confirmButtonText: String,
     dismissButtonText: String,
     imageVector: ImageVector,
@@ -1441,6 +1464,9 @@ fun AccountInfo(
         onDismissAction = { showUpdate = false },
         isVisible = true
     )
+    val annotatedString = buildAnnotatedString {
+        append("Are you sure you want to log out?")
+    }
 
     if (showLogout) DestructiveActionDialog(
         isVisible = true,
@@ -1453,7 +1479,7 @@ fun AccountInfo(
         },
         onDismissAction = { showLogout = false },
         title = "Log out",
-        text = "Are you sure you want to log out?",
+        text = annotatedString,
         confirmButtonText = "Logout",
         dismissButtonText = "Cancel",
         imageVector = Icons.Default.Logout
@@ -1652,6 +1678,7 @@ fun BookConditionDropdown(
  * @see MUser
  * @see BookInfoScreenViewModel
  */
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun BookInfoView(
     book: MBook,
@@ -1668,141 +1695,394 @@ fun BookInfoView(
     val isBuyerConfirmed = currInterestObject?.buyerConfirm == true
     val buyerCheckedState = remember { mutableStateOf(isBuyerConfirmed) }
 
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.background,
-            contentColor = MaterialTheme.colorScheme.onBackground
-        ),
-        border = BorderStroke(2.dp, MaterialTheme.colorScheme.primary),
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Image(
-                painter = rememberAsyncImagePainter(model = book.imageURL),
-                contentDescription = "${book.title} Image",
-                modifier = Modifier
-                    .height(200.dp)
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(12.dp))
-            )
+    val isBookSaved = user.savedBooks.contains(book.bookID)
+    var visible  by remember { mutableStateOf(true) }
 
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Text(text = book.title, fontSize = 20.sp, fontWeight = FontWeight.Bold)
-            Spacer(modifier = Modifier.height(8.dp))
-
+    LazyColumn {
+        stickyHeader {
             Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
+                modifier = Modifier
+                    .background(MaterialTheme.colorScheme.background)
+                    .fillMaxWidth()
+                    .height(60.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
+                Text(
+                    text = "Book Info Screen",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold
+
+                )
+            }
+        }
+
+        item {
+            Row {
+                Image(
+                    painter = rememberAsyncImagePainter(model = book.imageURL),
+                    contentDescription = "${book.title} Image",
+                    modifier = Modifier
+                        .height(200.dp)
+                        .fillMaxWidth(if(user.email == book.email) 1f else 0.5f )
+                        .clip(RoundedCornerShape(12.dp))
+                )
+
                 if (user.email != book.email) {
-                    Button(
-                        colors = ButtonDefaults
-                            .buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-                        onClick = onContactClicked,
-                        enabled = currInterestObject == null
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(end = 15.dp)
                     ) {
-                        Text(text = "Contact Seller", fontSize = 16.sp)
-                    }
-                    Button(onClick = {
-                        if (user.savedBooks.contains(book.bookID)) {
-                            viewModel.unsaveBook(book)
-                            viewModel.fetchBookDetails(book.bookID)
-                            GlobalScope.launch {
-                                withContext(Dispatchers.Main) {
-                                    viewModel.getUser()
-                                }
-                            }
-                        } else {
-                            viewModel.saveBook(book)
-                            viewModel.fetchBookDetails(book.bookID)
-                            GlobalScope.launch {
-                                withContext(Dispatchers.Main) {
-                                    viewModel.getUser()
-                                }
-                            }
+                        Button(
+                            colors = ButtonDefaults
+                                .buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                            onClick = onContactClicked,
+                            enabled = currInterestObject == null,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Mail,
+                                contentDescription = "Contact Seller",
+                                tint = MaterialTheme.colorScheme.onPrimary,
+                                modifier = Modifier.padding(end = 10.dp)
+                            )
+                            Text(text = "Contact Seller", fontSize = 15.sp)
                         }
-                    }) {
-                        Text(
-                            text = if (user.savedBooks.contains(book.bookID)) "Unsave" else "Save",
-                            fontSize = 16.sp
-                        )
+                        Button(
+                            onClick = {
+                                if (isBookSaved) {
+                                    viewModel.unsaveBook(book)
+                                    viewModel.fetchBookDetails(book.bookID)
+                                    GlobalScope.launch {
+                                        withContext(Dispatchers.Main) {
+                                            viewModel.getUser()
+                                        }
+                                    }
+                                } else {
+                                    viewModel.saveBook(book)
+                                    viewModel.fetchBookDetails(book.bookID)
+                                    GlobalScope.launch {
+                                        withContext(Dispatchers.Main) {
+                                            viewModel.getUser()
+                                        }
+                                    }
+                                }
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Icon(
+                                imageVector = if (isBookSaved) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                                contentDescription = "Save to favorites",
+                                tint = if (isBookSaved) Color.Red else MaterialTheme.colorScheme.onPrimary,
+                                modifier = Modifier.padding(end = 10.dp)
+                            )
+                            Text(
+                                text = if (isBookSaved) "Unsave" else "Save",
+                                fontSize = 15.sp
+                            )
+                        }
+
+                        Button(
+                            onClick = {},
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.ReportProblem,
+                                contentDescription = "Report Listing",
+                                tint = MaterialTheme.colorScheme.onPrimary,
+                                modifier = Modifier.padding(end = 10.dp)
+                            )
+                            Text(text = "Report Listing", fontSize = 15.sp)
+                        }
                     }
                 }
-            }
 
+                val annotatedString = buildAnnotatedString {
+                    append("You are about to delete ")
+                    withStyle(
+                        style = SpanStyle(fontWeight = FontWeight.Bold)
+                    ) {
+                        append("'${book.title}'. ")
+                    }
+                    append("This action cannot be undone. Do you still want to proceed?")
+                }
+            }
+        }
+
+        item {
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+
+                Text(
+                    text = book.title,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(start = 15.dp, end = 15.dp)
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+
+
+            }
+        }
+
+        item {
             Spacer(modifier = Modifier.height(8.dp))
             val annotatedString = buildAnnotatedString {
                 append("Seller Email: ")
                 withStyle(
                     style = SpanStyle(
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
+                        color = MaterialTheme.colorScheme.primary,
+                        fontStyle = FontStyle.Italic,
                     )
                 ) {
                     append(book.email)
                 }
             }
-            if(currInterestObject != null) Text(text = annotatedString, fontSize = 14.sp)
-            Text(text = "Author: ${book.author}", fontSize = 16.sp)
+            if(currInterestObject != null) {
+                Text(
+                    text = annotatedString,
+                    fontSize = 14.sp,
+                    modifier = Modifier.padding(start = 15.dp, end = 15.dp)
+                )
+            }
             Spacer(modifier = Modifier.height(8.dp))
-            Text(text = "ISBN: ${book.isbn}", fontSize = 16.sp)
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(text = "Category: ${book.mCategory}", fontSize = 16.sp)
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(text = "Condition: ${book.condition}", fontSize = 16.sp)
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(text = "Price: $${book.price}", fontSize = 16.sp)
-            Spacer(modifier = Modifier.height(8.dp))
+        }
 
-            Column(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(text = "Sale Status:", fontWeight = FontWeight.Bold)
-                if(book.email == viewModel.email){
-                    Text(
-                        text = "Please refer to Interest Screen to view the sale status for all book listings",
-                        fontSize = 14.sp,
-                        fontStyle = FontStyle.Italic
+        item {
+            val annotatedString = buildAnnotatedString {
+                append("Author: ")
+                withStyle(
+                    style = SpanStyle(
+                        fontWeight = FontWeight.Bold,
                     )
+                ) {
+                    append(book.author)
                 }
-                if (currInterestObject != null) {
 
+            }
+            Text(
+                text = annotatedString,
+                fontSize = 16.sp,
+                modifier = Modifier.padding(start = 15.dp, end = 15.dp))
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+
+        item {
+            val annotatedString = buildAnnotatedString {
+                append("ISBN#: ")
+                withStyle(
+                    style = SpanStyle(
+                        fontWeight = FontWeight.Bold,
+                    )
+                ) {
+                    append(book.isbn)
+                }
+            }
+            Text(
+                text = annotatedString,
+                fontSize = 16.sp,
+                modifier = Modifier.padding(start = 15.dp, end = 15.dp)
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+
+        item {
+            val annotatedString = buildAnnotatedString {
+                append("Price: ")
+                withStyle(
+                    style = SpanStyle(
+                        fontWeight = FontWeight.Bold,
+                    )
+                ) {
+                    append("$${book.price}")
+                }
+
+            }
+            Text(
+                text = annotatedString,
+                fontSize = 16.sp,
+                modifier = Modifier
+                    .fillMaxWidth(0.5f)
+                    .padding(start = 15.dp, end = 15.dp),
+                textAlign = TextAlign.Start
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+
+        item {
+            val annotatedString = buildAnnotatedString {
+                append("Condition: ")
+                withStyle(
+                    style = SpanStyle(
+                        fontWeight = FontWeight.Bold,
+                    )
+                ) {
+                    append(book.condition)
+                }
+            }
+
+            Text(
+                text = annotatedString,
+                fontSize = 16.sp,
+                modifier = Modifier
+                    .fillMaxWidth(0.5f)
+                    .padding(start = 15.dp, end = 15.dp),
+                textAlign = TextAlign.Start
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+
+        item {
+            val annotatedString = buildAnnotatedString {
+                append("Category: ")
+                withStyle(
+                    style = SpanStyle(
+                        fontWeight = FontWeight.Bold,
+                    )
+                ) {
+                    append(book.mCategory)
+                }
+
+            }
+            Text(
+                text = annotatedString,
+                fontSize = 16.sp,
+                modifier = Modifier.padding(start = 15.dp, end = 15.dp)
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+
+
+        item {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 15.dp, end = 15.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer
+                ),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            ) {
+                Column(modifier = Modifier.padding(top = 15.dp, bottom = 15.dp)) {
                     Row {
-                        Text(text = "Buyer Confirmation: ", modifier = Modifier.padding(top = 16.dp))
-                        Checkbox(
-                            enabled = (book.email != viewModel.email),
-                            onCheckedChange = {
-                                viewModel.buyerVerifiedBook(book, currInterestObject)
-                                viewModel.fetchBookDetails(book.bookID)
-                            },
-                            checked = buyerCheckedState.value
+                        Text(
+                            text = "Sale Status:",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 17.sp,
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.padding(start = 15.dp, end = 15.dp)
+                        )
+                        if (book.email != viewModel.email) {
+                            Text(
+                                text = "Collapse",
+                                fontSize = 12.sp,
+                                textDecoration = TextDecoration.Underline,
+                                modifier = Modifier
+                                    .clickable { visible = !visible }
+                                    .padding(start = 10.dp),
+                            )
+                        }
+                    }
+                    if (book.email == viewModel.email) {
+                        Text(
+                            text = "Please refer to Interest Screen to view the sale status for all book listings",
+                            fontSize = 14.sp,
+                            fontStyle = FontStyle.Italic,
+                            modifier = Modifier.padding(start = 15.dp, end = 15.dp)
                         )
                     }
+                    if (currInterestObject != null) {
+                        AnimatedVisibility(visible = visible) {
+                            Column {
+                                Row {
+                                    Text(
+                                        text = "Buyer Confirmation: ",
+                                        modifier = Modifier.padding(
+                                            top = 16.dp,
+                                            start = 15.dp,
+                                            end = 15.dp
+                                        )
+                                    )
+                                    Checkbox(
+                                        enabled = (book.email != viewModel.email),
+                                        onCheckedChange = {
+                                            viewModel.buyerVerifiedBook(book, currInterestObject)
+                                            viewModel.fetchBookDetails(book.bookID)
+                                        },
+                                        checked = buyerCheckedState.value
+                                    )
+                                }
 
-                    Row {
-                        Text(text = "Seller Confirmation: ", modifier = Modifier.padding(top = 16.dp))
-                        Checkbox(
-                            enabled = (book.email == viewModel.email),
-                            onCheckedChange = {
-                                viewModel.sellerVerifiedBook(book, currInterestObject)
-                                viewModel.fetchBookDetails(book.bookID)
-                            },
-                            checked = sellerCheckedState.value
-                        )
+                                Row {
+                                    Text(
+                                        text = "Seller Confirmation: ",
+                                        modifier = Modifier.padding(
+                                            top = 16.dp,
+                                            start = 15.dp,
+                                            end = 15.dp
+                                        )
+                                    )
+                                    Checkbox(
+                                        enabled = (book.email == viewModel.email),
+                                        onCheckedChange = {
+                                            viewModel.sellerVerifiedBook(book, currInterestObject)
+                                            viewModel.fetchBookDetails(book.bookID)
+                                        },
+                                        checked = sellerCheckedState.value
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
             }
             Spacer(modifier = Modifier.height(8.dp))
-            Text(text = "Description: ${book.description}", fontSize = 16.sp)
+        }
+
+        item {
+            Text(
+                text = "Description:",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(start = 15.dp, end = 15.dp)
+            )
+            ExpandableText(
+                text = book.description,
+                maxLines = 5,
+                modifier = Modifier.padding(start = 15.dp, end = 15.dp),
+                fontSize = 14
+            )
+            Spacer(modifier = Modifier.height(40.dp))
+
+        }
+
+    }
+
+}
+
+@Composable
+fun ExpandableText(text: String, maxLines: Int, modifier: Modifier, fontSize: Int){
+    var isExpanded by remember { mutableStateOf(false) }
+    Column(
+        modifier = modifier
+    ) {
+        Text(
+            text = text,
+            maxLines = if (isExpanded) Int.MAX_VALUE else maxLines,
+            fontSize = fontSize.sp,
+            overflow = TextOverflow.Ellipsis
+        )
+
+        TextButton(
+            onClick = { isExpanded = !isExpanded },
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text(
+                text = if(isExpanded) "Collapse" else "Expand"
+            )
         }
     }
 }
@@ -2884,14 +3164,27 @@ fun SellerInterestView(
 
     val reloadState = remember { mutableStateOf(loading) }
 
+
     LazyColumn {
+        item {
+            Text(
+                text = if(sellerInterestList.isEmpty()) "This page is empty. Post some listings for books to get started." else "View all of the users who have expressed interest in any of your book listings",
+                fontSize = 14.sp,
+                modifier = Modifier.padding(15.dp),
+                fontWeight = FontWeight.Bold,
+
+            )
+        }
         sellerInterestList.forEach { book ->
             stickyHeader {
                 Row(
                     modifier = Modifier
                         .background(MaterialTheme.colorScheme.secondaryContainer)
                         .fillMaxWidth()
-                        .height(60.dp),
+                        .height(60.dp)
+                        .clickable {
+                            navController.navigate("${AppScreens.BookInfoScreen.name}/${book.bookID}")
+                        },
                     verticalAlignment = Alignment.CenterVertically
                 ) {
 
@@ -2914,7 +3207,8 @@ fun SellerInterestView(
             item { if(book.interestList.isEmpty()) {
                 Text(
                 text = "No users interested in this title as yet!",
-                fontSize = 12.sp, fontStyle = FontStyle.Italic)
+                fontSize = 12.sp, fontStyle = FontStyle.Italic,
+                modifier = Modifier.padding(start = 15.dp, top = 10.dp))
                 }
             }
             item {
@@ -2925,6 +3219,8 @@ fun SellerInterestView(
 
                     val isBuyerConfirmed = interestObject.buyerConfirm
                     val buyerCheckedState = remember { mutableStateOf(isBuyerConfirmed) }
+
+                    var showElement by remember { mutableStateOf(false) }
 
                     val annotatedString = buildAnnotatedString {
                         append("Prospective Buyer: ")
@@ -2948,41 +3244,60 @@ fun SellerInterestView(
                             )
                         }
                         else {
-                            Text(
-                                text = annotatedString,
-                                fontSize = 12.sp
-                            )
                             Row {
                                 Text(
-                                    text = "Buyer Confirmation: ",
-                                    modifier = Modifier.padding(top = 16.dp)
+                                    text = annotatedString,
+                                    fontSize = 12.sp,
+                                    modifier = Modifier.padding(start = 15.dp, top = 10.dp)
                                 )
-                                Checkbox(
-                                    enabled = book.email != viewModel.email,
-                                    onCheckedChange = {
-                                        viewModel.buyerVerifiedBook(book, interestObject)
-                                        viewModel.fetchBookDetails(book.bookID)
-                                    },
-                                    checked = buyerCheckedState.value
+                                Text(
+                                    text = if(showElement) "Hide" else "Show",
+                                    modifier = Modifier
+                                        .clickable {
+                                            showElement = !showElement
+                                        }
+                                        .padding(start = 10.dp, top = 5.dp),
+                                    textDecoration = TextDecoration.Underline
                                 )
                             }
-                            Row {
-                                Text(
-                                    text = "Seller Confirmation: ",
-                                    modifier = Modifier.padding(top = 16.dp)
-                                )
-                                Checkbox(
-                                    enabled = (book.email == viewModel.email) && !reloadState.value,
-                                    onCheckedChange = {
-                                        viewModel.viewModelScope.launch {
-                                            viewModel.sellerVerifiedBook(book, interestObject)
-                                            viewModel.fetchBookDetails(book.bookID)
-                                            reloadState.value = true
-                                        }
-                                    },
-                                    checked = sellerCheckedState.value
-                                )
+                            AnimatedVisibility(visible = showElement) {
+                                Column {
+                                    Row {
+                                        Text(
+                                            text = "Buyer Confirmation: ",
+                                            modifier = Modifier.padding(top = 16.dp, start = 15.dp)
+                                        )
+                                        Checkbox(
+                                            enabled = book.email != viewModel.email,
+                                            onCheckedChange = {
+                                                viewModel.buyerVerifiedBook(book, interestObject)
+                                                viewModel.fetchBookDetails(book.bookID)
+                                            },
+                                            checked = buyerCheckedState.value
+                                        )
+                                    }
+                                    Row {
+                                        Text(
+                                            text = "Seller Confirmation: ",
+                                            modifier = Modifier.padding(top = 16.dp, start = 15.dp)
+                                        )
+                                        Checkbox(
+                                            enabled = (book.email == viewModel.email) && !reloadState.value,
+                                            onCheckedChange = {
+                                                viewModel.viewModelScope.launch {
+                                                    viewModel.sellerVerifiedBook(
+                                                        book,
+                                                        interestObject
+                                                    )
+                                                    viewModel.fetchBookDetails(book.bookID)
+                                                    reloadState.value = true
+                                                }
+                                            },
+                                            checked = sellerCheckedState.value
+                                        )
 
+                                    }
+                                }
                             }
                         }
 
