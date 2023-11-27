@@ -59,6 +59,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.jrod7938.textchangeapp.components.BookInfoView
+import com.jrod7938.textchangeapp.components.ContactSellerDialog
 import kotlinx.coroutines.launch
 
 /**
@@ -82,7 +83,7 @@ fun BookInfoScreen(
     val loading by viewModel.loading.observeAsState(initial = false)
     val message by viewModel.message.collectAsState(initial = null)
 
-    val (showContactInfo, setContactInfo) = remember { mutableStateOf(false) }
+    val (contactInfo, setContactInfo) = remember { mutableStateOf(false) }
 
     LaunchedEffect(key1 = true) {
         bookId?.let {
@@ -114,50 +115,19 @@ fun BookInfoScreen(
             }
         }
 
-        if (showContactInfo && book != null) {
-            val context = LocalContext.current
-
-            AlertDialog(
-                backgroundColor = MaterialTheme.colorScheme.background,
-                onDismissRequest = {
-                    setContactInfo(false)
-               },
-                title = {
-                    Text(
-                        modifier = Modifier.fillMaxWidth(),
-                        text = "Contact Seller",
-                        textAlign = TextAlign.Center
+        if (contactInfo && book != null) {
+            user?.let { thisUser ->
+                book?.let { thisBook ->
+                    ContactSellerDialog(
+                        isVisible = true,
+                        onDismissAction = { setContactInfo(false) },
+                        onConfirmAction = { setContactInfo(false) },
+                        book = thisBook,
+                        user = thisUser,
+                        viewModel = viewModel,
                     )
-                },
-                buttons = {
-                    Button(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 16.dp, start = 16.dp, end = 16.dp),
-                        onClick = {
-                            Log.d("INTEREST", "HI")
-                            book!!.let { book ->
-                               user?.let { viewModel.addInterestObject(book, it)  }
-                                val emailIntent = viewModel.prepareInterestEmailIntent(book)
-                                emailIntent.let {
-                                    context.startActivity(emailIntent)
-
-                                }
-                            }
-                        }
-                    ) {
-                        Text(text = "Send Email")
-                    }
-                    Button(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        onClick = { setContactInfo(false) }
-                    ) {
-                        Text("Close")
-                    }
                 }
-            )
+            }
         }
     }
 }
