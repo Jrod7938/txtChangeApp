@@ -535,6 +535,39 @@ class BookInfoScreenViewModel : ViewModel() {
 
     }
 
+    fun deleteInterestObject(book: MBook, currInterestObject: InterestObject){
+        _loading.value = true
+        val db = FirebaseFirestore.getInstance()
+
+        viewModelScope.launch {
+            // remove by book
+            val refByBook = db.collection("books").document(book.bookID)
+            refByBook.update("interest_list", FieldValue.arrayRemove(currInterestObject.toMap()))
+                .addOnSuccessListener {
+                    Log.d("deleteInterestObject: BY BOOK", "Interest object removed successfully")
+                    viewModelScope.launch { _book.value?.interestList = reloadInterestList(book) }
+                }
+                .addOnFailureListener { e ->
+                    Log.e("deleteInterestObject: BY BOOK", "Error removing interest object")
+                    _message.value = e.message
+                }
+
+            // remove by category
+            val refByCategory = db.collection(book.mCategory).document(book.bookID)
+            refByCategory.update("interest_list", FieldValue.arrayRemove(currInterestObject.toMap()))
+                .addOnSuccessListener {
+                    Log.d("deleteInterestObject: BY CAT", "Interest object removed successfully")
+                    viewModelScope.launch { _book.value?.interestList = reloadInterestList(book) }
+                }
+                .addOnFailureListener { e ->
+                    Log.e("deleteInterestObject: BY CAT", "Error removing interest object")
+                    _message.value = e.message
+                }
+        }
+
+        _loading.value = false
+    }
+
     private suspend fun reloadInterestList(book: MBook): List<InterestObject> = withContext(Dispatchers.IO){
         val db = FirebaseFirestore.getInstance()
         val interestList = mutableListOf<InterestObject>()

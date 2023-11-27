@@ -1683,7 +1683,6 @@ fun BookConditionDropdown(
 fun BookInfoView(
     book: MBook,
     user: MUser,
-    onContactClicked: () -> Unit,
     viewModel: BookInfoScreenViewModel = viewModel()
 ) {
 
@@ -1697,6 +1696,9 @@ fun BookInfoView(
 
     val isBookSaved = user.savedBooks.contains(book.bookID)
     var visible  by remember { mutableStateOf(true) }
+
+    val (interest, setInterest) = remember { mutableStateOf(false) }
+    val (removeInterest, setRemoveInterest) = remember { mutableStateOf(false) }
 
     LazyColumn {
         stickyHeader {
@@ -1725,7 +1727,7 @@ fun BookInfoView(
                     contentDescription = "${book.title} Image",
                     modifier = Modifier
                         .height(200.dp)
-                        .fillMaxWidth(if(user.email == book.email) 1f else 0.5f )
+                        .fillMaxWidth(if (user.email == book.email) 1f else 0.5f)
                         .clip(RoundedCornerShape(12.dp))
                 )
 
@@ -1735,20 +1737,36 @@ fun BookInfoView(
                             .fillMaxWidth()
                             .padding(end = 15.dp)
                     ) {
-                        Button(
-                            colors = ButtonDefaults
-                                .buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-                            onClick = onContactClicked,
-                            enabled = currInterestObject == null,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Mail,
-                                contentDescription = "Contact Seller",
-                                tint = MaterialTheme.colorScheme.onPrimary,
-                                modifier = Modifier.padding(end = 10.dp)
-                            )
-                            Text(text = "Contact Seller", fontSize = 15.sp)
+                        if (currInterestObject == null) {
+                            Button(
+                                colors = ButtonDefaults
+                                    .buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                                onClick = { setInterest(true) },
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Mail,
+                                    contentDescription = "I'm Interested",
+                                    tint = MaterialTheme.colorScheme.onPrimary,
+                                    modifier = Modifier.padding(end = 10.dp)
+                                )
+                                Text(text = "I'm Interested", fontSize = 12.sp)
+                            }
+                        } else {
+                            Button(
+                                colors = ButtonDefaults
+                                    .buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                                onClick = { setRemoveInterest(true) },
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Mail,
+                                    contentDescription = "Withdraw Interest",
+                                    tint = MaterialTheme.colorScheme.onPrimary,
+                                    modifier = Modifier.padding(end = 10.dp)
+                                )
+                                Text(text = "Withdraw Interest", fontSize = 12.sp)
+                            }
                         }
                         Button(
                             onClick = {
@@ -1797,16 +1815,6 @@ fun BookInfoView(
                             Text(text = "Report Listing", fontSize = 15.sp)
                         }
                     }
-                }
-
-                val annotatedString = buildAnnotatedString {
-                    append("You are about to delete ")
-                    withStyle(
-                        style = SpanStyle(fontWeight = FontWeight.Bold)
-                    ) {
-                        append("'${book.title}'. ")
-                    }
-                    append("This action cannot be undone. Do you still want to proceed?")
                 }
             }
         }
@@ -2063,6 +2071,30 @@ fun BookInfoView(
 
     }
 
+    if(interest){
+        ContactSellerDialog(
+            isVisible = true,
+            onDismissAction = { setInterest(false) },
+            onConfirmAction = { setInterest(false) },
+            book = book,
+            user = user ,
+            viewModel = viewModel,
+        )
+    }
+
+    if(removeInterest) {
+        currInterestObject?.let {
+            WithdrawInterestDialog(
+                isVisible = true,
+                onDismissAction = { setRemoveInterest(false) },
+                onConfirmAction = { setRemoveInterest(false) },
+                book = book,
+                interestObject = it,
+                viewModel = viewModel,
+            )
+        }
+    }
+
 }
 
 @Composable
@@ -2239,9 +2271,11 @@ fun BookThumbnail(
     val user by viewModel.user.observeAsState(initial = null)
     val isBookSaved = user?.savedBooks?.contains(book.bookID) == true
     val (isChecked, setChecked) = remember(isBookSaved) { mutableStateOf(isBookSaved) }
-    val (show, setShow) = remember { mutableStateOf(false) }
+    val (interest, setInterest) = remember { mutableStateOf(false) }
+    val (removeInterest, setRemoveInterest) = remember { mutableStateOf(false)}
 
-    var clicked by remember { mutableStateOf(false) }
+    var interestClicked by remember { mutableStateOf(false) }
+    var wInterestClicked by remember { mutableStateOf(false)}
 
     val currInterestObject = book.interestList.find { it.interestId == user?.userId + book.userId}
 
@@ -2322,14 +2356,17 @@ fun BookThumbnail(
                         }
                         setChecked(!isChecked)
                     })
+
                 Button(
-                    onClick = {
-                        setShow(true)
-                    },
-                    enabled = (currInterestObject == null) && !clicked,
+                    onClick = { setInterest(true) },
+                    enabled = ((currInterestObject == null) && !interestClicked)
                 ) {
-                    Text(text = "Purchase")
+                    Text(
+                        text = "I'm Interested",
+                        fontSize = 10.sp
+                    )
                 }
+
                 Icon(
                     Icons.Outlined.Info,
                     tint = MaterialTheme.colorScheme.primary,
@@ -2342,17 +2379,83 @@ fun BookThumbnail(
             }
         }
     }
-    if (show) {
+    if (interest) {
         user?.let {
             ContactSellerDialog(
                 isVisible = true,
-                onDismissAction = { setShow(false) },
-                onConfirmAction = { clicked = true },
+                onDismissAction = { setInterest(false) },
+                onConfirmAction = { interestClicked = true },
                 book = book,
                 user = it,
                 viewModel = viewModel,
             )
         }
+    }
+}
+
+@Composable
+fun WithdrawInterestDialog(
+    isVisible: Boolean,
+    onDismissAction: () -> Unit,
+    onConfirmAction: () -> Unit,
+    book: MBook,
+    interestObject: InterestObject,
+    viewModel: BookInfoScreenViewModel,
+) {
+    val(view, setView) = remember { mutableStateOf(isVisible) }
+    val annotatedString = buildAnnotatedString {
+        append("This will indicate to the seller that you are ")
+        withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)){
+            append("no longer interested ")
+        }
+        append(
+            "in this book listing.\n\n" +
+            "Sellers do not receive notification of this so we recommend you reach out to them and let them know.\n\n"+
+            "You may re-indicate your interest by clicking "
+        )
+        withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)){
+            append("I'm Interested ")
+        }
+        append("at any time.")
+
+    }
+    if(view) {
+        AlertDialog(
+            shape = MaterialTheme.shapes.medium,
+            onDismissRequest = onDismissAction.also { setView(false) } ,
+            dismissButton = {
+                TextButton(onClick = onDismissAction.also { setView(false) }) {
+                    Text("Cancel", fontWeight = FontWeight.Bold)
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    book.let { thisBook ->
+                        viewModel.deleteInterestObject(book, interestObject)
+                        viewModel.fetchBookDetails(thisBook.bookID)
+                        onConfirmAction.invoke()
+                    }
+
+                }
+                ) { Text("Continue", fontWeight = FontWeight.Bold) }
+
+            },
+            title = {
+                Text(
+                    "Withdraw Interest?",
+                    fontSize = 14.sp,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Bold,
+                )
+            },
+            text = {
+                Text(
+                    text = annotatedString,
+                    fontSize = 15.sp,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+        )
     }
 }
 
@@ -2366,6 +2469,36 @@ fun ContactSellerDialog(
     viewModel: BookInfoScreenViewModel,
 ) {
     val (view, setView) = remember { mutableStateOf(isVisible) }
+
+    val annotatedString = buildAnnotatedString{
+        append(
+            "Email the seller of this listing to begin the transaction.\n\n"+
+            "This will also indicate to the seller that you "
+        )
+        withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)){
+            append("are interested ")
+        }
+        append(
+            " in purchasing their book.\n\n"+
+            "You may withdraw this interest any time via the "
+        )
+        withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)){
+            append("Info Screen before the sale is confirmed.\n\n")
+        }
+        append("Once you click ")
+        withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)){
+            append("Continue")
+        }
+        append(
+            ", you will not be able to contact the seller using this link.\n\n"+
+            "You may reference the "
+        )
+        withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)){
+            append("Info Screen ")
+        }
+        append("for this book if you need to access the seller's email again.")
+
+    }
     val context = LocalContext.current
 
     if(view) {
@@ -2397,14 +2530,13 @@ fun ContactSellerDialog(
                 Text(
                     "Contact Seller?",
                     fontSize = 14.sp,
-                    color = MaterialTheme.colorScheme.primary
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Bold,
                 )
             },
             text = {
                 Text(
-                    "Email the seller of this listing to the begin transaction.\n\n" +
-                    "Once you click Continue, you will not be able to contact the seller using this link.\n\n"+
-                    "You may reference the Info Screen for this book if you need to access the seller email again.\n",
+                    text = annotatedString,
                     fontSize = 15.sp,
                     color = MaterialTheme.colorScheme.primary
                 )

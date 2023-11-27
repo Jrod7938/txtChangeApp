@@ -83,7 +83,6 @@ fun BookInfoScreen(
     val loading by viewModel.loading.observeAsState(initial = false)
     val message by viewModel.message.collectAsState(initial = null)
 
-    val (contactInfo, setContactInfo) = remember { mutableStateOf(false) }
 
     LaunchedEffect(key1 = true) {
         bookId?.let {
@@ -105,7 +104,7 @@ fun BookInfoScreen(
                 BookInfoView(
                     book = book!!,
                     user = user!!,
-                    onContactClicked = { setContactInfo(true) })
+                )
             } else {
                 Text(
                     text = "Failed to fetch book details: $message",
@@ -115,20 +114,6 @@ fun BookInfoScreen(
             }
         }
 
-        if (contactInfo && book != null) {
-            user?.let { thisUser ->
-                book?.let { thisBook ->
-                    ContactSellerDialog(
-                        isVisible = true,
-                        onDismissAction = { setContactInfo(false) },
-                        onConfirmAction = { setContactInfo(false) },
-                        book = thisBook,
-                        user = thisUser,
-                        viewModel = viewModel,
-                    )
-                }
-            }
-        }
     }
 }
 
