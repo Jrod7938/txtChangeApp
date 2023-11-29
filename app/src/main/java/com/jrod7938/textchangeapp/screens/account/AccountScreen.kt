@@ -141,7 +141,7 @@ fun AccountScreen(
                     )
                 }
             }
-            Divider(modifier = Modifier.fillMaxWidth())
+            Divider(modifier = Modifier.fillMaxWidth(), color = MaterialTheme.colorScheme.secondaryContainer)
         }
 
         item {

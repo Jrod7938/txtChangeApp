@@ -33,8 +33,10 @@ package com.jrod7938.textchangeapp.screens.home
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -85,11 +87,12 @@ fun HomeScreen(
             fontWeight = FontWeight.Bold
         )
         HomeScreenButtons(navController = navController)
+        Spacer(modifier = Modifier.height(8.dp))
         Text(
-            text = "Categories:",
+            text = "Browse Categories:",
             color = MaterialTheme.colorScheme.onBackground,
             style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Bold,
         )
         Column(
             modifier = Modifier.fillMaxWidth(),

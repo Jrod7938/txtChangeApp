@@ -36,6 +36,7 @@ import android.content.Intent
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.animateColor
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector1D
@@ -47,6 +48,10 @@ import androidx.compose.animation.core.keyframes
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.updateTransition
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
@@ -213,8 +218,11 @@ import com.jrod7938.textchangeapp.model.ListingSubmissionData
 import com.jrod7938.textchangeapp.screens.sell.SellScreenViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import okhttp3.internal.notify
+import okhttp3.internal.wait
 
 /**
  * This composable is the txtChange name plate. It displays the txtChange name
@@ -433,7 +441,7 @@ fun UserForm(
         email.value.trim().isNotEmpty()
                 && password.value.trim().isNotEmpty()
                 && (isPasswordValid(password.value))
-                // && email.value.endsWith("@pride.hofstra.edu")
+                && email.value.endsWith("@pride.hofstra.edu")
     }
 
     val scrollState = rememberScrollState()
@@ -670,7 +678,7 @@ fun BottomNavBar(
     var selectedIndex by remember { mutableIntStateOf(0) }
 
     AnimatedNavigationBar(
-        modifier = Modifier.height(70.dp),
+        modifier = Modifier.height(64.dp),
         selectedIndex = selectedIndex,
         ballColor = MaterialTheme.colorScheme.primary,
         cornerRadius = shapeCornerRadius(cornerRadius = 0.dp),
@@ -741,63 +749,65 @@ fun TopNavigationBar(
             setTitle("Listing Interests")
         }
     }
+    Column {
+        TopAppBar(
+            modifier = Modifier
+                .fillMaxHeight(0.1f)
+                .padding(top = 15.dp, bottom = 5.dp, start = 10.dp, end = 10.dp),
+            title = {
+                Text(
+                    text = title,
+                    fontWeight = FontWeight.ExtraBold,
+                    fontSize = 25.sp,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(top = 10.dp)
+                )
+            },
+            actions = {
+                Box(
+                    modifier = Modifier
+                        .wrapContentSize(Alignment.TopEnd)
+                ) {
+                    IconButton(
+                        onClick = { setExpanded(true) },
+                        content = {
+                            Icon(
+                                imageVector = Icons.Filled.MoreVert,
+                                tint = MaterialTheme.colorScheme.primary,
+                                contentDescription = "More Vertical"
+                            )
+                        }
+                    )
+                    DropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { setExpanded(false) }
+                    ) {
+                        DropdownMenuItem(
+                            content = { Text("Invite Friends") },
+                            onClick = { sendInvite.let { context.startActivity(sendInvite) } }
+                        )
+                        DropdownMenuItem(
+                            content = { Text("Send Feedback") },
+                            onClick = { sendFeedback.let { context.startActivity(sendFeedback) } }
+                        )
+                    }
 
-    TopAppBar(
-        modifier = Modifier
-            .fillMaxHeight(0.1f)
-            .padding(top = 15.dp, bottom = 5.dp, start = 10.dp, end = 10.dp),
-        title = {
-            Text(
-                text = title,
-                fontWeight = FontWeight.ExtraBold,
-                fontSize = 25.sp,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(top = 10.dp)
-            )
-        },
-        actions = {
-            Box(
-                modifier = Modifier
-                    .wrapContentSize(Alignment.TopEnd)
-            ) {
+                }
+
                 IconButton(
-                    onClick = { setExpanded(true) },
+                    onClick = { navController.navigate(AppScreens.SellerInterestListScreen.name) },
                     content = {
                         Icon(
-                            imageVector = Icons.Filled.MoreVert,
-                            tint = MaterialTheme.colorScheme.primary,
-                            contentDescription = "More Vertical"
+                            imageVector = Icons.Default.Sell,
+                            tint = MaterialTheme.colorScheme.secondaryContainer,
+                            contentDescription = "Open Seller Interest List"
                         )
                     }
                 )
-                DropdownMenu(
-                    expanded = expanded,
-                    onDismissRequest = { setExpanded(false) }
-                ) {
-                    DropdownMenuItem(
-                        content = { Text("Invite Friends") },
-                        onClick = { sendInvite.let { context.startActivity(sendInvite) } }
-                    )
-                    DropdownMenuItem(
-                        content = { Text("Send Feedback") },
-                        onClick = { sendFeedback.let { context.startActivity(sendFeedback) } }
-                    )
-                }
-
-            }
-
-            IconButton (
-                onClick = { navController.navigate(AppScreens.SellerInterestListScreen.name) },
-                content = {
-                    Icon(
-                        imageVector = Icons.Default.Sell,
-                        tint = MaterialTheme.colorScheme.secondaryContainer,
-                        contentDescription = "Open Seller Interest List"
-                    )
-                }
-            )
-        },
-    )
+            },
+        )
+        Divider(modifier = Modifier.fillMaxWidth(), color = MaterialTheme.colorScheme.secondaryContainer)
+    }
 
 }
 
@@ -866,11 +876,9 @@ fun CategoryCard(
             .clickable(onClick = { navController.navigate("${AppScreens.SearchScreen.name}/$category") }),
         shape = MaterialTheme.shapes.small,
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.background,
-            contentColor = MaterialTheme.colorScheme.onBackground
+            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+            contentColor = MaterialTheme.colorScheme.secondary
         ),
-        border = BorderStroke(2.dp, MaterialTheme.colorScheme.primary),
-        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
     ) {
         Column(
             modifier = Modifier
@@ -889,6 +897,7 @@ fun CategoryCard(
             Text(
                 text = category,
                 style = MaterialTheme.typography.titleSmall.copy(fontSize = 18.sp),
+                fontSize = 16.sp,
                 textAlign = TextAlign.Center,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis
@@ -913,7 +922,7 @@ fun DisplayCategories(
 ) {
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxSize()
     ) {
         items(bookCategories.entries.toList()) { entry ->
             val category = entry.key
@@ -1273,7 +1282,6 @@ fun BookListingItem(
                 )
             }
 
-
             val annotatedString = buildAnnotatedString {
                 append("You are about to delete ")
                 withStyle(
@@ -1384,78 +1392,88 @@ fun AccountInfo(
     var showLogout by remember { mutableStateOf(false) }
     var showUpdate by remember { mutableStateOf(false) }
 
-    Column(
+    Card (
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+            contentColor = MaterialTheme.colorScheme.onBackground
+        ),
         modifier = Modifier
+            .padding(10.dp)
             .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.secondaryContainer)
-            .padding(top = 30.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
     ) {
-        Button(
-            enabled = false,
-            colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.inverseSurface,
-                contentColor = MaterialTheme.colorScheme.background,
-                disabledContainerColor = MaterialTheme.colorScheme.inverseSurface,
-                disabledContentColor = MaterialTheme.colorScheme.background
-            ),
-            onClick = {},
-            content = { Text("${user.firstName[0]}", fontSize = 40.sp) },
-            modifier = Modifier.size(100.dp)
-        )
-        Text(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 15.dp),
-            text = "${user.firstName} ${user.lastName}",
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.Bold,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            textAlign = TextAlign.Center,
-        )
-        Text(
-            modifier = Modifier.fillMaxWidth(),
-            text = "@${user.displayName}",
-            color = MaterialTheme.colorScheme.primary,
-            fontSize = 16.sp,
-            textAlign = TextAlign.Center,
-            fontStyle = FontStyle.Italic
-        )
-        Text(
-            modifier = Modifier.fillMaxWidth(),
-            text = "${user.bookListings.size} Listings | ${user.savedBooks.size} Saved",
-            fontSize = 16.sp,
-            textAlign = TextAlign.Center,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.primary,
-        )
-        Row(
-            verticalAlignment = Alignment.Bottom,
-            modifier = Modifier.padding(bottom = 15.dp)
+                .background(MaterialTheme.colorScheme.secondaryContainer)
+                .padding(top = 30.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
-            Button(onClick = { showUpdate = true }) {
-                Text("Edit Profile")
-            }
-            IconButton(
-                onClick = { showLogout = true },
+            Button(
+                enabled = false,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.inverseSurface,
+                    contentColor = MaterialTheme.colorScheme.background,
+                    disabledContainerColor = MaterialTheme.colorScheme.inverseSurface,
+                    disabledContentColor = MaterialTheme.colorScheme.background
+                ),
+                onClick = {},
+                content = { Text("${user.firstName[0]}", fontSize = 40.sp) },
+                modifier = Modifier.size(100.dp)
+            )
+            Text(
                 modifier = Modifier
-                    .size(40.dp)
-                    .padding(start = 5.dp, bottom = 5.dp),
-                colors = IconButtonDefaults.iconButtonColors(
-                    contentColor = MaterialTheme.colorScheme.onError,
-                    containerColor = MaterialTheme.colorScheme.error
-                )
+                    .fillMaxWidth()
+                    .padding(top = 15.dp),
+                text = "${user.firstName} ${user.lastName}",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                textAlign = TextAlign.Center,
+            )
+            Text(
+                modifier = Modifier.fillMaxWidth(),
+                text = "@${user.displayName}",
+                color = MaterialTheme.colorScheme.primary,
+                fontSize = 16.sp,
+                textAlign = TextAlign.Center,
+                fontStyle = FontStyle.Italic
+            )
+            Text(
+                modifier = Modifier.fillMaxWidth(),
+                text = "${user.bookListings.size} Listings | ${user.savedBooks.size} Saved",
+                fontSize = 16.sp,
+                textAlign = TextAlign.Center,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary,
+            )
+            Row(
+                verticalAlignment = Alignment.Bottom,
+                modifier = Modifier.padding(bottom = 15.dp)
             ) {
-                Icon(
-                    imageVector = Icons.Default.Logout,
-                    contentDescription = "Logout",
-                    tint = MaterialTheme.colorScheme.onError,
+                Button(onClick = { showUpdate = true }) {
+                    Text("Edit Profile")
+                }
+                IconButton(
+                    onClick = { showLogout = true },
                     modifier = Modifier
-                        .padding(start = 5.dp)
-                        .size(20.dp)
-                )
+                        .size(40.dp)
+                        .padding(start = 5.dp, bottom = 5.dp),
+                    colors = IconButtonDefaults.iconButtonColors(
+                        contentColor = MaterialTheme.colorScheme.onError,
+                        containerColor = MaterialTheme.colorScheme.error
+                    )
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Logout,
+                        contentDescription = "Logout",
+                        tint = MaterialTheme.colorScheme.onError,
+                        modifier = Modifier
+                            .padding(start = 5.dp)
+                            .size(20.dp)
+                    )
+                }
             }
         }
     }
@@ -1701,27 +1719,27 @@ fun BookInfoView(
     val (removeInterest, setRemoveInterest) = remember { mutableStateOf(false) }
 
     LazyColumn {
-        stickyHeader {
+        item {
             Row(
                 modifier = Modifier
-                    .background(MaterialTheme.colorScheme.background)
                     .fillMaxWidth()
                     .height(60.dp),
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
             ) {
                 Text(
                     text = "Book Info",
                     style = MaterialTheme.typography.titleLarge,
+                    textAlign = TextAlign.Center,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(top = 15.dp, start = 30.dp, end = 30.dp, bottom = 15.dp)
 
                 )
             }
-            Divider(modifier = Modifier.fillMaxWidth())
         }
 
         item {
-            Row {
+            Row(modifier = Modifier.padding(top = 16.dp)) {
                 Image(
                     painter = rememberAsyncImagePainter(model = book.imageURL),
                     contentDescription = "${book.title} Image",
@@ -1735,7 +1753,8 @@ fun BookInfoView(
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(end = 15.dp)
+                            .padding(end = 15.dp),
+                        verticalArrangement = Arrangement.Bottom
                     ) {
                         if (currInterestObject == null) {
                             Button(
@@ -1750,7 +1769,7 @@ fun BookInfoView(
                                     tint = MaterialTheme.colorScheme.onPrimary,
                                     modifier = Modifier.padding(end = 10.dp)
                                 )
-                                Text(text = "I'm Interested", fontSize = 12.sp)
+                                Text(text = "I'm Interested", fontSize = 14.sp)
                             }
                         } else {
                             Button(
@@ -1765,7 +1784,7 @@ fun BookInfoView(
                                     tint = MaterialTheme.colorScheme.onPrimary,
                                     modifier = Modifier.padding(end = 10.dp)
                                 )
-                                Text(text = "Withdraw Interest", fontSize = 12.sp)
+                                Text(text = "Withdraw Interest", fontSize = 14.sp)
                             }
                         }
                         Button(
@@ -1914,9 +1933,7 @@ fun BookInfoView(
             Text(
                 text = annotatedString,
                 fontSize = 16.sp,
-                modifier = Modifier
-                    .fillMaxWidth(0.5f)
-                    .padding(start = 15.dp, end = 15.dp),
+                modifier = Modifier.padding(start = 15.dp, end = 15.dp),
                 textAlign = TextAlign.Start
             )
             Spacer(modifier = Modifier.height(8.dp))
@@ -1937,9 +1954,7 @@ fun BookInfoView(
             Text(
                 text = annotatedString,
                 fontSize = 16.sp,
-                modifier = Modifier
-                    .fillMaxWidth(0.5f)
-                    .padding(start = 15.dp, end = 15.dp),
+                modifier = Modifier.padding(start = 15.dp, end = 15.dp),
                 textAlign = TextAlign.Start
             )
             Spacer(modifier = Modifier.height(8.dp))
@@ -1998,7 +2013,7 @@ fun BookInfoView(
                     }
                     if (book.email == viewModel.email) {
                         Text(
-                            text = "Please refer to Interest Screen to view the sale status for all book listings",
+                            text = "Please refer to Interest Screen to view the sale status for all book listings.",
                             fontSize = 14.sp,
                             fontStyle = FontStyle.Italic,
                             modifier = Modifier.padding(start = 15.dp, end = 15.dp)
@@ -2021,6 +2036,7 @@ fun BookInfoView(
                                         onCheckedChange = {
                                             viewModel.buyerVerifiedBook(book, currInterestObject)
                                             viewModel.fetchBookDetails(book.bookID)
+                                            // viewModel.removeBookIfBothPartiesVerified(book, currInterestObject)
                                         },
                                         checked = buyerCheckedState.value
                                     )
@@ -2040,10 +2056,19 @@ fun BookInfoView(
                                         onCheckedChange = {
                                             viewModel.sellerVerifiedBook(book, currInterestObject)
                                             viewModel.fetchBookDetails(book.bookID)
+                                            // viewModel.removeBookIfBothPartiesVerified(book, currInterestObject)
                                         },
                                         checked = sellerCheckedState.value
                                     )
                                 }
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = "*Please note that if both confirmation boxes are checked, the book will be removed from our database!",
+                                    fontSize = 12.sp,
+                                    color = MaterialTheme.colorScheme.error,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.padding(start = 15.dp, end = 15.dp )
+                                )
                             }
                         }
                     }
@@ -2272,10 +2297,8 @@ fun BookThumbnail(
     val isBookSaved = user?.savedBooks?.contains(book.bookID) == true
     val (isChecked, setChecked) = remember(isBookSaved) { mutableStateOf(isBookSaved) }
     val (interest, setInterest) = remember { mutableStateOf(false) }
-    val (removeInterest, setRemoveInterest) = remember { mutableStateOf(false)}
 
     var interestClicked by remember { mutableStateOf(false) }
-    var wInterestClicked by remember { mutableStateOf(false)}
 
     val currInterestObject = book.interestList.find { it.interestId == user?.userId + book.userId}
 
@@ -3288,7 +3311,7 @@ fun VerificationDialog(isVisible: Boolean) {
 }
 
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalAnimationApi::class)
 @Composable
 fun SellerInterestView(
     sellerInterestList: List<MBook>,
@@ -3297,155 +3320,162 @@ fun SellerInterestView(
     loading: Boolean,
 ) {
 
-    val reloadState = remember { mutableStateOf(loading) }
+    LazyColumn(
+        modifier = Modifier
+            .background(MaterialTheme.colorScheme.secondaryContainer)
+            .fillMaxSize()
+            .padding(top = 3.dp)
 
-
-    LazyColumn {
+    ) {
         item {
-            Text(
-                text = if(sellerInterestList.isEmpty()) "This page is empty. Post some listings for books to get started." else "View all of the users who have expressed interest in any of your book listings",
-                fontSize = 14.sp,
-                modifier = Modifier.padding(15.dp),
-                fontWeight = FontWeight.Bold,
-
-            )
         }
         sellerInterestList.forEach { book ->
-            stickyHeader {
-                Row(
-                    modifier = Modifier
-                        .background(MaterialTheme.colorScheme.secondaryContainer)
-                        .fillMaxWidth()
-                        .height(60.dp)
-                        .clickable {
-                            navController.navigate("${AppScreens.BookInfoScreen.name}/${book.bookID}")
-                        },
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-
-                    Image(
-                        painter = rememberAsyncImagePainter(model= book.imageURL),
-                        contentDescription = "${book.title} Image",
-                        modifier = Modifier
-                            .height(30.dp)
-                            .padding(start = 15.dp, end = 15.dp)
-
-                    )
-
-                    Text(
-                        text = book.title,
-                        color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.padding(top = 10.dp)
-                    )
-                }
-            }
-            item { if(book.interestList.isEmpty()) {
-                Text(
-                text = "No users interested in this title as yet!",
-                fontSize = 12.sp, fontStyle = FontStyle.Italic,
-                modifier = Modifier.padding(start = 15.dp, top = 10.dp))
-                }
-            }
             item {
-                book.interestList.forEach { interestObject ->
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 3.dp, end = 3.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.background
+                    ),
+                    border = BorderStroke(2.dp, MaterialTheme.colorScheme.secondaryContainer)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(60.dp)
+                            .background(MaterialTheme.colorScheme.background)
+                            .padding(start = 15.dp, end = 15.dp)
+                            .clickable {
+                                navController.navigate("${AppScreens.BookInfoScreen.name}/${book.bookID}")
+                            },
+                    ) {
+                        Image(
+                            painter = rememberAsyncImagePainter(model = book.imageURL),
+                            contentDescription = "${book.title} Image",
+                            modifier = Modifier
+                                .height(40.dp)
+                                .padding(start = 15.dp, end = 15.dp, top = 10.dp)
 
-                    val isSellerConfirmed = interestObject.sellerConfirm
-                    val sellerCheckedState = remember { mutableStateOf(isSellerConfirmed) }
-
-                    val isBuyerConfirmed = interestObject.buyerConfirm
-                    val buyerCheckedState = remember { mutableStateOf(isBuyerConfirmed) }
-
-                    var showElement by remember { mutableStateOf(false) }
-
-                    val annotatedString = buildAnnotatedString {
-                        append("Prospective Buyer: ")
-                        withStyle(
-                            style = SpanStyle(
+                        )
+                        Column {
+                            Text(
+                                text = book.title,
                                 color = MaterialTheme.colorScheme.primary,
-                                fontWeight = FontWeight.Bold
+                                modifier = Modifier.padding(top = 10.dp),
+                                fontWeight = FontWeight.Bold,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
                             )
-                        ) {
-                            append(interestObject.userDisplayName)
-
+                            Text(
+                                text = "ID: ${book.bookID}",
+                                fontSize = 10.sp
+                            )
                         }
                     }
 
-                    Column {
-                        if (reloadState.value) {
-                            Button(
-                                onClick = { navController.navigate(AppScreens.LoadingScreen.name) },
-                                content = { Text(text = "Reload", fontSize = 10.sp) },
-                                modifier = Modifier.padding(15.dp)
+
+                    if (book.interestList.isEmpty()) {
+                        Divider(modifier = Modifier.fillMaxWidth(),
+                            color = MaterialTheme.colorScheme.secondaryContainer)
+                        Text(
+                            text = "No users interested in this title as yet!",
+                            fontSize = 12.sp, fontStyle = FontStyle.Italic,
+                            modifier = Modifier.padding(start = 15.dp, top = 10.dp)
+                        )
+                    }
+
+                    book.interestList.forEach { interestObject ->
+
+                        val isSellerConfirmed = interestObject.sellerConfirm
+                        val sellerCheckedState = remember { mutableStateOf(isSellerConfirmed) }
+
+                        val isBuyerConfirmed = interestObject.buyerConfirm
+                        val buyerCheckedState = remember { mutableStateOf(isBuyerConfirmed) }
+
+                        var showElement by remember { mutableStateOf(false) }
+
+                        val annotatedString = buildAnnotatedString {
+                            append("Buyer: ")
+                            withStyle(
+                                style = SpanStyle(
+                                    color = MaterialTheme.colorScheme.primary,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            ) {
+                                append(interestObject.userDisplayName)
+
+                            }
+                        }
+                        Divider(modifier = Modifier.fillMaxWidth(),
+                            color = MaterialTheme.colorScheme.secondaryContainer)
+                        Row {
+                            Text(
+                                text = annotatedString,
+                                fontSize = 12.sp,
+                                modifier = Modifier.padding(start = 15.dp, top = 10.dp)
+                            )
+                            Text(
+                                text = if (showElement) "Hide" else "Show",
+                                modifier = Modifier
+                                    .clickable {
+                                        showElement = !showElement
+                                    }
+                                    .padding(start = 10.dp, top = 10.dp),
+                                textDecoration = TextDecoration.Underline,
+                                fontSize = 12.sp
                             )
                         }
-                        else {
-                            Row {
-                                Text(
-                                    text = annotatedString,
-                                    fontSize = 12.sp,
-                                    modifier = Modifier.padding(start = 15.dp, top = 10.dp)
-                                )
-                                Text(
-                                    text = if(showElement) "Hide" else "Show",
-                                    modifier = Modifier
-                                        .clickable {
-                                            showElement = !showElement
-                                        }
-                                        .padding(start = 10.dp, top = 5.dp),
-                                    textDecoration = TextDecoration.Underline
-                                )
-                            }
-                            AnimatedVisibility(visible = showElement) {
-                                Column {
-                                    Row {
-                                        Text(
-                                            text = "Buyer Confirmation: ",
-                                            modifier = Modifier.padding(top = 16.dp, start = 15.dp)
-                                        )
-                                        Checkbox(
-                                            enabled = book.email != viewModel.email,
-                                            onCheckedChange = {
-                                                viewModel.buyerVerifiedBook(book, interestObject)
+                        AnimatedVisibility(visible = showElement) {
+                            Column {
+                                Row {
+                                    Text(
+                                        text = "Buyer Confirmation: ",
+                                        modifier = Modifier.padding(top = 16.dp, start = 15.dp),
+                                        fontSize = 14.sp,
+                                    )
+                                    Checkbox(
+                                        enabled = book.email != viewModel.email,
+                                        onCheckedChange = {
+                                            viewModel.buyerVerifiedBook(book, interestObject)
+                                            viewModel.fetchBookDetails(book.bookID)
+                                        },
+                                        checked = buyerCheckedState.value
+                                    )
+                                }
+                                Row {
+                                    Text(
+                                        text = "Seller Confirmation: ",
+                                        modifier = Modifier.padding(top = 16.dp, start = 15.dp),
+                                        fontSize = 14.sp
+                                    )
+                                    Checkbox(
+                                        enabled = (book.email == viewModel.email) && !(
+                                                interestObject.sellerConfirm &&
+                                                        interestObject.buyerConfirm
+                                                ),
+                                        onCheckedChange = {
+                                            viewModel.viewModelScope.launch {
+                                                viewModel.sellerVerifiedBook(book, interestObject)
                                                 viewModel.fetchBookDetails(book.bookID)
-                                            },
-                                            checked = buyerCheckedState.value
-                                        )
-                                    }
-                                    Row {
-                                        Text(
-                                            text = "Seller Confirmation: ",
-                                            modifier = Modifier.padding(top = 16.dp, start = 15.dp)
-                                        )
-                                        Checkbox(
-                                            enabled = (book.email == viewModel.email) && !reloadState.value,
-                                            onCheckedChange = {
-                                                viewModel.viewModelScope.launch {
-                                                    viewModel.sellerVerifiedBook(
-                                                        book,
-                                                        interestObject
-                                                    )
-                                                    viewModel.fetchBookDetails(book.bookID)
-                                                    reloadState.value = true
-                                                }
-                                            },
-                                            checked = sellerCheckedState.value
-                                        )
+                                                delay(800L)
+                                                navController.navigate(
+                                                    "${AppScreens.LoadingScreen.name}/" +
+                                                            AppScreens.SellerInterestListScreen.name
+                                                )
+                                            }
+                                        },
+                                        checked = sellerCheckedState.value
+                                    )
 
-                                    }
                                 }
                             }
+
                         }
 
-                        Divider(modifier = Modifier.fillMaxWidth())
-
                     }
-
                 }
             }
-
         }
     }
-
-
-
 }

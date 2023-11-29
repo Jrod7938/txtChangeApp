@@ -50,6 +50,7 @@ import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.Clear
 import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -72,8 +73,10 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
@@ -308,37 +311,50 @@ fun SearchScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             if (!errorMessage.isNullOrEmpty()) {
-                Text(text = "$errorMessage")
+                Text(
+                    text = errorMessage.toString(),
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.padding(start = 15.dp, end = 15.dp).fillMaxWidth(),
+                    textAlign = TextAlign.Center
+                )
             }
-            if (loading || bookList.isEmpty() || viewModel.user.value == null) {
-                CircularProgressIndicator()
-            } else {
-                AnimatedVisibility(visible = !loading) {
-                    Column(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalAlignment = Alignment.CenterHorizontally
+            AnimatedVisibility(visible = !loading) {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .padding(16.dp)
+                            .clickable { navController.navigate(AppScreens.SearchScreen.name) },
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
                     ) {
-                        Row(
-                            modifier = Modifier
-                                .padding(16.dp)
-                                .clickable { navController.navigate(AppScreens.SearchScreen.name) },
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.Search,
-                                contentDescription = "Search for a Book",
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(30.dp)
-                            )
-                            Spacer(modifier = Modifier.padding(5.dp))
-                            Text(
-                                text = "Search for a Book",
-                                color = MaterialTheme.colorScheme.primary,
-                                fontWeight = FontWeight.SemiBold,
-                                fontSize = MaterialTheme.typography.titleLarge.fontSize
-                            )
-                        }
+                        Icon(
+                            imageVector = Icons.Filled.Search,
+                            contentDescription = "Search for a Book",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(30.dp)
+                        )
+                        Spacer(modifier = Modifier.padding(5.dp))
+                        Text(
+                            text = "Search for a Book",
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = MaterialTheme.typography.titleLarge.fontSize
+                        )
+                    }
+
+                    if(bookList.isEmpty() || viewModel.user.value == null) {
+                        Text(
+                            text = "Oops.. looks like there is nothing to see here!",
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                    else {
                         DisplaySearchResults(
                             bookList,
                             category,
@@ -348,6 +364,7 @@ fun SearchScreen(
                     }
                 }
             }
+
         }
     }
 }

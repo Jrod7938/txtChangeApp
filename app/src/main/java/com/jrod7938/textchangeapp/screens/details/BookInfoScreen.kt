@@ -58,8 +58,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import com.jrod7938.textchangeapp.components.BookInfoView
 import com.jrod7938.textchangeapp.components.ContactSellerDialog
+import com.jrod7938.textchangeapp.navigation.AppScreens
 import kotlinx.coroutines.launch
 
 /**
@@ -82,7 +84,7 @@ fun BookInfoScreen(
     val book by viewModel.book.observeAsState(initial = null)
     val loading by viewModel.loading.observeAsState(initial = false)
     val message by viewModel.message.collectAsState(initial = null)
-
+    val reloadInterface by viewModel.reloadInterface.collectAsState(initial = false)
 
     LaunchedEffect(key1 = true) {
         bookId?.let {
@@ -91,9 +93,19 @@ fun BookInfoScreen(
         }
     }
 
+    if(reloadInterface) {
+        bookId?.let {
+            viewModel.checkBookId(
+                bookId,
+                navigate = { navController.navigate(AppScreens.NotFoundScreen.name) }
+            )
+        }
+    }
+
     if (loading) {
         CircularProgressIndicator()
-    } else {
+    }
+    else {
         Column(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.Top,
@@ -113,7 +125,6 @@ fun BookInfoScreen(
                 )
             }
         }
-
     }
 }
 

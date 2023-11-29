@@ -32,16 +32,23 @@
 package com.jrod7938.textchangeapp.screens.details
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.jrod7938.textchangeapp.components.SellerInterestView
 import com.jrod7938.textchangeapp.model.MBook
+import com.jrod7938.textchangeapp.navigation.AppScreens
 
 @Composable
 fun SellerInterestListScreen(
@@ -61,13 +68,26 @@ fun SellerInterestListScreen(
     }
 
 
-    AnimatedVisibility(visible = !loading) {
+    if(loading) {
+        CircularProgressIndicator()
+    }
+    else if(sellerInterestList.isEmpty()){
+        Text(
+            text = "This page is empty. Post some listings for books to get started.",
+            fontSize = 14.sp,
+            modifier = Modifier.padding(15.dp),
+            fontWeight = FontWeight.Bold,
+
+            )
+    }
+    else {
         SellerInterestView(
             sellerInterestList = sellerInterestList,
             viewModel = viewModel,
             navController = navController,
-            loading = loading
+            loading = false
         )
+
     }
 
 }
