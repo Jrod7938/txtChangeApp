@@ -60,6 +60,8 @@ import kotlinx.coroutines.withContext
  * @property message StateFlow<String?> the message to display
  * @property _mUser MutableLiveData<MUser> the user
  * @property mUser LiveData<MUser> the user
+ * @property _bookListings MutableLiveData<List<MBook>> the book listings
+ * @property bookListings LiveData<List<MBook>> the book listings
  */
 class AccountScreenViewModel : ViewModel() {
 
@@ -157,7 +159,6 @@ class AccountScreenViewModel : ViewModel() {
      * @param firstName First name of the user
      * @param lastName Last name of the user
      */
-
     fun editUserProfile(
         firstName: String,
         lastName: String,

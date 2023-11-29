@@ -59,9 +59,14 @@ import kotlinx.coroutines.withContext
  * @property email String? the user's email
  * @property userName String? the user's username
  * @property _userName String? the user's username
+ * @property userName String? the user's username
+ * @property _loading MutableLiveData<Boolean> the loading state
  * @property loading MutableLiveData<Boolean> the loading state
+ * @property _message MutableStateFlow<String?> the message state
  * @property message MutableStateFlow<String?> the message state
+ * @property _user MutableLiveData<MUser> the user state
  * @property user MutableLiveData<MUser> the user state
+ * @property _book MutableLiveData<MBook> the book state
  * @property book MutableLiveData<MBook> the book state
  * @property accountVM AccountScreenViewModel the account view model
  *
