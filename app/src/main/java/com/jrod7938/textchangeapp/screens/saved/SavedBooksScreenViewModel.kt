@@ -56,6 +56,7 @@ import kotlinx.coroutines.withContext
  * @property userDoc String that represents the current user's email without @pride.hofstra.edu
  * @property _savedBooks MutableLiveData<List<MBook>> that represents the current user's saved books
  * @property savedBooks LiveData<List<MBook>> that represents the current user's saved books
+ * @property fetchedBooks Boolean that represents whether the user's saved books have been fetched
  *
  * @see ViewModel
  * @see MBook
@@ -76,7 +77,6 @@ class SavedBooksScreenViewModel : ViewModel() {
     private var fetchedBooks = false
 
     init {
-
         if (!fetchedBooks) {
             viewModelScope.launch {
                 _savedBooks.value = loadSavedBooks()

@@ -54,8 +54,12 @@ import kotlinx.coroutines.tasks.await
  * @property auth Firebase Authentication instance
  * @property _loading MutableLiveData<Boolean> to indicate if the user is being created
  * @property loading LiveData<Boolean> to observe if the user is being created
+ * @property _errorMessage MutableStateFlow<String?> to indicate if there is an error
+ * @property errorMessage StateFlow<String?> to observe if there is an error
  * @property _accountCreatedSignal MutableStateFlow<Boolean> to indicate if the user is created
  * @property accountCreatedSignal StateFlow<Boolean> to observe if the user is created
+ * @property _isVerificationSent MutableStateFlow<Boolean> to indicate if the verification email is sent
+ * @property isVerificationSent StateFlow<Boolean> to observe if the verification email is sent
  *
  * @constructor Creates a ViewModel for the LoginScreen
  */
@@ -137,7 +141,6 @@ class LoginScreenViewModel: ViewModel() {
      * @see FirebaseAuth.createUserWithEmailAndPassword
      * @see createUser
      */
-
     fun createUserWithEmailAndPassword(
         firstName: String,
         lastName: String,
@@ -145,7 +148,6 @@ class LoginScreenViewModel: ViewModel() {
         password: String,
         home: () -> Unit,
     ){
-
         if(_loading.value == false){
             _loading.value = true
             auth.createUserWithEmailAndPassword(email, password)
@@ -188,7 +190,6 @@ class LoginScreenViewModel: ViewModel() {
      *
      * @see waitForEmailVerification
      */
-
     private fun emailVerificationAction(
         onVerificationComplete: () -> Unit,
         onVerificationFailed: () -> Unit
@@ -229,7 +230,6 @@ class LoginScreenViewModel: ViewModel() {
      *
      * @see emailVerificationAction
      */
-
     private suspend fun waitForEmailVerification(
         onVerificationComplete: () -> Unit,
         onVerificationFailed: () -> Unit
@@ -264,7 +264,6 @@ class LoginScreenViewModel: ViewModel() {
      * @param focusState : FocusState
      *
      */
-
     fun resetErrorMessage(focusState: FocusState){
         if(focusState.isFocused){
             if(!_errorMessage.value.isNullOrEmpty()) _errorMessage.value = null
