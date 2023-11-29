@@ -194,7 +194,7 @@ import com.jrod7938.textchangeapp.screens.account.AccountScreenViewModel
 import com.jrod7938.textchangeapp.screens.details.BookInfoScreenViewModel
 import com.jrod7938.textchangeapp.screens.home.HomeScreen
 import com.jrod7938.textchangeapp.screens.login.LoginScreenViewModel
-import com.jrod7938.textchangeapp.screens.sell.ListingSubmissionData
+import com.jrod7938.textchangeapp.model.ListingSubmissionData
 import com.jrod7938.textchangeapp.screens.sell.SellScreenViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope

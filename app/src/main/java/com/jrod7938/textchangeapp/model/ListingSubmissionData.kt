@@ -29,7 +29,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.jrod7938.textchangeapp.screens.sell
+package com.jrod7938.textchangeapp.model
 
 /**
  * Data class that captures user information for listing submission
