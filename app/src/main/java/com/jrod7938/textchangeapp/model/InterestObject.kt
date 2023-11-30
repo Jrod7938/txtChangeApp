@@ -31,6 +31,15 @@
 
 package com.jrod7938.textchangeapp.model
 
+/**
+ * Model class for an InterestObject, created when a user is interested in a book listing
+ *
+ * @property interestId String id of the InterestObject created with the id of the interested user and the book
+ * @property userDisplayName String of the interested user's display name
+ * @property buyerConfirm Boolean value for whether the Buyer approves the sale
+ * @property sellerConfirm Boolean value for whether the Seller approves the sale
+ *
+ **/
 data class InterestObject(
     val interestId: String,
     val userDisplayName: String,
@@ -39,6 +48,16 @@ data class InterestObject(
 ) {
 
     companion object {
+
+        /**
+         *
+         * Creates an InterestObject from a HashMap
+         * This is how it is stored in Firebase
+         *
+         * @param map the HashMap to create the InterestObject from
+         *
+         * @return InterestObject the InterestObject created from the HashMap
+         */
         fun fromMap(map: HashMap<String, Any>): InterestObject {
             return InterestObject(
                 interestId = map["interest_id"].toString(),
@@ -48,6 +67,14 @@ data class InterestObject(
             )
         }
     }
+
+    /**
+     *
+     * Creates a map from the InterestObject
+     *
+     * @return MutableMap<String, Any> the map created from the InterestObject
+     */
+
     fun toMap(): MutableMap<String, Any> {
         return mutableMapOf(
             "interest_id" to this.interestId,
