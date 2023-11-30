@@ -29,46 +29,39 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.jrod7938.textchangeapp.navigation
+package com.jrod7938.textchangeapp.screens.splash
+
+import androidx.compose.foundation.layout.Column
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.navigation.NavHostController
+import com.jrod7938.textchangeapp.navigation.AppScreens
+import kotlinx.coroutines.delay
 
 /**
- * Enum class to represent the different screens of the app
+ * Loading Screen
  *
- * @constructor Creates an enum class to represent the different screens of the app
+ * @param navController NavController the navigation controller
+ * @param destination String the destination to navigate to after the loading page
  */
-enum class AppScreens {
-    SplashScreen,
-    LoginScreen,
-    AccountScreen,
-    HomeScreen,
-    SearchScreen,
-    BookInfoScreen,
-    SavedBooksScreen,
-    SellerInterestListScreen,
-    NotFoundScreen,
-    LoadingScreen;
 
-    companion object {
-        /**
-         * Get the screen from the route
-         *
-         * @param route route to get the screen from
-         *
-         * @return AppScreens
-         */
-        fun fromRoute(route: String): AppScreens = when (route?.substringBefore("/")) {
-            SplashScreen.name -> SplashScreen
-            LoginScreen.name -> LoginScreen
-            AccountScreen.name -> AccountScreen
-            HomeScreen.name -> HomeScreen
-            SearchScreen.name -> SearchScreen
-            BookInfoScreen.name -> BookInfoScreen
-            SavedBooksScreen.name -> SavedBooksScreen
-            SellerInterestListScreen.name -> SellerInterestListScreen
-            LoadingScreen.name -> LoadingScreen
-            NotFoundScreen.name -> NotFoundScreen
-            null -> HomeScreen
-            else -> throw IllegalArgumentException("Route $route is not recognized.")
+
+@Composable
+fun LoadingScreen(
+    navController: NavHostController,
+    destination: String? = "",
+){
+    Column{
+        CircularProgressIndicator()
+        Text("Loading")
+    }
+
+    LaunchedEffect(key1 = true){
+        delay(1000L)
+        destination?.let {
+            navController.navigate(destination)
         }
     }
 }

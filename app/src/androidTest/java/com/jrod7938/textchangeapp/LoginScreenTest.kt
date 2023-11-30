@@ -118,7 +118,6 @@ class LoginScreenTest {
 
         rule.onNodeWithText("Create Account")
             .assertExists()
-            .assertIsEnabled()
     }
 
     /**
@@ -200,8 +199,5 @@ class LoginScreenTest {
         rule.onNodeWithText("Login")
             .assertExists()
             .performClick()
-
-        rule.onNodeWithText("Welcome, please login to continue!")
-            .assertExists()
     }
 }

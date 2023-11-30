@@ -70,7 +70,7 @@ class HomeScreenTest {
             .assertExists()
             .assertHasClickAction()
 
-        rule.onNodeWithText("Categories:")
+        rule.onNodeWithText("Browse Categories:")
             .assertExists()
     }
 }

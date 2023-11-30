@@ -31,11 +31,13 @@
 
 package com.jrod7938.textchangeapp.screens.search
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.firestore.FirebaseFirestore
+import com.jrod7938.textchangeapp.model.InterestObject
 import com.jrod7938.textchangeapp.model.MBook
 import com.jrod7938.textchangeapp.model.MUser
 import com.jrod7938.textchangeapp.screens.account.AccountScreenViewModel
@@ -106,13 +108,22 @@ class BookSearchScreenViewModel : ViewModel() {
      */
     fun searchBookByTitle(title: String) {
         viewModelScope.launch {
+            val bookList = mutableListOf<MBook>()
             _loading.postValue(true)
             db.collection("books")
                 .whereEqualTo("title", title)
                 .get()
-                .addOnSuccessListener { result ->
-                    val bookList = result.map { document ->
-                        MBook.fromDocument(document)
+                .addOnSuccessListener { snapShot ->
+                    for(document in snapShot.documents){
+                        val convertedInterestList = mutableListOf<InterestObject>()
+                        val interestList = document.get("interest_list") as ArrayList<HashMap<String, Any>>
+
+                        for(item in interestList) {convertedInterestList.add(InterestObject.fromMap(item))}
+
+                        val book = MBook.fromDocument(document)
+                        book.interestList = convertedInterestList
+
+                        bookList.add(book)
                     }
                     _books.value =
                     bookList.filter { _user.value?.bookListings?.contains(it.bookID) == false }
@@ -132,11 +143,20 @@ class BookSearchScreenViewModel : ViewModel() {
      *  @return Unit
      */
     fun searchBooksByCategory(category: String) {
+        val bookList = mutableListOf<MBook>()
         db.collection(category.trim())
             .get()
-            .addOnSuccessListener { result ->
-                val bookList = result.map { document ->
-                    MBook.fromDocument(document)
+            .addOnSuccessListener { snapShot ->
+                for(document in snapShot.documents){
+                    val convertedInterestList = mutableListOf<InterestObject>()
+                    val interestList = document.get("interest_list") as ArrayList<HashMap<String, Any>>
+
+                    for(item in interestList) {convertedInterestList.add(InterestObject.fromMap(item))}
+
+                    val book = MBook.fromDocument(document)
+                    book.interestList = convertedInterestList
+
+                    bookList.add(book)
                 }
                 _books.value =
                     bookList.filter { _user.value?.bookListings?.contains(it.bookID) == false }
@@ -155,13 +175,22 @@ class BookSearchScreenViewModel : ViewModel() {
      */
     fun searchBookByISBN(isbn : String) {
         viewModelScope.launch{
+            val bookList = mutableListOf<MBook>()
             _loading.postValue(true)
             db.collection("books")
                 .whereEqualTo("isbn", isbn)
                 .get()
-                .addOnSuccessListener { result ->
-                    val bookList = result.map { document ->
-                        MBook.fromDocument(document)
+                .addOnSuccessListener { snapShot ->
+                    for(document in snapShot.documents){
+                        val convertedInterestList = mutableListOf<InterestObject>()
+                        val interestList = document.get("interest_list") as ArrayList<HashMap<String, Any>>
+
+                        for(item in interestList) {convertedInterestList.add(InterestObject.fromMap(item))}
+
+                        val book = MBook.fromDocument(document)
+                        book.interestList = convertedInterestList
+
+                        bookList.add(book)
                     }
                     _books.value =
                     bookList.filter { _user.value?.bookListings?.contains(it.bookID) == false }
@@ -181,13 +210,22 @@ class BookSearchScreenViewModel : ViewModel() {
      */
     fun searchBookByAuthor(author : String) {
         viewModelScope.launch{
+            val bookList = mutableListOf<MBook>()
             _loading.postValue(true)
             db.collection("books")
                 .whereEqualTo("author", author)
                 .get()
-                .addOnSuccessListener { result ->
-                    val bookList = result.map { document ->
-                        MBook.fromDocument(document)
+                .addOnSuccessListener { snapShot ->
+                    for(document in snapShot.documents){
+                        val convertedInterestList = mutableListOf<InterestObject>()
+                        val interestList = document.get("interest_list") as ArrayList<HashMap<String, Any>>
+
+                        for(item in interestList) {convertedInterestList.add(InterestObject.fromMap(item))}
+
+                        val book = MBook.fromDocument(document)
+                        book.interestList = convertedInterestList
+
+                        bookList.add(book)
                     }
                     _books.value =
                     bookList.filter { _user.value?.bookListings?.contains(it.bookID) == false }
