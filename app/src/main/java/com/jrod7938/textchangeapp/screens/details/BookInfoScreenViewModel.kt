@@ -75,6 +75,11 @@ import kotlinx.coroutines.withContext
  * @property _book MutableLiveData<MBook> the book state
  * @property book MutableLiveData<MBook> the book state
  * @property accountVM AccountScreenViewModel the account view model
+ * @property _reloadInterface MutableStateFlow<Boolean> that represents whether or not the view needs to reload the page when a change in the database is detected
+ * @property reloadInterface StateFlow<Boolean> that represents whether or not the view needs to reload the page when a change in the database is detected
+ * @property _sellerInterestList MutableLiveData<MUser> the seller's interest list
+ * @property sellerInterestList LiveData<MUser> the seller's interest list
+ * @property _bookCollectionSize MutableLiveData<Int> the size of the books collection in the databse
  *
  * @see ViewModel
  * @see BookInfoScreen
@@ -119,10 +124,10 @@ class BookInfoScreenViewModel : ViewModel() {
     }
 
     /**
-    * Monitor the books collection in the database in the background to keep track of changes
-     * Update the UI as needed
-    *
-    * */
+     *
+     * Monitors the book collection size in the database to update the View if necessary
+     *
+     */
     @SuppressLint("RestrictedApi")
     private fun startBackgroundTask(){
         viewModelScope.launch {
@@ -149,6 +154,14 @@ class BookInfoScreenViewModel : ViewModel() {
         }
     }
 
+    /**
+     *
+     * Called when the view is to be reloaded.
+     * Checks if any book displayed on a page currently, is no longer available to redirect user.
+     *
+     * @param bookId The id of the MBook to verify
+     * @param navigate The Function to redirect the user to a specified location
+     */
     fun checkBookId(bookId: String, navigate: () -> Unit) {
         db.collection("books").document(bookId).get()
             .addOnSuccessListener { documentSnapshot ->
@@ -522,7 +535,7 @@ class BookInfoScreenViewModel : ViewModel() {
      *
      * @see MBook
      */
-   fun removeBookIfBothPartiesVerified(book: MBook) {
+    private fun removeBookIfBothPartiesVerified(book: MBook) {
 
         // remove from user listings
         val userID = book.email.split("@")[0]
@@ -619,6 +632,17 @@ class BookInfoScreenViewModel : ViewModel() {
             }
     }
 
+
+    /**
+     * Adds a new interest object to the interestList of a specified Book
+     *
+     * @param book The MBook to be modified
+     * @param buyer The MUser to add the interest object for
+     *
+     * @see MBook
+     * @see MUser
+     *
+     * **/
     fun addInterestObject(book: MBook, buyer: MUser){
         _loading.value = true
         val db = FirebaseFirestore.getInstance()
@@ -660,6 +684,16 @@ class BookInfoScreenViewModel : ViewModel() {
 
     }
 
+    /**
+     * Deletes the specified interest object from the specified book's interestList
+     *
+     * @param book The MBook to be modified
+     * @param currInterestObject The InterestObject to be removed
+     *
+     * @see InterestObject
+     *
+     */
+
     fun deleteInterestObject(book: MBook, currInterestObject: InterestObject){
         _loading.value = true
         val db = FirebaseFirestore.getInstance()
@@ -693,6 +727,16 @@ class BookInfoScreenViewModel : ViewModel() {
         _loading.value = false
     }
 
+    /**
+     *
+     * Reloads the interestList from the database for a specified book in the event that it changes
+     *
+     * @param book the MBook to be modified
+     * @return List<InterestObject> the updated list
+     *
+     * @see InterestObject
+     */
+
     private suspend fun reloadInterestList(book: MBook): List<InterestObject> = withContext(Dispatchers.IO){
         val db = FirebaseFirestore.getInstance()
         val interestList = mutableListOf<InterestObject>()
@@ -724,6 +768,13 @@ class BookInfoScreenViewModel : ViewModel() {
         }
         return@withContext interestList
     }
+
+    /**
+     *
+     * Retrieves the seller's interest list - all user's interested in all of their listings
+     *
+     * @param user the MUser to reference their listings
+     */
 
     fun retrieveSellerInterestList(user: MUser){
         _loading.value = true
