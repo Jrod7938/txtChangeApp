@@ -84,7 +84,8 @@ fun SellerInterestListScreen(
         SellerInterestView(
             sellerInterestList = sellerInterestList,
             viewModel = viewModel,
-            navController = navController
+            navController = navController,
+            loading = false
         )
 
     }
