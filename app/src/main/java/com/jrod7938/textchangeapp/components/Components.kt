@@ -290,11 +290,6 @@ fun AppLogo(
     }
 }
 
-// @Preview(showBackground = true)
-@Composable
-private fun AppLogoPreview() {
-    AppLogo()
-}
 
 /**
  * This composable is the app logo. It displays the app logo.
@@ -1309,10 +1304,10 @@ fun BookListingItem(
 }
 
 
+
 /**
- * This composable is the confirmation dialog when
- * the user wants to delete or edit book.
- *
+ * This composable is the Destructive Action Dialog. It displays a dialog for
+ * the user to confirm a destructive action, such as deletion or logging out.
  * @param isVisible Boolean whether the dialog is visible
  * @param onConfirmAction () -> Unit the function to call when the user confirms the action
  * @param onDismissAction () -> Unit the function to call when the user dismisses the action
@@ -1321,6 +1316,7 @@ fun BookListingItem(
  * @param confirmButtonText String the text of the confirm button
  * @param dismissButtonText String the text of the dismiss button
  * @param imageVector ImageVector the image vector of the dialog
+ *
  */
 @Composable
 fun DestructiveActionDialog(
@@ -2122,6 +2118,17 @@ fun BookInfoView(
 
 }
 
+/**
+ * This composable is a Expandable Text Component
+ * It is reusable, and allows you to neatly display overflowing text, by being able to toggle between
+ * expanded and collapsed state
+ *
+ * @param text The text to be displayed
+ * @param maxLines The number of lines the text is allowed to display on a collapsed state
+ * @param modifier The option to modify the display of the text
+ * @param fontSize The desired font size of the text
+ *
+ **/
 @Composable
 fun ExpandableText(text: String, maxLines: Int, modifier: Modifier, fontSize: Int){
     var isExpanded by remember { mutableStateOf(false) }
@@ -2416,6 +2423,19 @@ fun BookThumbnail(
     }
 }
 
+/**
+ * This composable is the Withdraw Interest Dialog.
+ * It is displayed whenever a user would like to withdraw their interest in a book listing.
+ *
+ * @param isVisible A Boolean value that determines whether or not the dialog is visible
+ * @param onDismissAction A Function to be called when the dialog is dismissed
+ * @param onConfirmAction A Function to be called when the user confirms their withdrawal
+ * @param book The MBook to withdraw the interest from
+ * @param interestObject The current InterestObject that needs to be deleted
+ * @param viewModel The BookInfoScreenViewModel to access the necessary functions from the viewModel
+ *
+ * */
+
 @Composable
 fun WithdrawInterestDialog(
     isVisible: Boolean,
@@ -2481,6 +2501,21 @@ fun WithdrawInterestDialog(
         )
     }
 }
+
+/**
+ *
+ * This composable is the Contact Seller Dialog.
+ * It is an Alert Dialog that is displayed after a user expresses interest in a book listing
+ * and would like to contact the seller.
+ *
+ * @param isVisible Boolean value that determines whether or not the dialog is visible
+ * @param onDismissAction A Function to be called when the dialog is dismissed
+ * @param onConfirmAction A Function to be called when the user confirms their action
+ * @param book The MBook to be referenced for the purpose of buyer seller interaction
+ * @param user The MUser who is logged in
+ *
+ *
+ **/
 
 @Composable
 fun ContactSellerDialog(
@@ -2569,8 +2604,8 @@ fun ContactSellerDialog(
 }
 
 /**
- * This composable is the Book Search Bar. It displays a search bar for
- * the user to search for books.
+ * This composable is the Display Search Results.
+ * It displays all of the results in thumbnail view derived from a book search
  *
  * @param bookList List<MBook> the list of books
  * @param text String the text to search for
@@ -2718,7 +2753,7 @@ fun SavedToFavoritesButton(
 }
 
 /**
- * This composable is the Sell FAB. It displays a FAB for
+ * This composable is the Sell FAB. It displays a floating action button for
  * the user to sell a book.
  *
  * @see PostListingMBS
@@ -3114,8 +3149,9 @@ fun SellSubmitButton(
 }
 
 /**
- * This composable is the Destructive Action Dialog. It displays a dialog for
- * the user to confirm a destructive action.
+ *
+ * This composable is the confirmation dialog when the user is about to perform an important action
+ * and might want to confirm before proceeding.
  *
  * @param title String the title of the dialog
  * @param content String the content of the dialog
@@ -3164,7 +3200,8 @@ fun ConfirmDialog(
 }
 
 /**
- * ISBN Tooltip Composable that displays a tooltip for the user to see the ISBN.
+ * ISBN Tooltip Composable that displays a tooltip for the user to see additional info
+ * about the ISBN.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -3284,7 +3321,6 @@ fun ConditionsDescriptions() {
  *
  * @param isVisible Boolean whether the dialog is visible
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun VerificationDialog(isVisible: Boolean) {
     val (view, setView) = remember { mutableStateOf(isVisible) }
@@ -3311,13 +3347,22 @@ fun VerificationDialog(isVisible: Boolean) {
 }
 
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalAnimationApi::class)
+/**
+ * This composable is the Seller Interest View.
+ * It configures the display of all of a user's book listings and the buyers that have expressed
+ * interest in purchasing the book.
+ *
+ * @param sellerInterestList The interest list to be displayed
+ * @param viewModel The BookInfoScreenViewModel that allows for the usage of certain viewModel functions
+ * @param navController Provides the ability to navigate to a listing's respective info page
+ *
+ *
+ * **/
 @Composable
 fun SellerInterestView(
     sellerInterestList: List<MBook>,
     viewModel: BookInfoScreenViewModel,
     navController: NavController,
-    loading: Boolean,
 ) {
 
     LazyColumn(
