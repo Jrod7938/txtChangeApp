@@ -2,6 +2,11 @@
 
 TxTchange is an Android app built using Jetpack Compose. It allows Hofstra Students to exchange textbooks with other users.
 
+# Demo
+
+https://github.com/Jrod7938/txtChangeApp/assets/46418742/d8b9b6d3-6a80-48ca-8730-edb23dfc2d2d
+
+
 # Software Requirements Document
 
 [Software Requirements Document](https://github.com/Jrod7938/TexTchangeApp/wiki)
