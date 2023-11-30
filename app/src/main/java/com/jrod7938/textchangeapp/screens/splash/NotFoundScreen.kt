@@ -56,6 +56,12 @@ import androidx.navigation.NavController
 import com.jrod7938.textchangeapp.navigation.AppScreens
 import kotlinx.coroutines.delay
 
+/**
+* Not Found Screen
+* Indicate a page is not available or data is null
+*
+* @param navController NavController the navigation controller
+*/
 @Composable
 fun NotFoundScreen(navController: NavController) {
 

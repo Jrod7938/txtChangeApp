@@ -40,6 +40,13 @@ import androidx.navigation.NavHostController
 import com.jrod7938.textchangeapp.navigation.AppScreens
 import kotlinx.coroutines.delay
 
+/**
+ * Loading Screen
+ *
+ * @param navController NavController the navigation controller
+ * @param destination String the destination to navigate to after the loading page
+ */
+
 
 @Composable
 fun LoadingScreen(

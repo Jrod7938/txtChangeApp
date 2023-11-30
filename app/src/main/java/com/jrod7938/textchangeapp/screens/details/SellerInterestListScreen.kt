@@ -50,6 +50,16 @@ import com.jrod7938.textchangeapp.components.SellerInterestView
 import com.jrod7938.textchangeapp.model.MBook
 import com.jrod7938.textchangeapp.navigation.AppScreens
 
+/**
+ * Seller Interest Screen
+ *
+ * @param navController NavController the navigation controller
+ * @param viewModel BookInfoScreenViewModel the viewModel for this screen
+ *
+ * @see NavController
+ * @see BookInfoScreenViewModel
+ */
+
 @Composable
 fun SellerInterestListScreen(
     navController: NavController,
