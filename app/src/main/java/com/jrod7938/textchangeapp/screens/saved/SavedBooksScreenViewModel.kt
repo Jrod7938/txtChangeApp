@@ -58,6 +58,8 @@ import kotlinx.coroutines.withContext
  * @property userDoc String that represents the current user's email without @pride.hofstra.edu
  * @property _savedBooks MutableLiveData<List<MBook>> that represents the current user's saved books
  * @property savedBooks LiveData<List<MBook>> that represents the current user's saved books
+ * @property _reloadInterface MutableStateFlow<Boolean> that represents whether or not the view needs to reload the page when a change in the database is detected
+ * @property reloadInterface StateFlow<Boolean> that represents whether or not the view needs to reload the page when a change in the database is detected
  * @property fetchedBooks Boolean that represents whether the user's saved books have been fetched
  *
  * @see ViewModel

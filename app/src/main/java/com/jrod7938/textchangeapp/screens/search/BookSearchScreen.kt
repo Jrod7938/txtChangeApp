@@ -346,7 +346,6 @@ fun SearchScreen(
                             fontSize = MaterialTheme.typography.titleLarge.fontSize
                         )
                     }
-
                     if(bookList.isEmpty() || viewModel.user.value == null) {
                         Text(
                             text = "Oops.. looks like there is nothing to see here!",
