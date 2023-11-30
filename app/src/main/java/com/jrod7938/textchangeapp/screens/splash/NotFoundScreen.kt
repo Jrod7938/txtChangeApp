@@ -29,82 +29,69 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.jrod7938.textchangeapp.screens.home
+package com.jrod7938.textchangeapp.screens.splash
 
-import android.annotation.SuppressLint
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.Icon
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.filled.WarningAmber
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavHostController
-import com.jrod7938.textchangeapp.components.DisplayCategories
-import com.jrod7938.textchangeapp.components.HomeScreenButtons
+import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import com.jrod7938.textchangeapp.navigation.AppScreens
+import kotlinx.coroutines.delay
 
 /**
- * Home screen of the app.
- *
- * @param navController the navigation controller
- * @param viewModel the view model
- *
- * @see HomeScreenViewModel
- * @see HomeScreenButtons
- * @see DisplayCategories
- */
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+* Not Found Screen
+* Indicate a page is not available or data is null
+*
+* @param navController NavController the navigation controller
+*/
 @Composable
-fun HomeScreen(
-    navController: NavHostController,
-    viewModel: HomeScreenViewModel = viewModel()
-) {
-    val bookCategories by viewModel.bookCategories.observeAsState(initial = HashMap())
-    val errorMessage by viewModel.message.collectAsState(initial = "")
-    val loading by viewModel.loading.observeAsState(initial = false)
-    
+fun NotFoundScreen(navController: NavController) {
 
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+        modifier = Modifier.fillMaxSize()
     ) {
-        Text(
-            text = "Get Started:",
-            color = MaterialTheme.colorScheme.onBackground,
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.Bold
+        Icon(
+            imageVector = Icons.Default.WarningAmber,
+            contentDescription = "Page not found",
+            tint = MaterialTheme.colorScheme.error,
+            modifier = Modifier.size(100.dp)
         )
-        HomeScreenButtons(navController = navController)
-        Spacer(modifier = Modifier.height(8.dp))
         Text(
-            text = "Browse Categories:",
-            color = MaterialTheme.colorScheme.onBackground,
-            style = MaterialTheme.typography.titleLarge,
+            text = "Page Not Found!",
             fontWeight = FontWeight.Bold,
+            fontSize = 30.sp,
+            )
+        Text(
+            text = "Redirecting to home screen...",
+            fontSize = 15.sp,
+            fontStyle = FontStyle.Italic
         )
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            if (!errorMessage.isNullOrEmpty()) {
-                Text(text = "$errorMessage")
-            }
-            if (loading) {
-                CircularProgressIndicator()
-            }
-        }
-        DisplayCategories(bookCategories, navController)
+
+        CircularProgressIndicator()
+    }
+
+    LaunchedEffect(key1 = true){
+        delay(1000)
+        navController.navigate(AppScreens.HomeScreen.name)
     }
 }

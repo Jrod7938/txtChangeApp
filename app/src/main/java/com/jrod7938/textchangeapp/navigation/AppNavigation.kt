@@ -51,10 +51,13 @@ import com.jrod7938.textchangeapp.components.SellFAB
 import com.jrod7938.textchangeapp.components.TopNavigationBar
 import com.jrod7938.textchangeapp.screens.account.AccountScreen
 import com.jrod7938.textchangeapp.screens.details.BookInfoScreen
+import com.jrod7938.textchangeapp.screens.details.SellerInterestListScreen
 import com.jrod7938.textchangeapp.screens.home.HomeScreen
 import com.jrod7938.textchangeapp.screens.login.LoginScreen
 import com.jrod7938.textchangeapp.screens.saved.SavedBooksScreen
 import com.jrod7938.textchangeapp.screens.search.SearchScreen
+import com.jrod7938.textchangeapp.screens.splash.LoadingScreen
+import com.jrod7938.textchangeapp.screens.splash.NotFoundScreen
 import com.jrod7938.textchangeapp.screens.splash.SplashScreen
 
 /**
@@ -169,6 +172,30 @@ fun AppNavigation() {
                         onDispose { }
                     }
                     AccountScreen(navController = navController)
+                }
+
+                composable(route = AppScreens.SellerInterestListScreen.name) {
+                    DisposableEffect(Unit) {
+                        showAppBars.value = true
+                        onDispose { }
+                    }
+                    SellerInterestListScreen(navController = navController)
+                }
+                
+                composable(route = "${AppScreens.LoadingScreen.name}/{destination}") {
+                    DisposableEffect(Unit) {
+                        showAppBars.value = false
+                        onDispose { }
+                    }
+                    val destination = it.arguments?.getString("destination")
+                    LoadingScreen(navController = navController, destination = destination)
+                }
+                composable(route = AppScreens.NotFoundScreen.name) {
+                    DisposableEffect(Unit) {
+                        showAppBars.value = false
+                        onDispose { }
+                    }
+                    NotFoundScreen(navController = navController)
                 }
             }
         }

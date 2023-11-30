@@ -31,101 +31,72 @@
 
 package com.jrod7938.textchangeapp.screens.details
 
-import android.util.Log
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewModelScope
+import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.currentBackStackEntryAsState
-import com.jrod7938.textchangeapp.components.BookInfoView
-import com.jrod7938.textchangeapp.components.ContactSellerDialog
+import com.jrod7938.textchangeapp.components.SellerInterestView
+import com.jrod7938.textchangeapp.model.MBook
 import com.jrod7938.textchangeapp.navigation.AppScreens
-import kotlinx.coroutines.launch
 
 /**
- * Screen that displays the details of a book.
+ * Seller Interest Screen
  *
- * @param navController the navigation controller
- * @param bookId the id of the book to display
- * @param viewModel the view model
+ * @param navController NavController the navigation controller
+ * @param viewModel BookInfoScreenViewModel the viewModel for this screen
  *
+ * @see NavController
  * @see BookInfoScreenViewModel
- * @see BookInfoView
  */
+
 @Composable
-fun BookInfoScreen(
-    navController: NavHostController,
-    bookId: String? = "",
+fun SellerInterestListScreen(
+    navController: NavController,
     viewModel: BookInfoScreenViewModel = viewModel()
 ) {
-    val user by viewModel.user.observeAsState(initial = null)
-    val book by viewModel.book.observeAsState(initial = null)
     val loading by viewModel.loading.observeAsState(initial = false)
-    val message by viewModel.message.collectAsState(initial = null)
-    val reloadInterface by viewModel.reloadInterface.collectAsState(initial = false)
+    val user by viewModel.user.observeAsState(initial = null)
+    val sellerInterestList by viewModel.sellerInterestList.observeAsState(initial = listOf())
 
     LaunchedEffect(key1 = true) {
-        bookId?.let {
-            viewModel.fetchBookDetails(it)
-            viewModel.getUser()
-        }
+        viewModel.getUser()
     }
 
-    if(reloadInterface) {
-        bookId?.let {
-            viewModel.checkBookId(
-                bookId,
-                navigate = { navController.navigate(AppScreens.NotFoundScreen.name) }
-            )
-        }
+    LaunchedEffect(user != null){
+        user?.let { viewModel.retrieveSellerInterestList(it) }
     }
 
-    if (loading) {
+
+    if(loading) {
         CircularProgressIndicator()
     }
-    else {
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.Top,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
+    else if(sellerInterestList.isEmpty()){
+        Text(
+            text = "This page is empty. Post some listings for books to get started.",
+            fontSize = 14.sp,
+            modifier = Modifier.padding(15.dp),
+            fontWeight = FontWeight.Bold,
 
-            if (book != null && user != null) {
-                BookInfoView(
-                    book = book!!,
-                    user = user!!,
-                )
-            } else {
-                Text(
-                    text = "Failed to fetch book details: $message",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-        }
+            )
     }
+    else {
+        SellerInterestView(
+            sellerInterestList = sellerInterestList,
+            viewModel = viewModel,
+            navController = navController,
+        )
+
+    }
+
 }
-
-

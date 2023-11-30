@@ -40,8 +40,10 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.jrod7938.textchangeapp.model.MBook
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
@@ -56,6 +58,8 @@ import kotlinx.coroutines.withContext
  * @property userDoc String that represents the current user's email without @pride.hofstra.edu
  * @property _savedBooks MutableLiveData<List<MBook>> that represents the current user's saved books
  * @property savedBooks LiveData<List<MBook>> that represents the current user's saved books
+ * @property _reloadInterface MutableStateFlow<Boolean> that represents whether or not the view needs to reload the page when a change in the database is detected
+ * @property reloadInterface StateFlow<Boolean> that represents whether or not the view needs to reload the page when a change in the database is detected
  * @property fetchedBooks Boolean that represents whether the user's saved books have been fetched
  *
  * @see ViewModel
@@ -74,16 +78,15 @@ class SavedBooksScreenViewModel : ViewModel() {
     private val _savedBooks = MutableLiveData<List<MBook>>()
     val savedBooks: LiveData<List<MBook>> = _savedBooks
 
+    private val _reloadInterface = MutableStateFlow(false)
+    val reloadInterface: StateFlow<Boolean> = _reloadInterface
+
     private var fetchedBooks = false
 
     init {
-        if (!fetchedBooks) {
-            viewModelScope.launch {
-                _savedBooks.value = loadSavedBooks()
-                fetchedBooks = true
-            }
-        }
+       loadSavedBooks()
     }
+
 
     /**
      * Queries Firestore (Firebase database) to acquire the current user's list of saved books
@@ -92,34 +95,38 @@ class SavedBooksScreenViewModel : ViewModel() {
      *
      * @see MBook
      */
-    private suspend fun loadSavedBooks(): List<MBook>? = withContext(Dispatchers.IO) {
-        _loading.postValue(true)
-        val db = FirebaseFirestore.getInstance()
-        val books = mutableListOf<MBook>()
-
-        try {
-            val document = db.collection("users").document(userDoc).get().await()
-            val savedBooks = document.get("saved_books") as? List<String> ?: listOf()
-
-            for (book in savedBooks) {
+    private fun loadSavedBooks() {
+        viewModelScope.launch {
+            _loading.postValue(true)
+            while (isActive) {
+                val db = FirebaseFirestore.getInstance()
+                val books = mutableListOf<MBook>()
                 try {
-                    val doc = db.collection("books").document(book).get().await()
-                    val mBook = MBook.fromDocument(doc)
-                    books.add(mBook)
-                    Log.d("SavedBooksScreenViewModel", "loadSavedBooks: Added to list")
+                    val document = db.collection("users").document(userDoc).get().await()
+                    val savedBooks = document.get("saved_books") as? List<String> ?: listOf()
+
+                    for (book in savedBooks) {
+                        try {
+                            val doc = db.collection("books").document(book).get().await()
+                            val mBook = MBook.fromDocument(doc)
+                            books.add(mBook)
+                            Log.d("SavedBooksScreenViewModel", "loadSavedBooks: Added to list")
+                        } catch (e: Exception) {
+                            _reloadInterface.value = true
+                            Log.e("SavedBooksScreenViewModel", "Error fetching a saved book", e)
+                            _errorMessage.emit("One or more books on your list is unavailable!")
+                        }
+                    }
+                    _savedBooks.value = books
+                    Log.d("SavedBooksScreenViewModel", "loadSavedBooks: Complete")
                 } catch (e: Exception) {
-                    Log.e("SavedBooksScreenViewModel", "Error fetching a saved book", e)
+                    Log.e("SavedBooksScreenViewModel", "Error fetching user's saved books", e)
                     _errorMessage.emit(e.message)
                 }
+                _loading.postValue(false)
+                delay(5000)
             }
-            Log.d("SavedBooksScreenViewModel", "loadSavedBooks: Complete")
-        } catch (e: Exception) {
-            Log.e("SavedBooksScreenViewModel", "Error fetching user's saved books", e)
-            _errorMessage.emit(e.message)
         }
-
-        _loading.postValue(false)
-        return@withContext books
     }
 
 }

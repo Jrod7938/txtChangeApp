@@ -53,9 +53,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
@@ -69,29 +75,57 @@ fun SavedBooksScreen(
     val loading by viewModel.loading.observeAsState(initial = false)
     val errorMessage by viewModel.errorMessage.collectAsState(initial = null)
     val savedBooks by viewModel.savedBooks.observeAsState(initial = listOf())
+    val reloadInterface by viewModel.reloadInterface.collectAsState(initial = false)
 
     Column(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize().padding(top = 15.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
     ) {
         if (loading) {
             CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
         } else {
-            if (!errorMessage.isNullOrEmpty()) {
-                Text(
-                    text = errorMessage.toString(),
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.error
-                )
-            }
             Text(
                 text = "Saved Books",
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onBackground
+                color = MaterialTheme.colorScheme.onBackground,
             )
+            if (!errorMessage.isNullOrEmpty()) {
+                Text(
+                    text = errorMessage.toString(),
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.padding(start = 15.dp, end = 15.dp).fillMaxWidth(),
+                    textAlign = TextAlign.Center
+                )
+                if(reloadInterface) {
+                    Button(
+                        onClick = {
+                            navController
+                                .navigate(
+                                    "${AppScreens.LoadingScreen.name}/${AppScreens.SavedBooksScreen.name}"
+                                )
+                        },
+                        content = {
+                            Text(
+                                text = "Reload Page",
+                                fontSize = 14.sp
+                            )
+                        }
+                    )
+                }
+            }
+            if(savedBooks.isEmpty()) {
+                Text(
+                    text = "This page is empty. Add some books to your saved list to get started.",
+                    fontSize = 14.sp,
+                    modifier = Modifier.padding(15.dp),
+                    fontWeight = FontWeight.Bold,
+
+                    )
+            }
             LazyColumn(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -103,10 +137,10 @@ fun SavedBooksScreen(
                             .fillMaxWidth()
                             .padding(8.dp),
                         colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.background,
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
                             contentColor = MaterialTheme.colorScheme.onBackground
                         ),
-                        border = BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
+                        // border = BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
                     ) {
                         Row(
                             modifier = Modifier.padding(16.dp),
@@ -127,19 +161,37 @@ fun SavedBooksScreen(
                                 verticalArrangement = Arrangement.SpaceBetween
                             ) {
                                 Text(
-                                    text = "Title: ${savedBooks[it].title}",
+                                    text = buildAnnotatedString {
+                                         withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)){
+                                             append("Title: ")
+                                         }
+                                        append(savedBooks[it].title)
+                                    },
                                     maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
+                                    overflow = TextOverflow.Ellipsis,
+                                    fontSize = 13.sp
                                 )
                                 Text(
-                                    text = "Author: ${savedBooks[it].author}",
+                                    text = buildAnnotatedString {
+                                        withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)){
+                                            append("Author: ")
+                                        }
+                                        append(savedBooks[it].author)
+                                    },
                                     maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
+                                    overflow = TextOverflow.Ellipsis,
+                                    fontSize = 13.sp
                                 )
                                 Text(
-                                    text = "Price: $${savedBooks[it].price}",
+                                    text =buildAnnotatedString {
+                                        withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)){
+                                            append("Price: ")
+                                        }
+                                        append(savedBooks[it].price.toString())
+                                    },
                                     maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
+                                    overflow = TextOverflow.Ellipsis,
+                                    fontSize = 13.sp
                                 )
                                 Button(
                                     modifier = Modifier.fillMaxWidth(),

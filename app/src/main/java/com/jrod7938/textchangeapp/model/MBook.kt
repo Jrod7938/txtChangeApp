@@ -48,8 +48,7 @@ import com.google.firebase.firestore.DocumentSnapshot
  * @property imageURL String the url of the image of the book
  * @property description String the description of the book
  * @property isbn String the isbn of the book
- * @property sellerConfirm Boolean if the seller has confirmed the transaction
- * @property buyerConfirm Boolean if the buyer has confirmed the transaction
+ * @property interestList List<InterestObject> the list of interests for the book
  */
 data class MBook(
     var bookID: String = "",
@@ -64,9 +63,13 @@ data class MBook(
     var imageURL: String = "",
     var description: String = "",
     val isbn: String,
-    var sellerConfirm: Boolean = false,
-    var buyerConfirm: Boolean = false,
+    var interestList: List<InterestObject>
 ) {
+    /**
+     * Creates a map from the MBook object
+     *
+     * @return MutableMap<String, Any> the map created from the MBook object
+     */
     fun toMap(): MutableMap<String, Any> {
         return mutableMapOf<String, Any>(
             "book_id" to this.bookID,
@@ -81,8 +84,7 @@ data class MBook(
             "imageURL" to this.imageURL,
             "description" to this.description,
             "isbn" to this.isbn,
-            "seller_confirm" to this.sellerConfirm,
-            "buyer_confirm" to this.buyerConfirm
+            "interest_list" to this.interestList,
         )
     }
 
@@ -111,8 +113,7 @@ data class MBook(
                 imageURL = document.getString("imageURL") ?: "",
                 description = document.getString("description") ?: "",
                 isbn = document.getString("isbn") ?: "",
-                sellerConfirm = document.getBoolean("seller_confirm") ?: false,
-                buyerConfirm = document.getBoolean("buyer_confirm") ?: false
+                interestList = document.get("interest_list") as List<InterestObject>,
             )
         }
     }
