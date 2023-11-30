@@ -1,0 +1,42 @@
+name: Android Emulator Tests
+
+  # Controls when the workflow will run
+  on:
+    # Triggers the workflow on push or pull request events but only for the "master" branch
+    push:
+      branches:
+        - master
+    pull_request:
+      branches:
+        - master
+
+    # Allows you to run this workflow manually from the Actions tab
+    workflow_dispatch:
+
+  jobs:
+    build:
+      runs-on: macos-latest
+
+      steps:
+        - name: Checkout code
+          uses: actions/checkout@v3
+
+        - name: Set up JDK
+          uses: actions/setup-java@v3
+          with:
+            distribution: 'adopt'
+            java-version: '17'
+
+        - name: Setup Android SDK
+          uses: android-actions/setup-android@v2
+
+        - name: Create and start emulator
+          run: |
+            echo "y" | sdkmanager "system-images;android-34;google_apis;x86_64"
+            echo "no" | avdmanager create avd --force --name testAVD --abi google_apis/x86_64 --package "system-images;android-34;google_apis;x86_64"
+            $ANDROID_HOME/emulator/emulator -avd testAVD -no-audio -no-window -no-boot-anim -accel on &
+        - name: Wait for emulator to start
+          run: |
+            adb wait-for-device shell 'while [[ -z $(getprop sys.boot_completed) ]]; do sleep 1; done; input keyevent 82'
+        - name: Run connectedAndroidTest
+          run: ./gradlew connectedAndroidTest
