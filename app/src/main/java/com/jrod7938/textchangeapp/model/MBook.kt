@@ -48,8 +48,7 @@ import com.google.firebase.firestore.DocumentSnapshot
  * @property imageURL String the url of the image of the book
  * @property description String the description of the book
  * @property isbn String the isbn of the book
- * @property sellerConfirm Boolean if the seller has confirmed the transaction
- * @property buyerConfirm Boolean if the buyer has confirmed the transaction
+ * @property interestList List<InterestObject> the list of interests for the book
  */
 data class MBook(
     var bookID: String = "",
